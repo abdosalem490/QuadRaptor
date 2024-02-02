@@ -1,0 +1,1 @@
+F450 Drone Design, Object Avoidance, GoPro4 Servo Gimbal, Rapeberry Pi OpenHD Video Transmittion, etc. by Jacob12138 on Thingiverse: https://www.thingiverse.com/thing:5196881
