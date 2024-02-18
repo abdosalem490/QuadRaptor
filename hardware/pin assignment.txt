@@ -60,8 +60,8 @@ PA15 -> NC
 PB0  -> USART4_TX
 PB1  -> USART4_RX
 PB2  -> USART4_CK
-PB3  -> NC (USART4_CTS if proved to be efficient)
-PB4  -> NC (USART4_RTS if proved to be efficient)
+PB3  -> USART4_CTS
+PB4  -> USART4_RTS
 PB5  -> NC
 PB6  -> TIM4_CH1
 PB7  -> TIM4_CH2
@@ -74,8 +74,9 @@ PB13 -> NC
 PB14 -> NC
 PB15 -> NC
 
-PC14 ->  adxl345_cs
-PC15 ->  bmp280_cs
+PC13 -> NC
+PC14 -> adxl345_cs
+PC15 -> bmp280_cs
 
 
 
@@ -101,8 +102,8 @@ PA15 -> camera_PCLK
 PB0  -> USART4_TX
 PB1  -> USART4_RX
 PB2  -> USART4_CK
-PB3  -> NC (USART4_CTS if proved to be efficient)
-PB4  -> NC (USART4_RTS if proved to be efficient)
+PB3  -> USART4_CTS
+PB4  -> USART4_RTS
 PB5  -> clk enable (for clock of 74hc165)
 PB6  -> USB D-
 PB7  -> USB D+
@@ -115,8 +116,9 @@ PB13 -> NC
 PB14 -> NC
 PB15 -> NC
 
-PC14 ->  nrf24L01_CS
-PC15 ->  sd_CS
+PC13 -> nrf24L01_CNS
+PC14 -> nrf24L01_CS
+PC15 -> sd_CS
 
 
 

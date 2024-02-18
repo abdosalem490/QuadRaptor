@@ -42,9 +42,11 @@ SAppMenu appMenu;
 SAppMenu flyModesMenu;
 SAppMenu *currentMenu;
 
-// RF24 myRadio (7, 8);
+RF24 myRadio (9, 10);
 unsigned long menuTime;
 unsigned long statusTime;
+unsigned long commandTime;
+
 
 uint8_t flyingMode = FLYING_MODE_SELECTION;
 uint8_t rightJoyStickSWState = HIGH;
@@ -77,20 +79,8 @@ const PROGMEM uint8_t celsius_circle[8] =
     0B00000010
 };
 
-
-
-/**
-* @brief: needed struct for transceiver
-*/
-typedef struct 
-{
-  int id=1;
-  float temperature = 18.3;
-  char  text[100] = "Text to be transmitted";
-} Package_t;
-Package_t data;
-
-byte addresses[][6] = {"0"};
+// address for the pipes
+byte addresses[][6] = {"RtoD", "DtoR"};
 
 /**
 * @brief: contains elements of main menu
@@ -118,6 +108,49 @@ const char *flyMenuItems[] =
 {
     "1. Stable Mode",
 };
+
+/**
+* @brief: defines the data to be sent over nrf module
+*/
+// defines the type of the data to be sent over the air
+typedef enum {
+  DATA_TYPE_MOVE,   // from remote to drone
+  DATA_TYPE_EXTRAS, // from remote to drone
+  DATA_TYPE_INFO,   // from drone to remote
+}DATA_TYPE_t;
+
+// struct defines data that holds: yaw, roll, pitch, thurst commands
+typedef struct{
+  int8_t roll;
+  int8_t pitch;
+  int8_t thurst;
+  int8_t yaw;
+  bool turnOnLeds;
+  bool playMusic;
+}move_command_t;
+
+
+// struct defines data that holds info coming from the drone like temperature, battery charge, etc...
+typedef struct{
+  float distanceToOrigin;
+  float altitude;
+  float temperature;
+  uint8_t batteryCharge;
+}drone_info_t;
+
+// the struct that to be sent over the air
+typedef struct{
+  DATA_TYPE_t type;
+
+  union {
+    move_command_t move;
+    drone_info_t info;
+  } data;
+
+} data_t;
+
+data_t data; // the variable through which we will send and recieve data
+
 
 /**
 * @brief: repesents the current state of the flight
@@ -187,12 +220,11 @@ static void updateStatus(float distanceToOrigin, float altitude, float temperatu
 
   // write battery charge
   sprintf(buff, "%d", batteryCharge);
-  ssd1306_fillRect(100, 32, (int)percent, 40);
-  ssd1306_drawRect(100, 32, 125, 40);
-
-
   ssd1306_setCursor(78, 32);
   ssd1306_print(buff);
+
+  ssd1306_drawRect(100, 32, 125, 40);
+  ssd1306_fillRect(100, 32, (uint8_t)percent, 40);
 
   // write flying Time
   sprintf(buff, "%02d:%02d", flyingTimeInSeconds / 60, flyingTimeInSeconds % 60);
@@ -238,15 +270,19 @@ void setup()
 
   currentMenu = &mainMenu;
 
-  /*myRadio.begin();  
+  // intialize nrf24l01
+  myRadio.begin();  
   myRadio.setChannel(115); 
   myRadio.setPALevel(RF24_PA_MAX);
-  myRadio.setDataRate( RF24_250KBPS ) ; 
+  myRadio.setDataRate( RF24_1MBPS ); 
   myRadio.openWritingPipe( addresses[0]);
-  delay(1000);*/
+  myRadio.openReadingPipe(1, addresses[1]);
+
+  delay(1000);
 
   menuTime = millis();
   statusTime = millis();
+  commandTime = millis();
 }
 
 void loop()
@@ -257,8 +293,6 @@ void loop()
     rightJoyStickSWState = digitalRead(RIGHT_JOYSTICK_SW_PIN);
     leftJoyStickSWState = digitalRead(LEFT_JOYSTICK_SW_PIN);
     generalSWState = digitalRead(GENERAL_SW_PIN);
-
-    Serial.println(rightJoyStickSWState);
   }
 
   // check if 250ms passed (for change of selection of the menu)
@@ -286,6 +320,7 @@ void loop()
       uint8_t selected_item = ssd1306_menuSelection(currentMenu); 
       ssd1306_clearScreen();
 
+      // main menu have: 1. Status , 2. Fly Modes , 3. run app
       if(currentMenu == &mainMenu)
       {
         // show status option is selected 
@@ -294,32 +329,39 @@ void loop()
           flyingMode = FLYING_MODE_STATUS;
           drawStatus(distanceToOrigin, altitude, temperature, batteryCharge, flight_status[FLIGHT_STATUS_MONITOR]);
         }
+        // fly modes option is selected
         else if(selected_item == 1)
         { 
           currentMenu = &flyModesMenu;
           ssd1306_showMenu( &flyModesMenu );
         }
+        // run an app option is selected
         else if(selected_item == 2)
         {
           currentMenu = &appMenu;
           ssd1306_showMenu( &appMenu );
         }
       }
+      // fly modes submenu has: 1. Stable Mode
       else if(currentMenu == &flyModesMenu)
       { 
+        // Stable Mode is selected 
         if(selected_item == 0)
         {
           flyingMode = FLYING_MODE_STABLE;
           drawStatus(distanceToOrigin, altitude, temperature, batteryCharge, flight_status[FLIGHT_STATUS_ARMING]);
         }
       }
+      // run an app has: 1. Return Home , 2. Land Now
       else if(currentMenu == &appMenu)
       {
+        // return home option
         if(selected_item == 0)
         {
           flyingMode = FLYING_MODE_RETURN_HOME;
           drawStatus(distanceToOrigin, altitude, temperature, batteryCharge, flight_status[FLIGHT_STATUS_RETURNING_HOME]);
         }
+        // land now option
         else if(selected_item == 1)
         { 
           flyingMode = FLYING_MODE_LANDING;
@@ -342,21 +384,50 @@ void loop()
     ssd1306_showMenu( &mainMenu );
   }
 
-
+  // update of the shown status every 1 second
   if(flyingMode != FLYING_MODE_SELECTION && millis() - statusTime >= 1000)
   {
+    // TODO: receive info from the drone
+
     statusTime = millis();
     updateStatus(distanceToOrigin, altitude, temperature, batteryCharge, ++currentFlyingSessionInSeconds);
   }
 
+  // send commands to the in case of stable mode fly every 50 ms
+  if(flyingMode == FLYING_MODE_STABLE && millis() - commandTime >= 50)
+  {
 
-  /*myRadio.write(&data, sizeof(data)); 
-  Serial.print("\nPackage:");
-  Serial.print(data.id);
-  Serial.print("\n");
-  Serial.println(data.temperature);
-  Serial.println(data.text);
-  data.id = data.id + 1;
-  data.temperature = data.temperature+0.1;
-  delay(1000);*/
+    commandTime = millis();
+    data.type = DATA_TYPE_MOVE;
+    data.data.move.yaw = -((analogRead(LEFT_JOYSTICK_X_PIN) >> 3) - 64);
+    data.data.move.thurst = -((analogRead(LEFT_JOYSTICK_Y_PIN) >> 3) - 64);
+    data.data.move.roll = -((analogRead(RIGHT_JOYSTICK_X_PIN) >> 3) - 64);
+    data.data.move.pitch = -((analogRead(RIGHT_JOYSTICK_Y_PIN) >> 3) - 63);
+    data.data.move.turnOnLeds = rightJoyStickSWState == HIGH && digitalRead(RIGHT_JOYSTICK_SW_PIN) == LOW;
+    data.data.move.playMusic = leftJoyStickSWState == HIGH && digitalRead(LEFT_JOYSTICK_SW_PIN) == LOW;
+
+    // char buff[100];
+    // sprintf(buff, "yaw = %d, thurst= %d, roll= %d, pitch=%d, test=%d", data.data.move.yaw, data.data.move.thurst, data.data.move.roll, data.data.move.pitch, analogRead(RIGHT_JOYSTICK_Y_PIN));
+    // Serial.println(buff);
+    
+    myRadio.stopListening();
+    while(myRadio.write(&data, sizeof(data)));
+    myRadio.startListening();
+
+    
+  }
+
+  // read incoming traffic if any
+  if(myRadio.available())
+  {
+    myRadio.read(&data, sizeof(data));
+
+    // update current state
+    temperature = data.data.info.temperature;
+    batteryCharge = data.data.info.batteryCharge;
+    altitude = data.data.info.altitude;
+    distanceToOrigin = data.data.info.distanceToOrigin;
+  }
+
+
 }
