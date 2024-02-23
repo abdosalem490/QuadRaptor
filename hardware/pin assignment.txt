@@ -38,6 +38,12 @@ Rpull(min) = 770 ohm
 3.3 = 12.6 x (4700 / (4700+R1))
 
 
+
+PCB TODO:
+	- add team logo and version
+	- add copper fill
+
+
 pin Assignment (drone board):
 ---------------
 PA0  -> NC // PA0 to PA3 may be used for the advanced timer
@@ -140,6 +146,5 @@ camera module:
 shift register:
 	https://dronebotworkshop.com/shift-registers/
 	
-
 
 
