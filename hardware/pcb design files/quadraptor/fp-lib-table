@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "dummy")(type "KiCad")(uri "D:/codes/PROJECTS/fourth year/GP/dummy")(options "")(descr ""))
+)
