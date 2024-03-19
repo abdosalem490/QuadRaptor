@@ -13,6 +13,7 @@
 #include "debug.h"
 
 /* I2C master mode flag */
+#define MASTER_TRANSMIT_MODE 0
 #define MASTER_RECEIVER_MODE 1
 
 /* Receiver buffer size */
@@ -31,10 +32,10 @@ void I2C_init() __attribute__((always_inline));
 void I2C_start_transmission(uint8_t receiver_address, uint8_t master_receive) __attribute__((always_inline));
 void I2C_write(uint8_t value) __attribute__((always_inline));
 void I2C_stop() __attribute__((always_inline));
-uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity, uint8_t stop_bool) __attribute__((always_inline));
+uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity) __attribute__((always_inline));
 uint8_t I2C_read() __attribute__((always_inline));
 
-inline void I2C_start_transmission(uint8_t receiver_address, uint8_t master_receive = 0){
+inline void I2C_start_transmission(uint8_t receiver_address, uint8_t master_receive){
     uint8_t i2c_dir = I2C_Direction_Transmitter;
     uint32_t i2c_event = I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED;
 
@@ -69,7 +70,7 @@ inline uint8_t I2C_read(){
     return result;
 }
 
-inline uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity, uint8_t stop_bool = true){
+inline uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity){
     uint8_t i = 0;
 
     I2C_start_transmission(address, MASTER_RECEIVER_MODE);
@@ -84,7 +85,7 @@ inline uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity, uint8_t stop_b
 
     while(I2C_GetFlagStatus(I2C2, I2C_FLAG_RXNE)!=SET);
     I2C_GenerateSTOP(I2C2, ENABLE);
-    
+
     return i;
 }
 
@@ -119,17 +120,17 @@ inline void I2C_init(){
 void gyro_signals(void) {
     int16_t GyroX, GyroY, GyroZ;
 
-    I2C_start_transmission(0x68);
+    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
     I2C_write(0x1A);
     I2C_write(0x05);
     I2C_stop();
     ////////////////////////////////////////////////////
-    I2C_start_transmission(0x68);
+    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
     I2C_write(0x1B);
     I2C_write(0x08);
     I2C_stop();
     ///////////////////////////////////////////////////
-    I2C_start_transmission(0x68);
+    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
     I2C_write(0x43);
     I2C_stop();
     ////////////////////////////////////////////////////
@@ -157,7 +158,7 @@ int main(void)
     I2C_init_ch32();
 
 
-    I2C_start_transmission(0x68);
+    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
     I2C_write(0x6B);
     I2C_write(0);
     I2C_stop();
