@@ -19,6 +19,14 @@
 /* Receiver buffer size */
 #define I2C_Rx_BUFFER_SIZE   6
 
+/* MPU6050 Constants */
+#define MPU6050_SLAVE_ADDRESS   (0x68)
+#define MPU6050_REG_PWR_MGMT_1  (0x6B)
+#define MPU6050_REG_CONFIG      (0x1A)
+#define MPU6050_REG_GYRO_CONFIG (0x1B)
+#define MPU6050_REG_GYRO_OUT    (0x43)
+#define MPU6050_LSB_DPS         (65.5)
+
 /* Receiver buffer */
 u8 RxData[I2C_Rx_BUFFER_SIZE];
 
@@ -120,20 +128,23 @@ inline void I2C_init(){
 void gyro_signals(void) {
     int16_t GyroX, GyroY, GyroZ;
 
-    ///////////////////////////////////////////////////
-    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
-    I2C_write(0x43);
+    /**
+    * Registers: Gyroscope measurements (0x43 to 0x48 = 67 to 72)
+    */
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_GYRO_OUT);
     I2C_stop();
-    ////////////////////////////////////////////////////
-    I2C_requestFrom(0x68, I2C_Rx_BUFFER_SIZE);
+
+    // Get sensor readings
+    I2C_requestFrom(MPU6050_SLAVE_ADDRESS, I2C_Rx_BUFFER_SIZE);
 
     GyroX= I2C_read()<<8 | I2C_read();
     GyroY= I2C_read()<<8 | I2C_read();
     GyroZ= I2C_read()<<8 | I2C_read();
 
-    RateRoll=(float)GyroX/65.5;
-    RatePitch=(float)GyroY/65.5;
-    RateYaw=(float)GyroZ/65.5;
+    RateRoll=(float)GyroX/MPU6050_LSB_DPS;
+    RatePitch=(float)GyroY/MPU6050_LSB_DPS;
+    RateYaw=(float)GyroZ/MPU6050_LSB_DPS;
 
     gcvt(RateRoll, 6, roll_buffer);
     gcvt(RatePitch, 6, pitch_buffer);
@@ -143,18 +154,32 @@ void gyro_signals(void) {
 
 void gyro_setup()
 {
-    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
-    I2C_write(0x6B);
+    /** 
+    Register: PWR_MGMT_1 (0x6B = 107)
+    *  Selects the clock source: 8MHz oscillator
+    *  Disables the following bits: Reset, Sleep, Cycle
+    *  Does not disable Temperature sensor.
+    **/
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_PWR_MGMT_1);
     I2C_write(0);
     I2C_stop();
-    ////////////////////////////////////////////////////
-    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
-    I2C_write(0x1A);
+    /**
+    Register: CONFIG (0x1A = 26)
+    * Disables FSYNC
+    * Sets the Digital Low Pass filter of BW = 10Hz
+    */
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_CONFIG);
     I2C_write(0x05);
     I2C_stop();
-    ////////////////////////////////////////////////////
-    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
-    I2C_write(0x1B);
+    /**
+    Register: GYRO_CONFIG (0x1B = 27)
+    * Doesn't enable gyroscope self test
+    * Sets the full scale range to [+-500 deg/s]
+    */
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_GYRO_CONFIG);
     I2C_write(0x08);
     I2C_stop();
 }
