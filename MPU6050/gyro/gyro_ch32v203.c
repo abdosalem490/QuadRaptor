@@ -120,15 +120,6 @@ inline void I2C_init(){
 void gyro_signals(void) {
     int16_t GyroX, GyroY, GyroZ;
 
-    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
-    I2C_write(0x1A);
-    I2C_write(0x05);
-    I2C_stop();
-    ////////////////////////////////////////////////////
-    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
-    I2C_write(0x1B);
-    I2C_write(0x08);
-    I2C_stop();
     ///////////////////////////////////////////////////
     I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
     I2C_write(0x43);
@@ -150,6 +141,24 @@ void gyro_signals(void) {
 
 }
 
+void gyro_setup()
+{
+    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
+    I2C_write(0x6B);
+    I2C_write(0);
+    I2C_stop();
+    ////////////////////////////////////////////////////
+    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
+    I2C_write(0x1A);
+    I2C_write(0x05);
+    I2C_stop();
+    ////////////////////////////////////////////////////
+    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
+    I2C_write(0x1B);
+    I2C_write(0x08);
+    I2C_stop();
+}
+
 int main(void)
 {
     USART_Printf_Init(57600);
@@ -157,12 +166,7 @@ int main(void)
     Delay_Init();
     I2C_init_ch32();
 
-
-    I2C_start_transmission(0x68, MASTER_TRANSMIT_MODE);
-    I2C_write(0x6B);
-    I2C_write(0);
-    I2C_stop();
-
+    gyro_setup();
 
     while(1){
       gyro_signals();
