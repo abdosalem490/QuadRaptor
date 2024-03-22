@@ -146,10 +146,6 @@ void gyro_signals(void) {
     RatePitch=(float)GyroY/MPU6050_LSB_DPS;
     RateYaw=(float)GyroZ/MPU6050_LSB_DPS;
 
-    gcvt(RateRoll, 6, roll_buffer);
-    gcvt(RatePitch, 6, pitch_buffer);
-    gcvt(RateYaw, 6, yaw_buffer);
-
 }
 
 void gyro_setup()
@@ -195,6 +191,10 @@ int main(void)
 
     while(1){
       gyro_signals();
+
+      gcvt(RateRoll, 6, roll_buffer);
+      gcvt(RatePitch, 6, pitch_buffer);
+      gcvt(RateYaw, 6, yaw_buffer);
 
       printf("%s, %s, %s\r\n", roll_buffer, pitch_buffer, yaw_buffer);
 
