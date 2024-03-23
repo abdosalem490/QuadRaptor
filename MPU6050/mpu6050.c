@@ -4,9 +4,13 @@
 #include "ch32v20x_i2c.h"
 #include "mpu6050.h"
 
+#define CALIBRATION_ITERATIONS (2000)
+
 /* Receiver buffer */
 u8 RxData[I2C_Rx_BUFFER_SIZE];
 
+/* Calibration */
+float roll_calibration = 0, pitch_calibration = 0, yaw_calibration = 0;
 
 void I2C_init() __attribute__((always_inline));
 void I2C_start_transmission(uint8_t receiver_address, uint8_t master_receive) __attribute__((always_inline));
@@ -99,6 +103,9 @@ inline void I2C_init(){
 
 void mpu6050_gyro_setup()
 {
+    int16_t calibration_iter = CALIBRATION_ITERATIONS;
+    float roll_rate, pitch_rate, yaw_rate;
+    float roll_local_calib = 0, pitch_local_calib = 0, yaw_local_calib = 0;
     I2C_init_ch32();
     /** 
     Register: PWR_MGMT_1 (0x6B = 107)
@@ -128,6 +135,21 @@ void mpu6050_gyro_setup()
     I2C_write(MPU6050_REG_GYRO_CONFIG);
     I2C_write(0x08);
     I2C_stop();
+
+    /**
+     * Calibrate the gyroscope
+     * Make the sensor aware of its physical reference
+    */
+    while(calibration_iter--){
+        mpu6050_gyro_read(&roll_rate, &pitch_rate, &yaw_rate);
+        roll_local_calib += roll_rate;
+        pitch_local_calib += pitch_rate;
+        yaw_local_calib += yaw_rate;
+        Delay_Ms(1);
+    }
+    roll_calibration = roll_local_calib / CALIBRATION_ITERATIONS;
+    pitch_calibration = pitch_local_calib / CALIBRATION_ITERATIONS;
+    yaw_calibration = yaw_local_calib / CALIBRATION_ITERATIONS;
 }
 
 
@@ -148,8 +170,8 @@ void mpu6050_gyro_read(float* roll_rate, float* pitch_rate, float* yaw_rate) {
     GyroY= I2C_read()<<8 | I2C_read();
     GyroZ= I2C_read()<<8 | I2C_read();
 
-    *roll_rate=(float)GyroX/MPU6050_LSB_DPS;
-    *pitch_rate=(float)GyroY/MPU6050_LSB_DPS;
-    *yaw_rate=(float)GyroZ/MPU6050_LSB_DPS;
+    *roll_rate=(float)GyroX/MPU6050_LSB_DPS - roll_calibration;
+    *pitch_rate=(float)GyroY/MPU6050_LSB_DPS - pitch_calibration;
+    *yaw_rate=(float)GyroZ/MPU6050_LSB_DPS - yaw_calibration;
 
 }
