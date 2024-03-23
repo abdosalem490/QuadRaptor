@@ -175,3 +175,61 @@ void mpu6050_gyro_read(float* roll_rate, float* pitch_rate, float* yaw_rate) {
     *yaw_rate=(float)GyroZ/MPU6050_LSB_DPS - yaw_calibration;
 
 }
+
+
+void mpu6050_accel_setup()
+{
+    I2C_init_ch32();
+    /** 
+    Register: PWR_MGMT_1 (0x6B = 107)
+    *  Selects the clock source: 8MHz oscillator
+    *  Disables the following bits: Reset, Sleep, Cycle
+    *  Does not disable Temperature sensor.
+    **/
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_PWR_MGMT_1);
+    I2C_write(0);
+    I2C_stop();
+    /**
+    Register: CONFIG (0x1A = 26)
+    * Disables FSYNC
+    * Sets the Digital Low Pass filter of BW = 10Hz
+    */
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_CONFIG);
+    I2C_write(0x05);
+    I2C_stop();
+    /**
+    Register: ACCEL_CONFIG (0x1C = 28)
+    * Doesn't enable accelerometer self test
+    * Sets the full scale range to [+- 8g]
+    */
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_ACCEL_CONFIG);
+    I2C_write(0x10);
+    I2C_stop();
+}
+
+
+void mpu6050_accel_read(float* x_acc, float* y_acc, float* z_acc)
+{
+    int16_t x_reg, y_reg, z_reg;
+
+    /**
+    * Registers: Accelerometer measurements (0x3B to 0x40 = 59 to 64)
+    */
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_ACCEL_OUT);
+    I2C_stop();
+
+    // Get sensor readings
+    I2C_requestFrom(MPU6050_SLAVE_ADDRESS, I2C_Rx_BUFFER_SIZE);
+
+    x_reg= I2C_read()<<8 | I2C_read();
+    y_reg= I2C_read()<<8 | I2C_read();
+    z_reg= I2C_read()<<8 | I2C_read();
+
+    *x_acc=(float)x_reg/MPU6050_LSB_G;
+    *y_acc=(float)y_reg/MPU6050_LSB_G;
+    *z_acc=(float)z_reg/MPU6050_LSB_G;
+}
