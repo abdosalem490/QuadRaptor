@@ -1,3 +1,4 @@
+#include <math.h>
 #include "debug.h"
 #include "ch32v20x_rcc.h"
 #include "ch32v20x_gpio.h"
@@ -185,7 +186,7 @@ void mpu6050_gyro_read(float* roll_rate, float* pitch_rate, float* yaw_rate) {
 void mpu6050_accel_setup()
 {
     I2C_init_ch32();
-    /** 
+    /**
     Register: PWR_MGMT_1 (0x6B = 107)
     *  Selects the clock source: 8MHz oscillator
     *  Disables the following bits: Reset, Sleep, Cycle
@@ -239,6 +240,17 @@ void mpu6050_accel_read(float* x_acc, float* y_acc, float* z_acc)
     *z_acc=(float)z_reg/MPU6050_LSB_G;
 }
 
+//                                                                                                                              GYR                 ACCEL
+void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanInput, float KalmanMeasurement, float Ts, float process_noise, float measure_covar)
+{
+    float KalmanGain;
+    *KalmanState = *KalmanState + Ts*KalmanInput;
+    *KalmanUncertainty = *KalmanUncertainty + Ts*Ts * process_noise*process_noise;
+    KalmanGain = *KalmanUncertainty * 1/(1*(*KalmanUncertainty) + measure_covar*measure_covar);
+    *KalmanState = *KalmanState + KalmanGain*(KalmanMeasurement-*KalmanState);
+    *KalmanUncertainty = (1-KalmanGain) * (*KalmanUncertainty);
+}
+
 
 void mpu6050_init()
 {
@@ -249,6 +261,15 @@ void mpu6050_init()
 
 void mpu6050_read(mpu6050_packet* data)
 {
+    float measured_roll, measured_pitch;
+
     mpu6050_gyro_read(&(data->angle_rates[ROLL]), &(data->angle_rates[PITCH]), &(data->angle_rates[YAW]));
     mpu6050_accel_read(&(data->accel[X_AXIS]), &(data->accel[Y_AXIS]), &(data->accel[Z_AXIS]));
+
+    measured_roll  = atan(data->accel[Y_AXIS]/sqrt(data->accel[X_AXIS]*data->accel[X_AXIS] + data->accel[Z_AXIS]*data->accel[Z_AXIS])) * 1/(3.142/180);
+    measured_pitch = -atan(data->accel[X_AXIS]/sqrt(data->accel[Y_AXIS]*data->accel[Y_AXIS] + data->accel[Z_AXIS]*data->accel[Z_AXIS])) * 1/(3.142/180);
+
+    kalman_filter(&(data->kalman_angles[ROLL]), &(data->kalman_uncertainty[ROLL]), data->angle_rates[ROLL], measured_roll, 1, STD_DEV_GYR, STD_DEV_ACC);
+    kalman_filter(&(data->kalman_angles[PITCH]), &(data->kalman_uncertainty[PITCH]), data->angle_rates[PITCH], measured_pitch, 1, STD_DEV_GYR, STD_DEV_ACC);
+
 }

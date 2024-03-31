@@ -12,6 +12,7 @@
 
 #include "debug.h"
 #include "mpu6050.h"
+#include "math.h"
 
 /* Just a character buffer to print the angle rates */
 char roll_buffer[10], pitch_buffer[10], yaw_buffer[10];
@@ -28,11 +29,11 @@ int main(void)
     while(1){
       mpu6050_read(&obj);
 
-      gcvt(obj.angle_rates[ROLL], 6, roll_buffer);
-      gcvt(obj.angle_rates[PITCH], 6, pitch_buffer);
-      gcvt(obj.angle_rates[YAW], 6, yaw_buffer);
+      gcvt(obj.kalman_angles[ROLL], 6, roll_buffer);
+      gcvt(obj.kalman_angles[PITCH], 6, pitch_buffer);
+//      gcvt(obj.kalman_angles[YAW], 6, yaw_buffer);
 
-      printf("%s, %s, %s\r\n", roll_buffer, pitch_buffer, yaw_buffer);
+      printf("%s, %s\r\n", roll_buffer, pitch_buffer);
 
       Delay_Ms(50);
     }

@@ -24,11 +24,17 @@
 #define Y_AXIS      (1)
 #define Z_AXIS      (2)
 
+/* Kalman Filter constants */
+#define STD_DEV_GYR (4.0)   // Standard Deviation of the gyroscope
+#define STD_DEV_ACC (3.0)   // Standard Deviation of the accelerometer
+
 
 
 struct packet{
     float angle_rates[3];
     float accel[3];
+    float kalman_angles[3];
+    float kalman_uncertainty[3];
 };
 typedef struct packet mpu6050_packet;
 
@@ -40,7 +46,7 @@ void mpu6050_init();
 
 /*
  * Get gyroscope and accelerometer measurements
- * Note: mpu6050_init must be called once in the 
+ * Note: mpu6050_init must be called once in the
  *       program before using this function
  */
 void mpu6050_read(mpu6050_packet* data);
