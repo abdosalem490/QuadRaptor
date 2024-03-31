@@ -19,6 +19,11 @@ void I2C_stop() __attribute__((always_inline));
 uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity) __attribute__((always_inline));
 uint8_t I2C_read() __attribute__((always_inline));
 
+void mpu6050_gyro_setup();
+void mpu6050_accel_setup();
+void mpu6050_gyro_read(float* roll_rate, float* pitch_rate, float* yaw_rate);
+void mpu6050_accel_read(float* x_acc, float* y_acc, float* z_acc);
+
 inline void I2C_start_transmission(uint8_t receiver_address, uint8_t master_receive){
     uint8_t i2c_dir = I2C_Direction_Transmitter;
     uint32_t i2c_event = I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED;
@@ -232,4 +237,18 @@ void mpu6050_accel_read(float* x_acc, float* y_acc, float* z_acc)
     *x_acc=(float)x_reg/MPU6050_LSB_G;
     *y_acc=(float)y_reg/MPU6050_LSB_G;
     *z_acc=(float)z_reg/MPU6050_LSB_G;
+}
+
+
+void mpu6050_init()
+{
+    mpu6050_gyro_setup();
+    mpu6050_accel_setup();
+}
+
+
+void mpu6050_read(mpu6050_packet* data)
+{
+    mpu6050_gyro_read(&(data->angle_rates[ROLL]), &(data->angle_rates[PITCH]), &(data->angle_rates[YAW]));
+    mpu6050_accel_read(&(data->accel[X_AXIS]), &(data->accel[Y_AXIS]), &(data->accel[Z_AXIS]));
 }

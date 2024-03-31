@@ -16,29 +16,31 @@
 #define MPU6050_REG_ACCEL_OUT    (0x3B)
 #define MPU6050_LSB_G            (4096)
 
+/* Packet Constants */
+#define ROLL        (0)
+#define PITCH       (1)
+#define YAW         (2)
+#define X_AXIS      (0)
+#define Y_AXIS      (1)
+#define Z_AXIS      (2)
+
+
+
+struct packet{
+    float angle_rates[3];
+    float accel[3];
+};
+typedef struct packet mpu6050_packet;
 
 /*
- * Initialize gyroscope
+ * Initialize gyroscope and accelerometer
  * Only called once
  */
-void mpu6050_gyro_setup();
+void mpu6050_init();
 
 /*
- * Get gyroscope measurements
- * Note: gyro_setup must be called once in the 
+ * Get gyroscope and accelerometer measurements
+ * Note: mpu6050_init must be called once in the 
  *       program before using this function
  */
-void mpu6050_gyro_read(float* roll_rate, float* pitch_rate, float* yaw_rate);
-
-/*
- * Initialize accelerometer
- * Only called once
- */
-void mpu6050_accel_setup();
-
-/*
- * Get accelerometer measurements
- * Note: accel_setup must be called once in the 
- *       program before using this function
- */
-void mpu6050_accel_read(float* x_acc, float* y_acc, float* z_acc);
+void mpu6050_read(mpu6050_packet* data);
