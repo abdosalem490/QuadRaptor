@@ -71,6 +71,12 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
+
+/**
+ * @reason: contains the 'printf' function with 2 important includes #include "stdio.h" and #include "ch32v20x.h"
+*/
+#include "debug.h"
+
 /*-----------------------------------------------------------
  * Application specific definitions.
  *

@@ -1,6 +1,14 @@
 {
     "files.associations": {
         "*.ejs": "html",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "service_rtos_wrapper.h": "c",
+        "math_btt.h": "c",
+        "task.h": "c",
+        "common.h": "c",
+        "constants.h": "c",
+        "stdint.h": "c",
+        "debug.h": "c",
+        "ch32v20x.h": "c"
     }
 }

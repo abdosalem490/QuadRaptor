@@ -2,6 +2,7 @@ Code/APP/ch32v20x_it.o: ../Code/APP/ch32v20x_it.c \
  ../Code/APP/ch32v20x_it.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Debug/debug.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Peripheral\inc/ch32v20x.h \
+ D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Lib/stdint.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Core/core_riscv.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\APP/system_ch32v20x.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\APP/ch32v20x_conf.h \
@@ -32,6 +33,8 @@ Code/APP/ch32v20x_it.o: ../Code/APP/ch32v20x_it.c \
 D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Debug/debug.h:
 
 D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Peripheral\inc/ch32v20x.h:
+
+D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Lib/stdint.h:
 
 D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Core/core_riscv.h:
 

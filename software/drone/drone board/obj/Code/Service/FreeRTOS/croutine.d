@@ -1,6 +1,7 @@
 Code/Service/FreeRTOS/croutine.o: ../Code/Service/FreeRTOS/croutine.c \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service\FreeRTOS\include/FreeRTOS.h \
- D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\APP/FreeRTOSConfig.h \
+ D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Lib/stdint.h \
+ D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service/FreeRTOSConfig.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Debug/debug.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Peripheral\inc/ch32v20x.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Core/core_riscv.h \
@@ -38,7 +39,9 @@ Code/Service/FreeRTOS/croutine.o: ../Code/Service/FreeRTOS/croutine.c \
 
 D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service\FreeRTOS\include/FreeRTOS.h:
 
-D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\APP/FreeRTOSConfig.h:
+D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Lib/stdint.h:
+
+D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service/FreeRTOSConfig.h:
 
 D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Debug/debug.h:
 
