@@ -33,7 +33,8 @@ Code/APP/main.o: ../Code/APP/main.c \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service\FreeRTOS\portable\GCC\RISC-V/portmacro.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service\FreeRTOS\include/mpu_wrappers.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service\FreeRTOS\include/task.h \
- D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service\FreeRTOS\include/list.h
+ D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service\FreeRTOS\include/list.h \
+ D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service/Service_RTOS_wrapper.h
 
 D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Debug/debug.h:
 
@@ -104,3 +105,5 @@ D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Co
 D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service\FreeRTOS\include/task.h:
 
 D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service\FreeRTOS\include/list.h:
+
+D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Service/Service_RTOS_wrapper.h:
