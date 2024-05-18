@@ -4,11 +4,11 @@
  * Version            : V1.0.0
  * Date               : 2021/06/06
  * Description        : Main program body.
-*********************************************************************************
-* Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* Attention: This software (modified or not) and binary are used for 
-* microcontroller manufactured by Nanjing Qinheng Microelectronics.
-*******************************************************************************/
+ *********************************************************************************
+ * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
+ * Attention: This software (modified or not) and binary are used for
+ * microcontroller manufactured by Nanjing Qinheng Microelectronics.
+ *******************************************************************************/
 
 /*
  *@Note
@@ -19,7 +19,6 @@
 */
 
 #include "debug.h"
-
 
 /* Global typedef */
 
@@ -47,7 +46,6 @@ int main(void)
     gpioConfig.GPIO_Speed = GPIO_Speed_10MHz;
     GPIO_Init(GPIOB, &gpioConfig);
 
-
     // I2C code
     I2C_InitTypeDef I2CConfig;
     I2CConfig.I2C_ClockSpeed = 100000;
@@ -59,24 +57,28 @@ int main(void)
     I2C_Init(I2C2, &I2CConfig);
 
     // I2C_Cmd(I2C2, ENABLE);
-    while( I2C_GetFlagStatus( I2C2, I2C_FLAG_BUSY ) != RESET );
+    while (I2C_GetFlagStatus(I2C2, I2C_FLAG_BUSY) != RESET)
+        ;
 
     I2C_GenerateSTART(I2C2, ENABLE);
-    while( !I2C_CheckEvent( I2C2, I2C_EVENT_MASTER_MODE_SELECT ) );
+    while (!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_MODE_SELECT))
+        ;
 
     I2C_Send7bitAddress(I2C2, 0x68 << 1, I2C_Direction_Transmitter);
-    while( !I2C_CheckEvent( I2C2, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED ) );
+    while (!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
+        ;
 
-    while(I2C_GetFlagStatus(I2C2, I2C_FLAG_TXE)!=SET);
+    while (I2C_GetFlagStatus(I2C2, I2C_FLAG_TXE) != SET)
+        ;
     I2C_SendData(I2C2, 0x6B);
-    while(I2C_GetFlagStatus(I2C2, I2C_FLAG_TXE)!=SET);
+    while (I2C_GetFlagStatus(I2C2, I2C_FLAG_TXE) != SET)
+        ;
     I2C_SendData(I2C2, 0);
-    while(I2C_GetFlagStatus(I2C2, I2C_FLAG_TXE)!=SET);
+    while (I2C_GetFlagStatus(I2C2, I2C_FLAG_TXE) != SET)
+        ;
     I2C_GenerateSTOP(I2C2, ENABLE);
 
-
-    while(1)
+    while (1)
     {
-
     }
 }
