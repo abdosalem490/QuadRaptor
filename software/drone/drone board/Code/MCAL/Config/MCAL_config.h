@@ -1,7 +1,7 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   Application Code                                                                                            |
- * |    @file           :   main.c                                                                                                      |
+ * |    @title          :   configuration file for the Micro-controller                                                                 |
+ * |    @file           :   MCAL_config.h                                                                                               |
  * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
  * |    @origin_date    :   20/05/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
@@ -42,106 +42,80 @@
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
-/*
- *@Note
- *task1 and task2 alternate printing
+
+#ifndef MCAL_CONFIG_H_
+#define MCAL_CONFIG_H_
+
+/******************************************************************************
+ * Includes
+ *******************************************************************************/
+
+
+/******************************************************************************
+ * Preprocessor Constants
+ *******************************************************************************/
+
+/******************************************************************************
+ * Configuration Constants
+ *******************************************************************************/
+
+/******************************************************************************
+ * Macros
+ *******************************************************************************/
+
+/******************************************************************************
+ * Typedefs
+ *******************************************************************************/
+
+/**
+ * @brief: contains error states for this module
+*/
+typedef enum {
+  MCAL_Config_STAT_OK,
+  MCAL_Config_STAT_INVALID_PARAMS,
+} MCAL_Config_ErrStat_t;
+
+/******************************************************************************
+ * Variables
+ *******************************************************************************/
+
+// TODO: define pins configurations as a table here to be read by configuration function to configure all pins (MCAL Module task)
+
+/******************************************************************************
+ * Function Prototypes
+ *******************************************************************************/
+
+/**
+ *  \b function                                 :       MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void);
+ *  \b Description                              :       this functions is used to configure all the pins of the MCU given the application and enable the clock of all the needed modules.
+ *  @note                                       :       To be modified so that the configuration of the pins is given be a static array written inside configuration file.
+ *  \b PRE-CONDITION                            :       make sure to call configure the clock of the MCU beforehand.
+ *  \b POST-CONDITION                           :       enable all the clocks and peripheral needed of the MCU, modify the functionality of pins as per application.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @MCAL_Config_ErrStat_t in "MCAL_config.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "MCAL_config.h"
+ * 
+ * int main() {
+ * SERVICE_RTOS_ErrStat_t local_TaskCreateState_t = MCAL_Config_ConfigAllPins();
+ * if(SERVICE_RTOS_STAT_OK == local_TaskCreateState_t)
+ * {
+ *  // the pins are configured successfully
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 20/05/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
+MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void);
 
-#include "debug.h"
-#include "Service_RTOS_wrapper.h"
-#include "MCAL_config.h"
-
-
-/* Global define */
-#define TASK1_TASK_PRIO 5
-#define TASK1_STK_SIZE 256
-#define TASK2_TASK_PRIO 5
-#define TASK2_STK_SIZE 256
-
-/* Global Variable */
-RTOS_TaskHandle_t Task2Task_Handler;
-
-/*********************************************************************
- * @fn      GPIO_Toggle_INIT
- *
- * @brief   Initializes GPIOA.0/1
- *
- * @return  none
- */
-void GPIO_Toggle_INIT(void)
-{
-    GPIO_InitTypeDef GPIO_InitStructure = {0};
-
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-}
-
-
-/*********************************************************************
- * @fn      task2_task
- *
- * @brief   task2 program.
- *
- * @param  *pvParameters - Parameters point of task2
- *
- * @return  none
- */
-// void task2_task(void *pvParameters)
-// {
-//     while (1)
-//     {
-//         printf("task2 entry\r\n");
-//         GPIO_ResetBits(GPIOA, GPIO_Pin_1);
-//         vTaskDelay(500);
-//         GPIO_SetBits(GPIOA, GPIO_Pin_1);
-//         vTaskDelay(500);
-//     }
-// }
-
-
-
-
-/*********************************************************************
- * @fn      main
- *
- * @brief   Main program.
- *
- * @return  none
- */
-int main(void)
-{
-    // Configure Clock and enable all needed peripherals 
-    SystemInit();
-    SystemCoreClockUpdate();
-    MCAL_Config_ConfigAllPins();
-    
-    // configure NVIC
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-
-    
-    
-    
-    // Delay_Init();
-    // USART_Printf_Init(115200);
-    // printf("SystemClk:%d\r\n", SystemCoreClock);
-    // printf("ChipID:%08x\r\n", DBGMCU_GetCHIPID());
-
-    // GPIO_Toggle_INIT();
-    // /* create two task */
-    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)task2_task,
-    //             "task2",
-    //             TASK2_STK_SIZE,
-    //             (UBaseType_t)TASK2_TASK_PRIO,
-    //             (RTOS_TaskHandle_t *)&Task2Task_Handler);
-
-
-    // // vTaskStartScheduler();
-
-    // while (1)
-    // {
-    //     printf("shouldn't run at here!!\n");
-    // }
-}
+/*** End of File **************************************************************/
+#endif /*MCAL_CONFIG_H_*/

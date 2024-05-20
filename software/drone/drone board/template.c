@@ -1,9 +1,9 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   Application Code                                                                                            |
- * |    @file           :   main.c                                                                                                      |
+ * |    @title          :   Wrapper File for RTOS function                                                                              |
+ * |    @file           :   Service_RTOS_wrapper.h                                                                                      |
  * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   20/05/2024                                                                                                  |
+ * |    @origin_date    :   18/05/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
  * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
@@ -11,7 +11,7 @@
  * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this file is the main entry to our application code that will run                                           |
+ * |    @brief          :   this header file contains useful functions to easily change RTOS without changing much in code              |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
@@ -38,110 +38,47 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    20/05/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
+ * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
+ 
 
-/*
- *@Note
- *task1 and task2 alternate printing
- */
+/******************************************************************************
+ * Includes
+ *******************************************************************************/
 
-#include "debug.h"
-#include "Service_RTOS_wrapper.h"
-#include "MCAL_config.h"
+/******************************************************************************
+ * Module Preprocessor Constants
+ *******************************************************************************/
 
+/******************************************************************************
+ * Module Preprocessor Macros
+ *******************************************************************************/
 
-/* Global define */
-#define TASK1_TASK_PRIO 5
-#define TASK1_STK_SIZE 256
-#define TASK2_TASK_PRIO 5
-#define TASK2_STK_SIZE 256
+/******************************************************************************
+ * Module Typedefs
+ *******************************************************************************/
 
-/* Global Variable */
-RTOS_TaskHandle_t Task2Task_Handler;
+/******************************************************************************
+ * Module Variable Definitions
+ *******************************************************************************/
 
-/*********************************************************************
- * @fn      GPIO_Toggle_INIT
- *
- * @brief   Initializes GPIOA.0/1
- *
- * @return  none
- */
-void GPIO_Toggle_INIT(void)
-{
-    GPIO_InitTypeDef GPIO_InitStructure = {0};
+/******************************************************************************
+ * Function Prototypes
+ *******************************************************************************/
 
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-}
-
-
-/*********************************************************************
- * @fn      task2_task
- *
- * @brief   task2 program.
- *
- * @param  *pvParameters - Parameters point of task2
- *
- * @return  none
- */
-// void task2_task(void *pvParameters)
-// {
-//     while (1)
-//     {
-//         printf("task2 entry\r\n");
-//         GPIO_ResetBits(GPIOA, GPIO_Pin_1);
-//         vTaskDelay(500);
-//         GPIO_SetBits(GPIOA, GPIO_Pin_1);
-//         vTaskDelay(500);
-//     }
-// }
+/******************************************************************************
+ * Function Definitions
+ *******************************************************************************/
 
 
 
 
-/*********************************************************************
- * @fn      main
- *
- * @brief   Main program.
- *
- * @return  none
- */
-int main(void)
-{
-    // Configure Clock and enable all needed peripherals 
-    SystemInit();
-    SystemCoreClockUpdate();
-    MCAL_Config_ConfigAllPins();
-    
-    // configure NVIC
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-
-    
-    
-    
-    // Delay_Init();
-    // USART_Printf_Init(115200);
-    // printf("SystemClk:%d\r\n", SystemCoreClock);
-    // printf("ChipID:%08x\r\n", DBGMCU_GetCHIPID());
-
-    // GPIO_Toggle_INIT();
-    // /* create two task */
-    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)task2_task,
-    //             "task2",
-    //             TASK2_STK_SIZE,
-    //             (UBaseType_t)TASK2_TASK_PRIO,
-    //             (RTOS_TaskHandle_t *)&Task2Task_Handler);
 
 
-    // // vTaskStartScheduler();
 
-    // while (1)
-    // {
-    //     printf("shouldn't run at here!!\n");
-    // }
-}
+/*************** END OF FUNCTIONS ***************************************************************************/
+
+
+// to be the IdleTask (called when no other tasks are running)
+// void vApplicationIdleHook( void );

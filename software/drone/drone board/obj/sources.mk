@@ -20,6 +20,7 @@ C_DEPS :=
 SUBDIRS := \
 Code/APP \
 Code/HAL/ADXL345 \
+Code/MCAL/Config \
 Code/MCAL/Core \
 Code/MCAL/Debug \
 Code/MCAL/Peripheral/src \
@@ -28,5 +29,6 @@ Code/Service/FreeRTOS \
 Code/Service/FreeRTOS/portable/Common \
 Code/Service/FreeRTOS/portable/GCC/RISC-V \
 Code/Service/FreeRTOS/portable/MemMang \
-Code/Service \
+Code/Service/Wrapper \
+. \
 

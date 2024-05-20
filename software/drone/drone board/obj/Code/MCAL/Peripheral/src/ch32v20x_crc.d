@@ -4,8 +4,8 @@ Code/MCAL/Peripheral/src/ch32v20x_crc.o: \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Peripheral\inc/ch32v20x.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\Lib/stdint.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Core/core_riscv.h \
- D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\APP/system_ch32v20x.h \
- D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\APP/ch32v20x_conf.h \
+ D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Config/system_ch32v20x.h \
+ D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Config/ch32v20x_conf.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Peripheral\inc/ch32v20x_adc.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Peripheral\inc/ch32v20x_bkp.h \
  D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Peripheral\inc/ch32v20x_can.h \
@@ -36,9 +36,9 @@ D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Co
 
 D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Core/core_riscv.h:
 
-D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\APP/system_ch32v20x.h:
+D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Config/system_ch32v20x.h:
 
-D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\APP/ch32v20x_conf.h:
+D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Config/ch32v20x_conf.h:
 
 D:\codes\PROJECTS\fourth\ year\GP\repo\QuadRaptor\software\drone\drone\ board\Code\MCAL\Peripheral\inc/ch32v20x_adc.h:
 

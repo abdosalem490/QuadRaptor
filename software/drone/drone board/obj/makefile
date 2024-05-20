@@ -8,15 +8,16 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include Code/Service/Wrapper/subdir.mk
 -include Code/Service/FreeRTOS/portable/MemMang/subdir.mk
 -include Code/Service/FreeRTOS/portable/GCC/RISC-V/subdir.mk
 -include Code/Service/FreeRTOS/portable/Common/subdir.mk
 -include Code/Service/FreeRTOS/subdir.mk
--include Code/Service/subdir.mk
 -include Code/MCAL/Startup/subdir.mk
 -include Code/MCAL/Peripheral/src/subdir.mk
 -include Code/MCAL/Debug/subdir.mk
 -include Code/MCAL/Core/subdir.mk
+-include Code/MCAL/Config/subdir.mk
 -include Code/HAL/ADXL345/subdir.mk
 -include Code/APP/subdir.mk
 -include subdir.mk

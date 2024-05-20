@@ -9,6 +9,7 @@
         "constants.h": "c",
         "stdint.h": "c",
         "debug.h": "c",
-        "ch32v20x.h": "c"
+        "ch32v20x.h": "c",
+        "ch32v20x_i2c.h": "c"
     }
 }

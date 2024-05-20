@@ -136,6 +136,7 @@ void I2C_Init(I2C_TypeDef *I2Cx, I2C_InitTypeDef *I2C_InitStruct)
     tmpreg &= CTLR2_FREQ_Reset;
     RCC_GetClocksFreq(&rcc_clocks);
     pclk1 = rcc_clocks.PCLK1_Frequency;
+    pclk1 = rcc_clocks.PCLK1_Frequency;
     freqrange = (uint16_t)(pclk1 / 1000000);
     tmpreg |= freqrange;
     I2Cx->CTLR2 = tmpreg;
