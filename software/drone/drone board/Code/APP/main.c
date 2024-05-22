@@ -231,7 +231,7 @@ void Task_CollectSensorData(void)
 {
     while (1)
     {
-
+        
     }
 }
 

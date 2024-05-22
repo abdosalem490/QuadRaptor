@@ -41,6 +41,7 @@
  * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
  * |    21/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_StartSchedular'.               |
  * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_CreateBlockingQueue'.          |
+ * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_AppendToBlockingQueue'.        |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
  
@@ -79,7 +80,16 @@
  * @reason: contains functions of our RTOS
  */
 #include "FreeRTOS.h"
+
+/**
+ * @reason: contains functions related to RTOS tasks
+*/
 #include "task.h"
+
+/**
+ * @reason: contains functions related to RTOS queues
+*/
+#include "queue.h"
 
 /******************************************************************************
  * Module Preprocessor Constants
@@ -167,8 +177,28 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CreateBlockingQueue(uint16_t arg_u16QueueLen
     return local_ErrStatus;
 }
 
+/**
+ * 
+*/
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToAdd, RTOS_QueueHandle_t arg_QueueHandle)
+{
+    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+
+    if(NULL == arg_pItemToAdd || NULL == arg_QueueHandle)
+    {
+        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
+    }
+    else
+    {
+        if(xQueueSendToBack((QueueHandle_t)arg_QueueHandle, (const void *)arg_pItemToAdd, (TickType_t)(arg_u32TimeoutMS / portTICK_PERIOD_MS)) != pdPASS)
+        {
+            local_ErrStatus = SERVICE_RTOS_STAT_QUEUE_FULL;
+        }
+    }
+
+    return local_ErrStatus;
+}
 /*************** END OF FUNCTIONS ***************************************************************************/
-
-
+ 
 // to be the IdleTask (called when no other tasks are running)
 // void vApplicationIdleHook( void );
