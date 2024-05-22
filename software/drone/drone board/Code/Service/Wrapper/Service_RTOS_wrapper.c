@@ -39,6 +39,8 @@
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
  * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
+ * |    21/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_StartSchedular'.               |
+ * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_CreateBlockingQueue'.          |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
  
@@ -111,26 +113,59 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_TaskCreate(SERVICE_RTOS_TaskFunction_t arg_p
 {
     SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
 
-    if(arg_pFuncTaskFunction == NULL || arg_pu8TaskName == NULL || arg_u16TaskStackDepth == 0 || arg_pTaskHandle == NULL)
+    if(NULL == arg_pFuncTaskFunction || NULL == arg_pu8TaskName  || 0 == arg_u16TaskStackDepth  || NULL == arg_pTaskHandle)
     {
         local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
     }
-
-    // create the task
-    xTaskCreate((TaskFunction_t)arg_pFuncTaskFunction,
-            (const char *)arg_pu8TaskName,
-            (uint16_t)arg_u16TaskStackDepth,
-            (void *)NULL,
-            (UBaseType_t)arg_u32TaskPriority,
-            (TaskHandle_t *)&arg_pTaskHandle);
-
+    else{
+        // create the task
+        xTaskCreate((TaskFunction_t)arg_pFuncTaskFunction,
+                (const char *)arg_pu8TaskName,
+                (uint16_t)arg_u16TaskStackDepth,
+                (void *)NULL,
+                (UBaseType_t)arg_u32TaskPriority,
+                (TaskHandle_t *)&arg_pTaskHandle);
+    }
 
     return local_ErrStatus;
 }
 
 
+/**
+ * 
+*/
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_StartSchedular(void)
+{
+    vTaskStartScheduler();
+}
 
+/**
+ * 
+*/
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CreateBlockingQueue(uint16_t arg_u16QueueLen, uint16_t arg_u16ElementSize, RTOS_QueueHandle_t* arg_pQueueHandle)
+{
+    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
 
+    if(0 == arg_u16QueueLen|| 0 == arg_u16ElementSize  || NULL == arg_pQueueHandle) 
+    {
+        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
+    }
+    else
+    {
+        arg_pQueueHandle = xQueueCreate((UBaseType_t)arg_u16QueueLen, (UBaseType_t) arg_u16ElementSize);
+
+        if(NULL == arg_pQueueHandle)
+        {
+            local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
+        }
+        else
+        {
+            // do nothing
+        }
+    }
+
+    return local_ErrStatus;
+}
 
 /*************** END OF FUNCTIONS ***************************************************************************/
 

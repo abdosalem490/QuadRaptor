@@ -61,7 +61,7 @@
 /**
  * @reason: to configure the pins
 */
-#include "gpio.h"
+#include "ch32v20x_gpio.h"
 
 /******************************************************************************
  * Module Preprocessor Constants
@@ -99,11 +99,11 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, DISABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, DISABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, DISABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2, DISABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, DISABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, DISABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, DISABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, DISABLE);
 

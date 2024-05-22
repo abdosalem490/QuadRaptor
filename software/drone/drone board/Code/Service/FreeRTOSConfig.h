@@ -143,7 +143,7 @@ to exclude the API function. */
 #define INCLUDE_xTaskAbortDelay				1
 #define INCLUDE_xTaskGetHandle				1
 #define INCLUDE_xSemaphoreGetMutexHolder	1
-
+#define configSUPPORT_DYNAMIC_ALLOCATION    1   /* to include xQueueCreate function in the build*/
 
 /* Normal assert() semantics without relying on the provision of an assert.h
 header file. */

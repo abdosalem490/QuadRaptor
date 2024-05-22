@@ -39,78 +39,242 @@
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
  * |    20/05/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
+ * |    21/05/2023      1.0.0           Abdelrahman Mohamed Salem       created the initial blueprint for tasks.                        |
+ * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       created the Queues for the IPC.                                 |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
-/*
- *@Note
- *task1 and task2 alternate printing
- */
+/******************************************************************************
+ * Includes
+ *******************************************************************************/
 
+/**
+ * @reason: contains printf function for debugging
+*/
 #include "debug.h"
+
+/**
+ * @reason: contains wrapper functions for needed RTOS functions
+*/
 #include "Service_RTOS_wrapper.h"
+
+/**
+ * @reason: initialize the pins of the micro-controller
+*/
 #include "MCAL_config.h"
 
+/******************************************************************************
+ * Module Preprocessor Constants
+ *******************************************************************************/
 
-/* Global define */
-#define TASK1_TASK_PRIO 5
-#define TASK1_STK_SIZE 256
-#define TASK2_TASK_PRIO 5
-#define TASK2_STK_SIZE 256
+/************************************************************************/
+/**
+ * @brief: size of stack for sensor data collection task in words
+*/
+#define TASK_SENSOR_COLLECT_STACK_SIZE 256
 
-/* Global Variable */
-RTOS_TaskHandle_t Task2Task_Handler;
+/**
+ * @brief: size of stack for sensor fusion task in words
+*/
+#define TASK_SENSOR_FUSION_STACK_SIZE 256
 
-/*********************************************************************
- * @fn      GPIO_Toggle_INIT
- *
- * @brief   Initializes GPIOA.0/1
- *
- * @return  none
- */
-void GPIO_Toggle_INIT(void)
+/**
+ * @brief: size of stack for communication with application board task in words
+*/
+#define TASK_APP_COMM_STACK_SIZE 256
+
+/**
+ * @brief: size of stack for master task in words
+*/
+#define TASK_MASTER_STACK_SIZE 256
+
+
+
+/************************************************************************/
+/**
+ * @brief: priority for sensor data collection task
+*/
+#define TASK_SENSOR_COLLECT_PRIO 4
+
+/**
+ * @brief: priority for sensor fusion task
+*/
+#define TASK_SENSOR_FUSION_PRIO 3
+
+/**
+ * @brief: priority for communication with application board task
+*/
+#define TASK_APP_COMM_PRIO 2
+
+/**
+ * @brief: priority for master task
+*/
+#define TASK_MASTER_PRIO 5
+
+/************************************************************************/
+/**
+ * @brief: Queue length for 'queue_RawSensorData_Handle_t'
+*/
+#define QUEUE_RAW_SENSOR_DATA_LEN   10
+
+/**
+ * @brief: Queue length for 'queue_FusedSensorData_Handle_t'
+*/
+#define QUEUE_SENSOR_FUSION_DATA_LEN   10
+
+/**
+ * @brief: Queue length for 'queue_AppCommToDrone_Handle_t'
+*/
+#define QUEUE_APP_TO_DRONE_DATA_LEN   10
+
+/**
+ * @brief: Queue length for 'queue_DroneCommToApp_Handle_t'
+*/
+#define QUEUE_DRONE_TO_APP_DATA_LEN   10
+
+/******************************************************************************
+ * Module Preprocessor Macros
+ *******************************************************************************/
+
+/******************************************************************************
+ * Module Typedefs
+ *******************************************************************************/
+
+/************************************************************************/
+/**
+ * @brief: this is the queue that the sensor data collection task will put its output into it
+*/
+RTOS_QueueHandle_t queue_RawSensorData_Handle_t;
+
+/**
+ * @brief: this is the queue that the sensor fusion task will put its output into it
+*/
+RTOS_QueueHandle_t queue_FusedSensorData_Handle_t;
+
+/**
+ * @brief: this is the queue that the app communication task will put its output into it from app board to the drone board
+*/
+RTOS_QueueHandle_t queue_AppCommToDrone_Handle_t;
+
+/**
+ * @brief: this is the queue that the app communication task will put its output into it from drone board to the app board
+*/
+RTOS_QueueHandle_t queue_DroneCommToApp_Handle_t;
+
+/************************************************************************/
+/**
+ * @brief: this is the struct definition of the items of the 'queue_RawSensorData_Handle_t' elements
+*/
+typedef struct RawSensorData{
+    uint16_t test;  // TODO: edit
+}RawSensorDataItem_t;
+
+/**
+ * @brief: this is the struct definition of the items of the 'queue_FusedSensorData_Handle_t' elements
+*/
+typedef struct SensorFusionData{
+    uint16_t test;  // TODO: edit
+}SensorFusionDataItem_t;
+
+/**
+ * @brief: this is the struct definition of the items of the 'queue_AppCommToDrone_Handle_t' elements
+*/
+typedef struct AppToDroneData{
+    uint16_t test;  // TODO: edit
+}AppToDroneDataItem_t;
+
+/**
+ * @brief: this is the struct definition of the items of the 'queue_DroneCommToApp_Handle_t' elements
+*/
+typedef struct DroneToAppData{
+    uint16_t test;  // TODO: edit
+}DroneToAppDataItem_t;
+
+/******************************************************************************
+ * Module Variable Definitions
+ *******************************************************************************/
+
+/************************************************************************/
+/**
+ * @brief: handler which act as identifier for the sensor data collection task through which we will deal with anything related to this task 
+*/
+RTOS_TaskHandle_t task_CollectSensorData_Handle_t;
+
+/**
+ * @brief: handler which act as identifier for the sensor fusion task through which we will deal with anything related to this task 
+*/
+RTOS_TaskHandle_t task_SensorFusion_Handle_t;
+
+/**
+ * @brief: handler which act as identifier for the app board communication task through which we will deal with anything related to this task 
+*/
+RTOS_TaskHandle_t task_AppComm_Handle_t;
+
+/**
+ * @brief: handler which act as identifier for the master task through which we will deal with anything related to this task 
+*/
+RTOS_TaskHandle_t task_Master_Handle_t;
+
+/******************************************************************************
+ * Function Prototypes
+ *******************************************************************************/
+
+/******************************************************************************
+ * Function Definitions
+ *******************************************************************************/
+
+/************************************************************************/
+/**
+ * @brief: this task is responsible for the collection of sensor data
+*/
+void Task_CollectSensorData(void)
 {
-    GPIO_InitTypeDef GPIO_InitStructure = {0};
+    while (1)
+    {
 
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    }
 }
 
+/************************************************************************/
+/**
+ * @brief: this task is responsible for processing of sensor data
+*/
+void Task_SensorFusion(void)
+{
+    while (1)
+    {
 
-/*********************************************************************
- * @fn      task2_task
- *
- * @brief   task2 program.
- *
- * @param  *pvParameters - Parameters point of task2
- *
- * @return  none
- */
-// void task2_task(void *pvParameters)
-// {
-//     while (1)
-//     {
-//         printf("task2 entry\r\n");
-//         GPIO_ResetBits(GPIOA, GPIO_Pin_1);
-//         vTaskDelay(500);
-//         GPIO_SetBits(GPIOA, GPIO_Pin_1);
-//         vTaskDelay(500);
-//     }
-// }
+    }
+}
 
+/************************************************************************/
+/**
+ * @brief: this task is responsible for communication with the application board 
+*/
+void Task_AppComm(void)
+{
+    while (1)
+    {
 
+    }
+}
 
+/************************************************************************/
+/**
+ * @brief: this is the master task that will take action upon commands given from the application board or new updates from the sensor data to stabilize the drone
+*/
+void Task_Master(void)
+{
+    while (1)
+    {
 
-/*********************************************************************
- * @fn      main
- *
- * @brief   Main program.
- *
- * @return  none
- */
+    }
+}
+
+/************************************************************************/
+/**
+ * @brief: main function of the drone board
+*/
 int main(void)
 {
     // Configure Clock and enable all needed peripherals 
@@ -121,27 +285,63 @@ int main(void)
     // configure NVIC
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
-    
-    
-    
-    // Delay_Init();
-    // USART_Printf_Init(115200);
-    // printf("SystemClk:%d\r\n", SystemCoreClock);
-    // printf("ChipID:%08x\r\n", DBGMCU_GetCHIPID());
+    // create the Queue for sensor collection data task to put its data into it
+    SERVICE_RTOS_CreateBlockingQueue(QUEUE_RAW_SENSOR_DATA_LEN,
+                                    sizeof(RawSensorDataItem_t),
+                                    &queue_RawSensorData_Handle_t);
 
-    // GPIO_Toggle_INIT();
-    // /* create two task */
-    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)task2_task,
-    //             "task2",
-    //             TASK2_STK_SIZE,
-    //             (UBaseType_t)TASK2_TASK_PRIO,
-    //             (RTOS_TaskHandle_t *)&Task2Task_Handler);
+    // create the Queue for sensor fusion task to put its data into it
+    SERVICE_RTOS_CreateBlockingQueue(QUEUE_SENSOR_FUSION_DATA_LEN,
+                                    sizeof(SensorFusionDataItem_t),
+                                    &queue_FusedSensorData_Handle_t);
+
+    // create the Queue for sensor collection data to put its data into it
+    SERVICE_RTOS_CreateBlockingQueue(QUEUE_APP_TO_DRONE_DATA_LEN,
+                                    sizeof(AppToDroneDataItem_t),
+                                    &queue_AppCommToDrone_Handle_t);
+
+    // create the Queue for sensor collection data to put its data into it
+    SERVICE_RTOS_CreateBlockingQueue(QUEUE_DRONE_TO_APP_DATA_LEN,
+                                    sizeof(DroneToAppDataItem_t),
+                                    &queue_DroneCommToApp_Handle_t);
 
 
-    // // vTaskStartScheduler();
+    // create a task for reading sensor data
+    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_CollectSensorData,
+                "Sensor Collection",
+                TASK_SENSOR_COLLECT_STACK_SIZE,
+                TASK_SENSOR_COLLECT_PRIO,
+                &task_CollectSensorData_Handle_t);
 
-    // while (1)
-    // {
-    //     printf("shouldn't run at here!!\n");
-    // }
+    // create a task for fusing sensor data
+    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_SensorFusion,
+                "Sensor Fusion",
+                TASK_SENSOR_FUSION_STACK_SIZE,
+                TASK_SENSOR_FUSION_PRIO,
+                &task_SensorFusion_Handle_t);
+
+    // create a task for communication with app board 
+    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
+                "App Communication",
+                TASK_APP_COMM_STACK_SIZE,
+                TASK_APP_COMM_PRIO,
+                &task_AppComm_Handle_t);
+
+    // create a task for master
+    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_Master,
+                "Master",
+                TASK_MASTER_STACK_SIZE,
+                TASK_MASTER_PRIO,
+                &task_Master_Handle_t);
+
+    // start the schedular
+    SERVICE_RTOS_StartSchedular();
+
+    while (1)
+    {
+        printf("shouldn't run at here!!\n");
+    }
 }
+
+
+/*************** END OF FUNCTIONS ***************************************************************************/
