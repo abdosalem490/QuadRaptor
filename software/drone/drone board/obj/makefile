@@ -13,6 +13,7 @@ RM := rm -rf
 -include Code/Service/FreeRTOS/portable/GCC/RISC-V/subdir.mk
 -include Code/Service/FreeRTOS/portable/Common/subdir.mk
 -include Code/Service/FreeRTOS/subdir.mk
+-include Code/MCAL/Wrapper/subdir.mk
 -include Code/MCAL/Startup/subdir.mk
 -include Code/MCAL/Peripheral/src/subdir.mk
 -include Code/MCAL/Debug/subdir.mk

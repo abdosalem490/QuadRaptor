@@ -51,12 +51,12 @@
 /**
  * @reason: contains standard definitions for the integer variables
  */
-#include "lib/stdint.h"
+#include "stdint.h"
 
 /**
  * @reason: contains volatile keyword definition regarding selected compiler
  */
-#include "../../lib/common.h"
+#include "common.h"
 
 /******************************************************************************
  * Preprocessor Constants

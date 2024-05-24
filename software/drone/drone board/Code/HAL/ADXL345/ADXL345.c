@@ -1,21 +1,21 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   General Purpose Input/Output                                                                                |
- * |    @file           :   GPIO_header.h                                                                                               |
+ * |    @title          :   ADXL345 Digital Accelerometer                                                                               |
+ * |    @file           :   ADXL345.c                                                                                                   |
  * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   03/09/2023                                                                                                  |
+ * |    @origin_date    :   24/05/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
- * |    @tool_chain     :   GNU Tools for STM32                                                                                         |
+ * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
  * |    @C_standard     :   ISO C99 (-std=c99)                                                                                          |
- * |    @target         :   stm32f407VGTX                                                                                               |
+ * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this header file contains functions implementations regarding the General Purpose Input/Output              |
+ * |    @brief          :   this file contains code implementation for the function of ADXL345                                          |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
- * |    Copyright (c) - 2023 - Abdelrahman Mohamed Salem - All Rights Reserved                                                          |
+ * |    Copyright (c) - 2024 - Abdelrahman Mohamed Salem - All Rights Reserved                                                          |
  * |                                                                                                                                    |
  * |    Permission is hereby granted, free of charge, to any person obtaining a copy                                                    |
  * |    of this software and associated documentation files (the "Software"), to deal                                                   |
@@ -38,7 +38,7 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    03/09/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
+ * |    24/05/2024      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -48,22 +48,22 @@
 /**
  * @reason: contains standard definitions for standard integers
  */
-#include "../../lib/stdint.h"
+#include "stdint.h"
 
 /**
  * @reason: contains definition for NULL
  */
-#include "../../lib/common.h"
+#include "common.h"
 
 /**
  * @reason: contains constants common values
  */
-#include "../../lib/constants.h"
+#include "constants.h"
 
 /**
  * @reason: contains useful functions that deals with bit level math
  */
-#include "../../Lib/math_btt.h"
+#include "math_btt.h"
 
 
 

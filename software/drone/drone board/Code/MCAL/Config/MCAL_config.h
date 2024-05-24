@@ -39,17 +39,27 @@
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
  * |    20/05/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
+ * |    24/05/2023      1.0.0           Abdelrahman Mohamed Salem       Added configurations for SPI of ADXL345.                        |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
 
 #ifndef MCAL_CONFIG_H_
-#define MCAL_CONFIG_H_
+#define MCAL_CONFIG_H_  
 
 /******************************************************************************
  * Includes
  *******************************************************************************/
 
+/**
+ * @reason: contains definitons for peripherals
+*/
+#include "ch32v20x.h"
+
+/**
+ * @reason: contains definitions for SPI
+*/
+#include "ch32v20x_spi.h"
 
 /******************************************************************************
  * Preprocessor Constants
@@ -58,6 +68,10 @@
 /******************************************************************************
  * Configuration Constants
  *******************************************************************************/
+
+
+
+
 
 /******************************************************************************
  * Macros
@@ -75,9 +89,23 @@ typedef enum {
   MCAL_Config_STAT_INVALID_PARAMS,
 } MCAL_Config_ErrStat_t;
 
+/**
+ * @brief: this is the struct that deals with adxl345
+*/
+typedef struct{
+    SPI_TypeDef* SPI;           /**< this is which SPI to use with ADXL345 */
+    SPI_InitTypeDef spiConfig;  /**< this the configuration for the SPI*/
+} MCAL_CONFIG_ADXLl345SPI_t;
+
 /******************************************************************************
  * Variables
  *******************************************************************************/
+
+/**
+ * @brief: to use the variable in HAL library
+*/
+extern MCAL_CONFIG_ADXLl345SPI_t MCAL_CFG_adxlSPI;
+
 
 // TODO: define pins configurations as a table here to be read by configuration function to configure all pins (MCAL Module task)
 

@@ -39,6 +39,7 @@
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
  * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
+ * |    24/05/2023      1.0.0           Abdelrahman Mohamed Salem       Added configurations for SPI of ADXL345.                        |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
  
@@ -63,6 +64,16 @@
 */
 #include "ch32v20x_gpio.h"
 
+/**
+ * @reason: contains definitons for peripherals
+*/
+#include "ch32v20x.h"
+
+/**
+ * @reason: contains definitions for SPI
+*/
+#include "ch32v20x_spi.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -78,6 +89,11 @@
 /******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
+
+/**
+ * @brief: the variable through which we will provide connection between ADXL345 and SPI
+*/
+MCAL_CONFIG_ADXLl345SPI_t MCAL_CFG_adxlSPI;
 
 /******************************************************************************
  * Function Prototypes
@@ -131,8 +147,9 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
         .GPIO_Pin = GPIO_Pin_0,
     };
 
-    // configure the pins
-    local_dummy_t.GPIO_Mode = GPIO_Mode_IPD;
+    // configure the pins 
+    /******************************************/
+    local_dummy_t.GPIO_Mode = GPIO_Mode_IN_FLOATING;
     local_dummy_t.GPIO_Pin = GPIO_Pin_0;
     GPIO_Init(GPIOA, &local_dummy_t);
 
@@ -196,6 +213,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_dummy_t.GPIO_Pin = GPIO_Pin_15;
     GPIO_Init(GPIOA, &local_dummy_t);
 
+    /******************************************/
     local_dummy_t.GPIO_Mode = GPIO_Mode_AF_PP;
     local_dummy_t.GPIO_Pin = GPIO_Pin_0;
     GPIO_Init(GPIOB, &local_dummy_t);
@@ -260,13 +278,31 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_dummy_t.GPIO_Pin = GPIO_Pin_15;
     GPIO_Init(GPIOB, &local_dummy_t);
     
-    local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP;
+    /******************************************/
+    local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP; 
     local_dummy_t.GPIO_Pin = GPIO_Pin_14;
     GPIO_Init(GPIOC, &local_dummy_t);
 
     local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP;
     local_dummy_t.GPIO_Pin = GPIO_Pin_15;
     GPIO_Init(GPIOC, &local_dummy_t);
+
+
+    // config all needed peripherals
+
+    /******************************************/
+    MCAL_CFG_adxlSPI.SPI = SPI1;
+    MCAL_CFG_adxlSPI.spiConfig.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+    MCAL_CFG_adxlSPI.spiConfig.SPI_Mode = SPI_Mode_Master;
+    MCAL_CFG_adxlSPI.spiConfig.SPI_DataSize = SPI_DataSize_8b;
+    MCAL_CFG_adxlSPI.spiConfig.SPI_CPOL = SPI_CPOL_High;
+    MCAL_CFG_adxlSPI.spiConfig.SPI_CPHA = SPI_CPHA_2Edge;
+    MCAL_CFG_adxlSPI.spiConfig.SPI_NSS = SPI_NSS_Soft;
+    MCAL_CFG_adxlSPI.spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;
+    MCAL_CFG_adxlSPI.spiConfig.SPI_FirstBit = SPI_FirstBit_MSB;
+    MCAL_CFG_adxlSPI.spiConfig.SPI_CRCPolynomial = 0b101;
+
+    /******************************************/
 
     return MCAL_Config_STAT_OK;
 }

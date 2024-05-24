@@ -38,7 +38,7 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    02/09/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
+ * |    16/03/2024      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -52,7 +52,7 @@
 /**
  * @reason: contains standard integer definition
  */
-#include "lib/stdint.h"
+#include "stdint.h"
 
 /******************************************************************************
  * Preprocessor Constants
@@ -126,7 +126,7 @@ HAL_ADXL345_ErrStates_t HAL_ADXL345_Init();
 /**
  *  \b function                                 :       HAL_ADXL345_PinStateRead(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, uint8_t *const arg_constpu8Operation)
  *  \b Description                              :       this functions is used to read pin state.
- *  @param  arg_u16ADXL345Name [IN]                :       this is input parameter and for possible values refer to @HAL_ADXL345_Ports_t in "ADXL345_header.h", this is input parameter which indicates which port to deal with..
+ *  @param  arg_u16ADXL345Name [IN]             :       this is input parameter and for possible values refer to @HAL_ADXL345_Ports_t in "ADXL345_header.h", this is input parameter which indicates which port to deal with..
  *  @param  arg_u16PinNumber [IN]               :       this is input parameter and for possible values refer to @HAL_ADXL345_Pins_t in "ADXL345_header.h", this is input parameter which indicates which pin to deal with.
  *  @param  arg_constpu8State [OUT]             :       this is output parameter which indicates which holds the address of the variable to which it will write the state of the pin, for possible states refer to @LIB_CONSTANTS_LogicalStates_t in "constants.h".
  *  @note                                       :       None.

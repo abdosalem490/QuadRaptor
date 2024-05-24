@@ -1,22 +1,21 @@
-
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   General Purpose Input/Output                                                                                |
- * |    @file           :   GPIO_private.h                                                                                              |
+ * |    @title          :   ADXL345 Digital Accelerometer                                                                               |
+ * |    @file           :   ADXL345_private.h                                                                                           |
  * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   03/09/2023                                                                                                  |
+ * |    @origin_date    :   15/03/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
- * |    @tool_chain     :   GNU Tools for STM32                                                                                         |
+ * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
  * |    @C_standard     :   ISO C99 (-std=c99)                                                                                          |
- * |    @target         :   stm32f407VGTX                                                                                               |
+ * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this header file contains private functions and variables for the General Purpose Input/Output (GPIO)       |                                                               |
+ * |    @brief          :   this file contains private functions and definitions that deals with ADXL345.                               |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
- * |    Copyright (c) - 2023 - Abdelrahman Mohamed Salem - All Rights Reserved                                                          |
+ * |    Copyright (c) - 2024 - Abdelrahman Mohamed Salem - All Rights Reserved                                                          |
  * |                                                                                                                                    |
  * |    Permission is hereby granted, free of charge, to any person obtaining a copy                                                    |
  * |    of this software and associated documentation files (the "Software"), to deal                                                   |
@@ -39,12 +38,12 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    03/09/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
+ * |    15/03/2024      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
-#ifndef HAL_GPIO_PRIVATE_H_
-#define HAL_GPIO_PRIVATE_H_
+#ifndef HAL_ADXL345_PRIVATE_H_
+#define HAL_ADXL345_PRIVATE_H_
 
 /******************************************************************************
  * Includes
@@ -52,17 +51,17 @@
 /**
  * @reason: contains definition for function callback
  */
-#include "../../lib/common.h"
+#include "common.h"
 
 /**
  * @reason: contains definitions for standard integers
  */
-#include "../../lib/stdint.h"
+#include "stdint.h"
 
 /**
  * @reason: contains all math bits functions
  */
-#include "../../lib/math_btt.h"
+#include "math_btt.h"
 
 /******************************************************************************
  * Preprocessor Constants
@@ -76,52 +75,10 @@
  * Macros
  *******************************************************************************/
 
-/**
- * @enum: HAL_GPIO__PortsIndexes_t
- * @brief: these are indexes used in globalConstArr_GPIO_PinsConfig_t.
- */
-typedef enum
-{
-    HAL_GPIO_PORTA_INDEX = 0,
-    HAL_GPIO_PORTB_INDEX = 1,
-    HAL_GPIO_PORTC_INDEX = 2,
-    HAL_GPIO_PORTD_INDEX = 3,
-    HAL_GPIO_PORTE_INDEX = 4,
-    HAL_GPIO_PORTF_INDEX = 5,
-    HAL_GPIO_PORTG_INDEX = 6,
-    HAL_GPIO_PORTH_INDEX = 7,
-    HAL_GPIO_PORTI_INDEX = 8,
-    HAL_GPIO_MAX_PORT_INDEX,
-} HAL_GPIO__PortsIndexes_t;
-
-/**
- * @enum: HAL_GPIO_PinsIndexes_t
- * @brief: these are indexes used in globalConstArr_GPIO_PinsConfig_t.
- */
-typedef enum
-{
-    HAL_GPIO_PIN0_INDEX = 0,
-    HAL_GPIO_PIN1_INDEX = 1,
-    HAL_GPIO_PIN2_INDEX = 2,
-    HAL_GPIO_PIN3_INDEX = 3,
-    HAL_GPIO_PIN4_INDEX = 4,
-    HAL_GPIO_PIN5_INDEX = 5,
-    HAL_GPIO_PIN6_INDEX = 6,
-    HAL_GPIO_PIN7_INDEX = 7,
-    HAL_GPIO_PIN8_INDEX = 8,
-    HAL_GPIO_PIN9_INDEX = 9,
-    HAL_GPIO_PIN10_INDEX = 10,
-    HAL_GPIO_PIN11_INDEX = 11,
-    HAL_GPIO_PIN12_INDEX = 12,
-    HAL_GPIO_PIN13_INDEX = 13,
-    HAL_GPIO_PIN14_INDEX = 14,
-    HAL_GPIO_PIN15_INDEX = 15,
-    HAL_GPIO_MAX_PIN_INDEX,
-} HAL_GPIO_PinsIndexes_t;
 
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 
 /*** End of File **************************************************************/
-#endif /*HAL_GPIO_PRIVATE_H_*/
+#endif /*HAL_ADXL345_PRIVATE_H_*/

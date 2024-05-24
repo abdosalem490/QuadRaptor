@@ -12,6 +12,8 @@
         "ch32v20x.h": "c",
         "ch32v20x_i2c.h": "c",
         "gpio.h": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "mcal_config.h": "c",
+        "ch32v20x_spi.h": "c"
     }
 }

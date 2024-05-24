@@ -231,7 +231,7 @@ void Task_CollectSensorData(void)
 {
     while (1)
     {
-        
+
     }
 }
 
@@ -277,10 +277,16 @@ void Task_Master(void)
 */
 int main(void)
 {
-    // Configure Clock and enable all needed peripherals 
+    // Configure/enable Clock and all needed peripherals 
     SystemInit();
     SystemCoreClockUpdate();
     MCAL_Config_ConfigAllPins();
+
+	RCC_ClocksTypeDef test = {0};
+	RCC_GetClocksFreq(&test);
+
+    // configure the sensors
+    
     
     // configure NVIC
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
