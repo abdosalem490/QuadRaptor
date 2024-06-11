@@ -14,6 +14,9 @@
         "gpio.h": "c",
         "queue.h": "c",
         "mcal_config.h": "c",
-        "ch32v20x_spi.h": "c"
+        "ch32v20x_spi.h": "c",
+        "adxl345_header.h": "c",
+        "mcal_wrapper.h": "c",
+        "adxl345_config.h": "c"
     }
 }

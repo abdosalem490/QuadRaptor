@@ -1,9 +1,9 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   Wrapper File for RTOS function                                                                              |
- * |    @file           :   Service_RTOS_wrapper.h                                                                                      |
+ * |    @title          :   configuration file for the external hardware                                                                |
+ * |    @file           :   HAL_config.h                                                                                                |
  * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   18/05/2024                                                                                                  |
+ * |    @origin_date    :   24/05/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
  * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
@@ -11,7 +11,7 @@
  * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this header file contains useful functions to easily change RTOS without changing much in code              |
+ * |    @brief          :   this file configure all the HAL layer hardware                                                              |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
@@ -38,169 +38,84 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
- * |    21/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_StartSchedular'.               |
- * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_CreateBlockingQueue'.          |
- * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_AppendToBlockingQueue'.        |
+ * |    24/05/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
+ * |    24/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'HAL_Config_ConfigAllHW'.                    |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
- 
+
+
+#ifndef HAL_CONFIG_HEADER_H_
+#define HAL_CONFIG_HEADER_H_
 
 /******************************************************************************
  * Includes
  *******************************************************************************/
-/**
- * @reason: contains standard definitions for standard integers
- */
-#include "stdint.h"
-
-/**
- * @reason: contains definition for NULL
- */
-#include "common.h"
-
-/**
- * @reason: contains constants common values
- */
-#include "constants.h"
-
-/**
- * @reason: contains useful functions that deals with bit level math
- */
-#include "math_btt.h"
 
 
+/******************************************************************************
+ * Preprocessor Constants
+ *******************************************************************************/
+
+/******************************************************************************
+ * Configuration Constants
+ *******************************************************************************/
+
+/******************************************************************************
+ * Macros
+ *******************************************************************************/
+/******************************************************************************
+ * Typedefs
+ *******************************************************************************/
+
 /**
- * @reason: contains definition for our functions
+ * @brief: contains error states for this module
 */
-#include "Service_RTOS_wrapper.h"
-
-
-/**
- * @reason: contains functions of our RTOS
- */
-#include "FreeRTOS.h"
-
-/**
- * @reason: contains functions related to RTOS tasks
-*/
-#include "task.h"
-
-/**
- * @reason: contains functions related to RTOS queues
-*/
-#include "queue.h"
+typedef enum {
+  HAL_Config_STAT_OK,
+  HAL_Config_STAT_INVALID_PARAMS,
+} HAL_Config_ErrStat_t;
 
 /******************************************************************************
- * Module Preprocessor Constants
+ * Variables
  *******************************************************************************/
 
-/******************************************************************************
- * Module Preprocessor Macros
- *******************************************************************************/
-
-/******************************************************************************
- * Module Typedefs
- *******************************************************************************/
-
-/******************************************************************************
- * Module Variable Definitions
- *******************************************************************************/
+// TODO: define pins configurations as a table here to be read by configuration function to configure all pins (HAL Module task)
 
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 
-/******************************************************************************
- * Function Definitions
- *******************************************************************************/
-
-
 /**
+ *  \b function                                 :       HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void);
+ *  \b Description                              :       this functions is used to configure all the external hardware of the MCU given the application.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       make sure to call configure the peripherals of the HAL beforehand.
+ *  \b POST-CONDITION                           :       all external hardware to the MCU are configured.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_Config_ErrStat_t in "HAL_config.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
  * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_TaskCreate(SERVICE_RTOS_TaskFunction_t arg_pFuncTaskFunction, const char * const arg_pu8TaskName, uint16_t arg_u16TaskStackDepth, uint32_t arg_u32TaskPriority, RTOS_TaskHandle_t* arg_pTaskHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-
-    if(NULL == arg_pFuncTaskFunction || NULL == arg_pu8TaskName  || 0 == arg_u16TaskStackDepth  || NULL == arg_pTaskHandle)
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else{
-        // create the task
-        xTaskCreate((TaskFunction_t)arg_pFuncTaskFunction,
-                (const char *)arg_pu8TaskName,
-                (uint16_t)arg_u16TaskStackDepth,
-                (void *)NULL,
-                (UBaseType_t)arg_u32TaskPriority,
-                (TaskHandle_t *)&arg_pTaskHandle);
-    }
-
-    return local_ErrStatus;
-}
-
-
-/**
+ * #include "HAL_config.h"
  * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_StartSchedular(void)
-{
-    vTaskStartScheduler();
-
-    return SERVICE_RTOS_STAT_OK;
-}
-
-/**
+ * int main() {
+ * HAL_Config_ErrStat_t local_TaskCreateState_t = HAL_Config_ConfigAllHW();
+ * if(SERVICE_RTOS_STAT_OK == local_TaskCreateState_t)
+ * {
+ *  // the pins are configured successfully
+ * }
  * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CreateBlockingQueue(uint16_t arg_u16QueueLen, uint16_t arg_u16ElementSize, RTOS_QueueHandle_t* arg_pQueueHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 24/05/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void);
 
-    if(0 == arg_u16QueueLen|| 0 == arg_u16ElementSize  || NULL == arg_pQueueHandle) 
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else
-    {
-        *arg_pQueueHandle = xQueueCreate((UBaseType_t)arg_u16QueueLen, (UBaseType_t) arg_u16ElementSize);
-
-        if(NULL == arg_pQueueHandle)
-        {
-            local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-        }
-        else
-        {
-            // do nothing
-        }
-    }
-
-    return local_ErrStatus;
-}
-
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToAdd, RTOS_QueueHandle_t arg_QueueHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-
-    if(NULL == arg_pItemToAdd || NULL == arg_QueueHandle)
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else
-    {
-        if(xQueueSendToBack((QueueHandle_t)arg_QueueHandle, (const void *)arg_pItemToAdd, (TickType_t)(arg_u32TimeoutMS / portTICK_PERIOD_MS)) != pdPASS)
-        {
-            local_ErrStatus = SERVICE_RTOS_STAT_QUEUE_FULL;
-        }
-    }
-
-    return local_ErrStatus;
-}
-/*************** END OF FUNCTIONS ***************************************************************************/
- 
-// to be the IdleTask (called when no other tasks are running)
-// void vApplicationIdleHook( void );
+/*** End of File **************************************************************/
+#endif /*HAL_CONFIG_HEADER_H_*/

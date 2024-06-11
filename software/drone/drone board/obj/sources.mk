@@ -20,6 +20,7 @@ C_DEPS :=
 SUBDIRS := \
 Code/APP \
 Code/HAL/ADXL345 \
+Code/HAL/Config \
 Code/MCAL/Config \
 Code/MCAL/Core \
 Code/MCAL/Debug \

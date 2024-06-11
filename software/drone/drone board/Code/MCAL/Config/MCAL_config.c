@@ -93,7 +93,7 @@
 /**
  * @brief: the variable through which we will provide connection between ADXL345 and SPI
 */
-MCAL_CONFIG_ADXLl345SPI_t MCAL_CFG_adxlSPI;
+MCAL_CONFIG_SPI_t MCAL_CFG_adxlSPI;
 
 /******************************************************************************
  * Function Prototypes
@@ -292,6 +292,8 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
 
     /******************************************/
     MCAL_CFG_adxlSPI.SPI = SPI1;
+    MCAL_CFG_adxlSPI.GPIO = GPIOC;
+    MCAL_CFG_adxlSPI.SlavePin = GPIO_Pin_14;
     MCAL_CFG_adxlSPI.spiConfig.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
     MCAL_CFG_adxlSPI.spiConfig.SPI_Mode = SPI_Mode_Master;
     MCAL_CFG_adxlSPI.spiConfig.SPI_DataSize = SPI_DataSize_8b;
@@ -301,8 +303,12 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     MCAL_CFG_adxlSPI.spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;
     MCAL_CFG_adxlSPI.spiConfig.SPI_FirstBit = SPI_FirstBit_MSB;
     MCAL_CFG_adxlSPI.spiConfig.SPI_CRCPolynomial = 0b101;
+    SPI_Init(SPI1, &MCAL_CFG_adxlSPI.spiConfig);
+    SPI_Cmd(SPI1, ENABLE);
+    GPIO_SetBits(MCAL_CFG_adxlSPI.GPIO, MCAL_CFG_adxlSPI.SlavePin);
 
     /******************************************/
+
 
     return MCAL_Config_STAT_OK;
 }

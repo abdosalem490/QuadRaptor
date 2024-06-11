@@ -69,10 +69,6 @@
  * Configuration Constants
  *******************************************************************************/
 
-
-
-
-
 /******************************************************************************
  * Macros
  *******************************************************************************/
@@ -90,12 +86,14 @@ typedef enum {
 } MCAL_Config_ErrStat_t;
 
 /**
- * @brief: this is the struct that deals with adxl345
+ * @brief: this is the struct that deals with spi
 */
 typedef struct{
     SPI_TypeDef* SPI;           /**< this is which SPI to use with ADXL345 */
+    GPIO_TypeDef* GPIO;         /**< this is which GPIO the CSS pin is connected to use with ADXL345 */
+    uint16_t SlavePin;          /**< this is which pin is for CSS for ADXL345 */
     SPI_InitTypeDef spiConfig;  /**< this the configuration for the SPI*/
-} MCAL_CONFIG_ADXLl345SPI_t;
+} MCAL_CONFIG_SPI_t;
 
 /******************************************************************************
  * Variables
@@ -104,7 +102,7 @@ typedef struct{
 /**
  * @brief: to use the variable in HAL library
 */
-extern MCAL_CONFIG_ADXLl345SPI_t MCAL_CFG_adxlSPI;
+extern MCAL_CONFIG_SPI_t MCAL_CFG_adxlSPI;
 
 
 // TODO: define pins configurations as a table here to be read by configuration function to configure all pins (MCAL Module task)

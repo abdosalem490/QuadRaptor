@@ -80,5 +80,22 @@
  * Function Prototypes
  *******************************************************************************/
 
+/**
+ * @brief: used to write data to single register ADXL address
+*/
+void HAL_ADXL345_Write_Single(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8Register_Address, uint8_t arg_u8Data);
+
+/**
+ * @brief: used to read register content from a single register ADXL register
+*/
+uint8_t HAL_ADXL345_Read_Single(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8RegisterAddress);
+
+/**
+ * @brief: make a use of ADXL345 feature to write data to consecutive ADXL345 register addresses without writing address of the register every time as we just insert the initial register address and any sequence writing on SPI will shift that pointer automatically and write data on SPI on the next ADXL345 register address
+*/
+void HAL_ADXL345_Write_Mutliple(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8RegisterStartAddress, uint8_t* arg_pu8Data, uint8_t arg_u8Len);
+
+
+
 /*** End of File **************************************************************/
 #endif /*HAL_ADXL345_PRIVATE_H_*/

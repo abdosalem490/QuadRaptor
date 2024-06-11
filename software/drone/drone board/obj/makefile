@@ -19,6 +19,7 @@ RM := rm -rf
 -include Code/MCAL/Debug/subdir.mk
 -include Code/MCAL/Core/subdir.mk
 -include Code/MCAL/Config/subdir.mk
+-include Code/HAL/Config/subdir.mk
 -include Code/HAL/ADXL345/subdir.mk
 -include Code/APP/subdir.mk
 -include subdir.mk

@@ -231,6 +231,15 @@ void Task_CollectSensorData(void)
 {
     while (1)
     {
+        // read accelerometer data
+        
+        // read gyroscope data
+
+        // read barometer data
+
+        // read temperature data
+
+
 
     }
 }
@@ -286,6 +295,7 @@ int main(void)
 	RCC_GetClocksFreq(&test);
 
     // configure the sensors
+    // HAL_ConfigAllSensors();
     
     
     // configure NVIC

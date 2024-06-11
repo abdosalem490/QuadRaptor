@@ -39,9 +39,7 @@
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
  * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
- * |    21/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_StartSchedular'.               |
- * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_CreateBlockingQueue'.          |
- * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_AppendToBlockingQueue'.        |
+ * |    24/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'HAL_Config_ConfigAllHW'.                    |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
  
@@ -49,47 +47,26 @@
 /******************************************************************************
  * Includes
  *******************************************************************************/
-/**
- * @reason: contains standard definitions for standard integers
- */
-#include "stdint.h"
 
 /**
- * @reason: contains definition for NULL
- */
-#include "common.h"
+ * @reason: contains the function declarations
+*/
+#include "HAL_config.h"
 
 /**
- * @reason: contains constants common values
- */
+ * @reason: contains definitions for ENABLE and DISABLE
+*/
 #include "constants.h"
 
 /**
- * @reason: contains useful functions that deals with bit level math
- */
-#include "math_btt.h"
-
-
-/**
- * @reason: contains definition for our functions
+ * @reason: contains definitions for ADXL345 functions and structs
 */
-#include "Service_RTOS_wrapper.h"
-
-
-/**
- * @reason: contains functions of our RTOS
- */
-#include "FreeRTOS.h"
+#include "ADXL345_config.h"
 
 /**
- * @reason: contains functions related to RTOS tasks
+ * @reason: contains initialization function for ADXL345
 */
-#include "task.h"
-
-/**
- * @reason: contains functions related to RTOS queues
-*/
-#include "queue.h"
+#include "ADXL345_header.h"
 
 /******************************************************************************
  * Module Preprocessor Constants
@@ -107,6 +84,11 @@
  * Module Variable Definitions
  *******************************************************************************/
 
+/**
+ * @brief: a variable through which we will deal with ADXL345
+ */
+HAL_ADXL345_config_t global_adxl345Config_t;
+
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -119,88 +101,28 @@
 /**
  * 
 */
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_TaskCreate(SERVICE_RTOS_TaskFunction_t arg_pFuncTaskFunction, const char * const arg_pu8TaskName, uint16_t arg_u16TaskStackDepth, uint32_t arg_u32TaskPriority, RTOS_TaskHandle_t* arg_pTaskHandle)
+HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void)
 {
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+    // configure ADXL345
+    global_adxl345Config_t.bandwidth_rate = HAL_ADXL345_BW_RATE_800HZ;
+    global_adxl345Config_t.enableFullRange = LIB_CONSTANTS_ENABLED;
+    global_adxl345Config_t.g_range = HAL_ADXL345_G_RANGE_8;
+    global_adxl345Config_t.int_pol = HAL_ADXL345_INT_POL_ACT_LOW;
+    global_adxl345Config_t.int0_src = HAL_ADXL345_INT_SRC_DATA_READY;
+    global_adxl345Config_t.int1_src = HAL_ADXL345_INT_SRC_FREE_FALL;
+    HAL_ADXL345_Init(&global_adxl345Config_t, &MCAL_CFG_adxlSPI);
 
-    if(NULL == arg_pFuncTaskFunction || NULL == arg_pu8TaskName  || 0 == arg_u16TaskStackDepth  || NULL == arg_pTaskHandle)
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else{
-        // create the task
-        xTaskCreate((TaskFunction_t)arg_pFuncTaskFunction,
-                (const char *)arg_pu8TaskName,
-                (uint16_t)arg_u16TaskStackDepth,
-                (void *)NULL,
-                (UBaseType_t)arg_u32TaskPriority,
-                (TaskHandle_t *)&arg_pTaskHandle);
-    }
 
-    return local_ErrStatus;
+    // configure 
+
+    return HAL_Config_STAT_OK;
 }
 
 
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_StartSchedular(void)
-{
-    vTaskStartScheduler();
 
-    return SERVICE_RTOS_STAT_OK;
-}
 
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CreateBlockingQueue(uint16_t arg_u16QueueLen, uint16_t arg_u16ElementSize, RTOS_QueueHandle_t* arg_pQueueHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-
-    if(0 == arg_u16QueueLen|| 0 == arg_u16ElementSize  || NULL == arg_pQueueHandle) 
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else
-    {
-        *arg_pQueueHandle = xQueueCreate((UBaseType_t)arg_u16QueueLen, (UBaseType_t) arg_u16ElementSize);
-
-        if(NULL == arg_pQueueHandle)
-        {
-            local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-        }
-        else
-        {
-            // do nothing
-        }
-    }
-
-    return local_ErrStatus;
-}
-
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToAdd, RTOS_QueueHandle_t arg_QueueHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-
-    if(NULL == arg_pItemToAdd || NULL == arg_QueueHandle)
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else
-    {
-        if(xQueueSendToBack((QueueHandle_t)arg_QueueHandle, (const void *)arg_pItemToAdd, (TickType_t)(arg_u32TimeoutMS / portTICK_PERIOD_MS)) != pdPASS)
-        {
-            local_ErrStatus = SERVICE_RTOS_STAT_QUEUE_FULL;
-        }
-    }
-
-    return local_ErrStatus;
-}
 /*************** END OF FUNCTIONS ***************************************************************************/
- 
+
+
 // to be the IdleTask (called when no other tasks are running)
 // void vApplicationIdleHook( void );
