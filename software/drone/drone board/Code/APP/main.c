@@ -249,6 +249,8 @@ void Task_CollectSensorData(void)
         // read accelerometer data
         HAL_WRAPEPR_ReadAcc(&global_Acc_t);
 
+        // Delay_Ms(5);
+
         // read gyroscope data
 
         // read barometer data
@@ -343,26 +345,26 @@ int main(void)
                 TASK_SENSOR_COLLECT_PRIO,
                 &task_CollectSensorData_Handle_t);
 
-    // create a task for fusing sensor data
-    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_SensorFusion,
-                "Sensor Fusion",
-                TASK_SENSOR_FUSION_STACK_SIZE,
-                TASK_SENSOR_FUSION_PRIO,
-                &task_SensorFusion_Handle_t);
+    // // create a task for fusing sensor data
+    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_SensorFusion,
+    //             "Sensor Fusion",
+    //             TASK_SENSOR_FUSION_STACK_SIZE,
+    //             TASK_SENSOR_FUSION_PRIO,
+    //             &task_SensorFusion_Handle_t);
 
-    // create a task for communication with app board 
-    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
-                "App Communication",
-                TASK_APP_COMM_STACK_SIZE,
-                TASK_APP_COMM_PRIO,
-                &task_AppComm_Handle_t);
+    // // create a task for communication with app board 
+    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
+    //             "App Communication",
+    //             TASK_APP_COMM_STACK_SIZE,
+    //             TASK_APP_COMM_PRIO,
+    //             &task_AppComm_Handle_t);
 
-    // create a task for master
-    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_Master,
-                "Master",
-                TASK_MASTER_STACK_SIZE,
-                TASK_MASTER_PRIO,
-                &task_Master_Handle_t);
+    // // create a task for master
+    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_Master,
+    //             "Master",
+    //             TASK_MASTER_STACK_SIZE,
+    //             TASK_MASTER_PRIO,
+    //             &task_Master_Handle_t);
 
     // start the schedular
     SERVICE_RTOS_StartSchedular();

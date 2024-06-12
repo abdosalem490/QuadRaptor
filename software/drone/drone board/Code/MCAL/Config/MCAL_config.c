@@ -173,7 +173,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_dummy_t.GPIO_Pin = GPIO_Pin_5;
     GPIO_Init(GPIOA, &local_dummy_t);
 
-    local_dummy_t.GPIO_Mode = GPIO_Mode_AF_PP;
+    local_dummy_t.GPIO_Mode = GPIO_Mode_IN_FLOATING;
     local_dummy_t.GPIO_Pin = GPIO_Pin_6;
     GPIO_Init(GPIOA, &local_dummy_t);
 
@@ -300,7 +300,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     MCAL_CFG_adxlSPI.spiConfig.SPI_CPOL = SPI_CPOL_High;
     MCAL_CFG_adxlSPI.spiConfig.SPI_CPHA = SPI_CPHA_2Edge;
     MCAL_CFG_adxlSPI.spiConfig.SPI_NSS = SPI_NSS_Soft;
-    MCAL_CFG_adxlSPI.spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;
+    MCAL_CFG_adxlSPI.spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32; //SPI_BaudRatePrescaler_32; 
     MCAL_CFG_adxlSPI.spiConfig.SPI_FirstBit = SPI_FirstBit_MSB;
     MCAL_CFG_adxlSPI.spiConfig.SPI_CRCPolynomial = 0b101;
     SPI_Init(SPI1, &MCAL_CFG_adxlSPI.spiConfig);

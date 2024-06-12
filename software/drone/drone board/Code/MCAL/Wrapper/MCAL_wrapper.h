@@ -90,12 +90,12 @@ typedef enum {
  *******************************************************************************/
 
 /**
- *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint8_t* args_pu16InData, uint16_t arg_u32Len, uint8_t *args_pu16OutData);
+ *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint8_t* args_pu8InData, uint16_t arg_u16Len, uint8_t *args_pu8OutData);
  *  \b Description                              :       this functions is used as a wrapper function to the function of sending SPI data.
  *  @param  arg_pSPI [IN]                       :       pointer to the function that will represent our task to be executed
- *  @param  args_pu16InData [IN]                :       base address of data to be transferred.
+ *  @param  args_pu8InData [IN]                 :       base address of data to be transferred.
  *  @param  arg_u16Len [IN]                     :       length of data to be transferred.
- *  @param  args_u16OutData [OUT]               :       base address to store the received data from the SPI upon transfer.
+ *  @param  args_u8OutData [OUT]                :       base address to store the received data from the SPI upon transfer.
  *                                                      make args_u16OutData = NULL incase you don't want to receive anything
  *  @note                                       :       this is a polling function halting the process execution until the SPI data is transferred.
  *  \b PRE-CONDITION                            :       make sure to call configure the configuration file in the current directory.
@@ -131,7 +131,7 @@ typedef enum {
  * </table><br><br>
  * <hr>
  */
-MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint8_t* args_pu16InData, uint16_t arg_u16Len, uint8_t *args_pu16OutData);
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint8_t* args_pu8InData, uint16_t arg_u16Len, uint8_t *args_pu8OutData);
 
 /*** End of File **************************************************************/
 #endif /*MCAL_WRAPPER_HEADER_H_*/

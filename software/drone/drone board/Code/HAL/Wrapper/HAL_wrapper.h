@@ -89,9 +89,9 @@ typedef enum {
  */
 typedef struct
 {
-  uint16_t x; /**< acceleration in x-direction */
-  uint16_t y; /**< acceleration in y-direction */
-  uint16_t z; /**< acceleration in z-direction */
+  int16_t x; /**< acceleration in x-direction */
+  int16_t y; /**< acceleration in y-direction */
+  int16_t z; /**< acceleration in z-direction */
 } HAL_WRAPPER_Acc_t;
 
 

@@ -128,8 +128,8 @@
 */
 void HAL_ADXL345_Write_Single(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8Register_Address, uint8_t arg_u8Data) {
 
-  uint16_t local_p16ArrData[] = {arg_u8Register_Address & 0x3F, arg_u8Data};
-  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) local_p16ArrData, 2, NULL);
+  uint8_t local_pu8ArrData[] = {arg_u8Register_Address & 0x3F, arg_u8Data};
+  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) local_pu8ArrData, 2, NULL);
 }
 
 /**
@@ -138,6 +138,7 @@ void HAL_ADXL345_Write_Single(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8Reg
 uint8_t HAL_ADXL345_Read_Single(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8RegisterAddress)
 {
   uint8_t local_u8Data = 0x80 | arg_u8RegisterAddress;
+  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) &local_u8Data, 1, (uint8_t*) &local_u8Data);
   MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) &local_u8Data, 1, (uint8_t*) &local_u8Data);
   return local_u8Data;
 }
@@ -161,9 +162,9 @@ void HAL_ADXL345_Write_Mutliple(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8R
 HAL_ADXL345_ErrStates_t HAL_ADXL345_Init(HAL_ADXL345_config_t* arg_pADXLConfig, MCAL_CONFIG_SPI_t* arg_pADXLSPI)
 {
 
-    HAL_ADXL345_Read_Single(arg_pADXLSPI, HAL_ADXL345_REG_DEVID);
+	uint8_t local_u8Temp = HAL_ADXL345_Read_Single(arg_pADXLSPI, HAL_ADXL345_REG_DEVID);
 
-    uint8_t local_u8Temp = 0;
+	local_u8Temp = 0;
     
     // TODO: configure free-fall if needed
 
@@ -210,23 +211,13 @@ HAL_ADXL345_ErrStates_t HAL_ADXL345_Init(HAL_ADXL345_config_t* arg_pADXLConfig, 
 HAL_ADXL345_ErrStates_t HAL_ADXL345_ReadAcc(MCAL_CONFIG_SPI_t* arg_pADXLSPI, HAL_ADXL345_Acc_t* arg_pReadings_t) 
 {
 
-  uint8_t local_u8Dummy[] = {0xC0 | HAL_ADXL345_REG_DATAX0};
-  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) local_u8Dummy, 1, NULL);
+  uint8_t local_u8Dummy[7] = {0};
+  local_u8Dummy[0] = 0xC0 | HAL_ADXL345_REG_DATAX0;
+  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) local_u8Dummy, 7, (uint8_t*) local_u8Dummy);
 
-  local_u8Dummy[0] = 0;
-  local_u8Dummy[1] = 0;
-  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) local_u8Dummy, 2, (uint8_t*) local_u8Dummy);
-  arg_pReadings_t->x = local_u8Dummy[1] << 8 | local_u8Dummy[0];
-  
-  local_u8Dummy[0] = 0;
-  local_u8Dummy[1] = 0;
-  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) local_u8Dummy, 1, (uint8_t*) local_u8Dummy);
-  arg_pReadings_t->y = local_u8Dummy[1] << 8 | local_u8Dummy[0];
-
-  local_u8Dummy[0] = 0;
-  local_u8Dummy[1] = 0;
-  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) local_u8Dummy, 1, (uint8_t*) local_u8Dummy);
-  arg_pReadings_t->z = local_u8Dummy[1] << 8 | local_u8Dummy[0];
+  arg_pReadings_t->x = local_u8Dummy[2] << 8 | local_u8Dummy[1];
+  arg_pReadings_t->y = local_u8Dummy[4] << 8 | local_u8Dummy[3];
+  arg_pReadings_t->z = local_u8Dummy[6] << 8 | local_u8Dummy[5];
 
   return HAL_ADXL345_OK;
 }

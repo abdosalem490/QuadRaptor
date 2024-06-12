@@ -95,21 +95,25 @@
 /**
  * 
  */
-MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint8_t* args_pu16InData, uint16_t arg_u16Len, uint8_t *args_pu16OutData)
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint8_t* args_pu8InData, uint16_t arg_u16Len, uint8_t *args_pu8OutData)
 {
-    if(NULL == arg_pSPI || NULL == args_pu16InData)
+    if(NULL == arg_pSPI || NULL == args_pu8InData)
         return MCAL_WRAPPER_STAT_INVALID_PARAMS;
 
     GPIO_ResetBits(arg_pSPI->GPIO, arg_pSPI->SlavePin);
 
     while (arg_u16Len > 0)
     {
-        SPI_I2S_SendData(arg_pSPI->SPI, *args_pu16InData);
-        args_pu16InData++;
-        if(args_pu16OutData != NULL)
-            *args_pu16OutData = SPI_I2S_ReceiveData(arg_pSPI->SPI);
-        while(SPI_I2S_GetFlagStatus(arg_pSPI->SPI, SPI_I2S_FLAG_TXE) != SET);
-        while(SPI_I2S_GetFlagStatus(arg_pSPI->SPI, SPI_I2S_FLAG_BSY) == SET);
+        SPI_I2S_SendData(arg_pSPI->SPI, *args_pu8InData);
+        args_pu8InData++;
+        if(args_pu8OutData != NULL)
+        {
+            while(SPI_I2S_GetFlagStatus(arg_pSPI->SPI, SPI_I2S_FLAG_TXE) != SET);
+            while(SPI_I2S_GetFlagStatus(arg_pSPI->SPI, SPI_I2S_FLAG_BSY) == SET);
+            *args_pu8OutData = SPI_I2S_ReceiveData(arg_pSPI->SPI);
+            args_pu8OutData++;
+        }
+
         arg_u16Len--;
     }
 
