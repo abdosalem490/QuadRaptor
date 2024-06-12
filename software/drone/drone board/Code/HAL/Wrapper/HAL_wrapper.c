@@ -1,9 +1,9 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   wrapper file for the MCAL layer functions                                                                   |
- * |    @file           :   MCAL_config.h                                                                                               |
+ * |    @title          :   wrapper file for the HAL layer functions                                                                    |
+ * |    @file           :   HAL_wrapper.c                                                                                               |
  * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   25/05/2024                                                                                                  |
+ * |    @origin_date    :   12/06/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
  * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
@@ -11,7 +11,7 @@
  * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this file is a wrapper file for the MCAL layer so that when we change MCAL, the code could be portable      |
+ * |    @brief          :   this file is a wrapper file for the HAL layer so that when we change HAL, the code could be portable.       |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
@@ -38,100 +38,84 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    25/05/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
- * |    11/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPEPR_SPI_POLL_TRANSFER'.                       |
+ * |    12/06/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
-
-
-#ifndef MCAL_WRAPPER_HEADER_H_
-#define MCAL_WRAPPER_HEADER_H_
+ 
 
 /******************************************************************************
  * Includes
  *******************************************************************************/
 
 /**
- * @reason: contains definition struct for SPI
+ * @reason: contains definition for HAL wrapper
  */
-#include "MCAL_config.h"
-
-/******************************************************************************
- * Preprocessor Constants
- *******************************************************************************/
-
-/******************************************************************************
- * Configuration Constants
- *******************************************************************************/
-
-/******************************************************************************
- * Macros
- *******************************************************************************/
-
-/******************************************************************************
- * Typedefs
- *******************************************************************************/
+#include "HAL_wrapper.h"
 
 /**
- * @brief: contains error states for this module
+ * @reason: contains definitions and decelerations for functions/variables for MCAL wrapper
 */
-typedef enum {
-  MCAL_WRAPPER_STAT_OK,
-  MCAL_WRAPPER_STAT_INVALID_PARAMS,
-} MCAL_WRAPPER_ErrStat_t;
+#include "MCAL_wrapper.h"
 
+/**
+ * @reason: contains common definitions
+ */
+#include "common.h"
+
+/**
+ * @reason: contains definitions from ADXL345 interface
+ */
+#include "ADXL345_header.h"
 
 /******************************************************************************
- * Variables
+ * Module Preprocessor Constants
  *******************************************************************************/
+
+/******************************************************************************
+ * Module Preprocessor Macros
+ *******************************************************************************/
+
+/******************************************************************************
+ * Module Typedefs
+ *******************************************************************************/
+
+/******************************************************************************
+ * Module Variable Definitions
+ *******************************************************************************/
+HAL_ADXL345_Acc_t global_ADXL345ACC_t = {0};
 
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 
-/**
- *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint8_t* args_pu16InData, uint16_t arg_u32Len, uint8_t *args_pu16OutData);
- *  \b Description                              :       this functions is used as a wrapper function to the function of sending SPI data.
- *  @param  arg_pSPI [IN]                       :       pointer to the function that will represent our task to be executed
- *  @param  args_pu16InData [IN]                :       base address of data to be transferred.
- *  @param  arg_u16Len [IN]                     :       length of data to be transferred.
- *  @param  args_u16OutData [OUT]               :       base address to store the received data from the SPI upon transfer.
- *                                                      make args_u16OutData = NULL incase you don't want to receive anything
- *  @note                                       :       this is a polling function halting the process execution until the SPI data is transferred.
- *  \b PRE-CONDITION                            :       make sure to call configure the configuration file in the current directory.
- *  \b POST-CONDITION                           :       None.
- *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @MCAL_WRAPPER_ErrStat_t in "MCAL_wrapper.h")
- *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
- *
- *  \b Example:
- * @code
- * 
- * #include "MCAL_wrapper.h"
- * 
- * 
- * int main() {
- * 
- * MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
- * if(MCAL_Config_STAT_OK == local_errState)
- * {
- *  uint8_t temp = 0;
- *  local_errState = MCAL_WRAPEPR_SPI_POLL_TRANSFER(&MCAL_CFG_adxlSPI, 15, &temp);
- *  if(MCAL_WRAPPER_STAT_OK == local_errState)
- *  {
- *  
- *  }
- * }
- * 
- * @endcode
- *
- * <br><b> - HISTORY OF CHANGES - </b>
- * <table align="left" style="width:800px">
- * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 11/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
- * </table><br><br>
- * <hr>
- */
-MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint8_t* args_pu16InData, uint16_t arg_u16Len, uint8_t *args_pu16OutData);
+/******************************************************************************
+ * Function Definitions
+ *******************************************************************************/
 
-/*** End of File **************************************************************/
-#endif /*MCAL_WRAPPER_HEADER_H_*/
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc)
+{
+    if(NULL == arg_pAcc)
+        return HAL_WRAPPER_STAT_INVALID_PARAMS;
+
+    // read the accelerometer data from ADXL345
+    HAL_ADXL345_ReadAcc(&MCAL_CFG_adxlSPI, &global_ADXL345ACC_t);
+
+    // TODO: read acceleration from MPU6050
+
+    arg_pAcc->x = global_ADXL345ACC_t.x;
+    arg_pAcc->y = global_ADXL345ACC_t.y;
+    arg_pAcc->z = global_ADXL345ACC_t.z;
+
+    return MCAL_WRAPPER_STAT_OK;
+}
+
+
+
+/*************** END OF FUNCTIONS ***************************************************************************/
+
+
+// to be the IdleTask (called when no other tasks are running)
+// void vApplicationIdleHook( void );

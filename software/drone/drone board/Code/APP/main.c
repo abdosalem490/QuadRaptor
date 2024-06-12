@@ -63,6 +63,18 @@
 */
 #include "MCAL_config.h"
 
+/**
+ * @reason: initialization of the all the external hardware
+ */
+#include "HAL_config.h"
+
+/**
+ * @reason: contains wrapper functions for HAL layer
+ */
+#include "HAL_wrapper.h"
+
+
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -215,6 +227,9 @@ RTOS_TaskHandle_t task_AppComm_Handle_t;
 */
 RTOS_TaskHandle_t task_Master_Handle_t;
 
+/************************************************************************/
+HAL_WRAPPER_Acc_t global_Acc_t = {0};
+
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -232,7 +247,8 @@ void Task_CollectSensorData(void)
     while (1)
     {
         // read accelerometer data
-        
+        HAL_WRAPEPR_ReadAcc(&global_Acc_t);
+
         // read gyroscope data
 
         // read barometer data
@@ -289,17 +305,15 @@ int main(void)
     // Configure/enable Clock and all needed peripherals 
     SystemInit();
     SystemCoreClockUpdate();
-    MCAL_Config_ConfigAllPins();
 
-	RCC_ClocksTypeDef test = {0};
-	RCC_GetClocksFreq(&test);
-
-    // configure the sensors
-    // HAL_ConfigAllSensors();
-    
-    
     // configure NVIC
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+
+    // configure all pins and peripherals 
+    MCAL_Config_ConfigAllPins();
+
+    // configure the external hardware as sensors, motors, etc... 
+    HAL_Config_ConfigAllHW();
 
     // create the Queue for sensor collection data task to put its data into it
     SERVICE_RTOS_CreateBlockingQueue(QUEUE_RAW_SENSOR_DATA_LEN,

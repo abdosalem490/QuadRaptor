@@ -21,6 +21,7 @@ SUBDIRS := \
 Code/APP \
 Code/HAL/ADXL345 \
 Code/HAL/Config \
+Code/HAL/Wrapper \
 Code/MCAL/Config \
 Code/MCAL/Core \
 Code/MCAL/Debug \

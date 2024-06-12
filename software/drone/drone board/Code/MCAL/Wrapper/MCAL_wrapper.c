@@ -95,7 +95,7 @@
 /**
  * 
  */
-MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint16_t* args_pu16InData, uint16_t arg_u16Len, uint16_t *args_pu16OutData)
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint8_t* args_pu16InData, uint16_t arg_u16Len, uint8_t *args_pu16OutData)
 {
     if(NULL == arg_pSPI || NULL == args_pu16InData)
         return MCAL_WRAPPER_STAT_INVALID_PARAMS;
