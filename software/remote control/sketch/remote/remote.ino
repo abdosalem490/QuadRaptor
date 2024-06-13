@@ -127,7 +127,7 @@ typedef struct{
   int8_t yaw;
   bool turnOnLeds;
   bool playMusic;
-}move_command_t;
+} move_command_t;
 
 
 // struct defines data that holds info coming from the drone like temperature, battery charge, etc...
@@ -275,7 +275,7 @@ void setup()
   myRadio.setChannel(115); 
   myRadio.setPALevel(RF24_PA_MAX);
   myRadio.setDataRate( RF24_1MBPS ); 
-  myRadio.openWritingPipe( addresses[0]);
+  myRadio.openWritingPipe(addresses[0]);
   myRadio.openReadingPipe(1, addresses[1]);
 
   delay(1000);
@@ -412,9 +412,7 @@ void loop()
     
     myRadio.stopListening();
     while(myRadio.write(&data, sizeof(data)));
-    myRadio.startListening();
-
-    
+    myRadio.startListening();    
   }
 
   // read incoming traffic if any

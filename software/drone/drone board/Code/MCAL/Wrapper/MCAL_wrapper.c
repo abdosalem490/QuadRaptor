@@ -40,6 +40,8 @@
  * |    Date            Version         Author                          Description                                                     |
  * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
  * |    11/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPEPR_SPI_POLL_TRANSFER'.                       |
+ * |    12/06/2023      1.0.0           Mohab Zaghloul                  created 'I2C_start_transmission', 'I2C_write', 'I2C_stop',      |
+ * |                                                                            'I2C_requestFrom', 'I2C_read' functions.                |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
  
@@ -64,9 +66,19 @@
 #include "ch32v20x_spi.h"
 
 /**
+ * @reason: contains I2C funcitonality
+ */
+#include "ch32v20x_i2c.h"
+
+/**
  * @reason: contains common definitions
  */
 #include "common.h"
+
+/**
+ * @reason: contains some configuration constants
+ */
+#include "MPU6050.h"
 
 /******************************************************************************
  * Module Preprocessor Constants
@@ -105,11 +117,11 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSP
     while (arg_u16Len > 0)
     {
         SPI_I2S_SendData(arg_pSPI->SPI, *args_pu8InData);
+        while(SPI_I2S_GetFlagStatus(arg_pSPI->SPI, SPI_I2S_FLAG_TXE) != SET);
+        while(SPI_I2S_GetFlagStatus(arg_pSPI->SPI, SPI_I2S_FLAG_BSY) == SET);        
         args_pu8InData++;
         if(args_pu8OutData != NULL)
         {
-            while(SPI_I2S_GetFlagStatus(arg_pSPI->SPI, SPI_I2S_FLAG_TXE) != SET);
-            while(SPI_I2S_GetFlagStatus(arg_pSPI->SPI, SPI_I2S_FLAG_BSY) == SET);
             *args_pu8OutData = SPI_I2S_ReceiveData(arg_pSPI->SPI);
             args_pu8OutData++;
         }
@@ -124,8 +136,75 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSP
 
 
 
+/**
+ * 
+ */
+void I2C_start_transmission(uint8_t receiver_address, uint8_t master_receive){
+    uint8_t i2c_dir = I2C_Direction_Transmitter;
+    uint32_t i2c_event = I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED;
+
+    if(master_receive){
+        i2c_dir = I2C_Direction_Receiver;
+        i2c_event = I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED;
+    }
+
+    while( I2C_GetFlagStatus( I2C2, I2C_FLAG_BUSY ) != RESET );
+
+    I2C_GenerateSTART(I2C2, ENABLE);
+    while( !I2C_CheckEvent( I2C2, I2C_EVENT_MASTER_MODE_SELECT ) );
+
+    I2C_Send7bitAddress(I2C2, receiver_address << 1, i2c_dir);
+    while( !I2C_CheckEvent( I2C2, i2c_event ) );
+}
+
+/**
+ * 
+ */
+void I2C_write(uint8_t value){
+    while(I2C_GetFlagStatus(I2C2, I2C_FLAG_TXE)!=SET);
+    I2C_SendData(I2C2, value);
+}
+
+/**
+ * 
+ */
+void I2C_stop(){
+    while(I2C_GetFlagStatus(I2C2, I2C_FLAG_TXE)!=SET);
+    I2C_GenerateSTOP(I2C2, ENABLE);
+}
+
+/**
+ * 
+ */
+uint8_t I2C_read(){
+    static uint8_t i = 0;
+    uint8_t result = RxData[i];
+    i = (i+1) % I2C_Rx_BUFFER_SIZE;
+    return result;
+}
+
+/**
+ * 
+ */
+uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity){
+    uint8_t i = 0;
+
+    I2C_start_transmission(address, MASTER_RECEIVER_MODE);
+
+    while(i < I2C_Rx_BUFFER_SIZE){
+        if( I2C_GetFlagStatus( I2C2, I2C_FLAG_RXNE ) !=  RESET ){
+            RxData[i] = I2C_ReceiveData( I2C2 );
+            i++;
+        }
+        if(i == I2C_Rx_BUFFER_SIZE-1) I2C_NACKPositionConfig(I2C2, I2C_NACKPosition_Next);
+    }
+
+    while(I2C_GetFlagStatus(I2C2, I2C_FLAG_RXNE)!=SET);
+    I2C_GenerateSTOP(I2C2, ENABLE);
+
+    return i;
+}
+
+
+
 /*************** END OF FUNCTIONS ***************************************************************************/
-
-
-// to be the IdleTask (called when no other tasks are running)
-// void vApplicationIdleHook( void );

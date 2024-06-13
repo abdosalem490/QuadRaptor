@@ -40,6 +40,8 @@
  * |    Date            Version         Author                          Description                                                     |
  * |    25/05/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
  * |    11/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPEPR_SPI_POLL_TRANSFER'.                       |
+ * |    12/06/2023      1.0.0           Mohab Zaghloul                  created 'I2C_start_transmission', 'I2C_write', 'I2C_stop',      |
+ * |                                                                            'I2C_requestFrom', 'I2C_read' functions.                |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -55,6 +57,12 @@
  * @reason: contains definition struct for SPI
  */
 #include "MCAL_config.h"
+
+
+/**
+ * @reason: contains standard definitions for int
+ */
+#include "stdint.h"
 
 /******************************************************************************
  * Preprocessor Constants
@@ -132,6 +140,150 @@ typedef enum {
  * <hr>
  */
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_SPI_POLL_TRANSFER(MCAL_CONFIG_SPI_t *arg_pSPI, uint8_t* args_pu8InData, uint16_t arg_u16Len, uint8_t *args_pu8OutData);
+
+
+
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       None.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       None
+ *
+ *  \b Example:
+ * @code
+ * 
+ *          None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 12/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void I2C_start_transmission(uint8_t receiver_address, uint8_t master_receive);
+
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       None.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       None
+ *
+ *  \b Example:
+ * @code
+ * 
+ *          None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 12/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void I2C_write(uint8_t value);
+
+
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       None.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       None
+ *
+ *  \b Example:
+ * @code
+ * 
+ *          None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 12/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void I2C_stop();
+
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       None.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       None
+ *
+ *  \b Example:
+ * @code
+ * 
+ *          None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 12/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity);
+
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       None.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       None
+ *
+ *  \b Example:
+ * @code
+ * 
+ *          None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 12/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+uint8_t I2C_read();
+
 
 /*** End of File **************************************************************/
 #endif /*MCAL_WRAPPER_HEADER_H_*/

@@ -55,7 +55,7 @@ void setup()
   myRadio.setChannel(115); 
   myRadio.setPALevel(RF24_PA_MAX);
   myRadio.setDataRate( RF24_1MBPS ) ; 
-  myRadio.openWritingPipe( addresses[1]);
+  myRadio.openWritingPipe(addresses[1]);
   myRadio.openReadingPipe(1, addresses[0]);
 
   infoTime = millis();

@@ -248,10 +248,9 @@ void Task_CollectSensorData(void)
     {
         // read accelerometer data
         HAL_WRAPEPR_ReadAcc(&global_Acc_t);
-
-        // Delay_Ms(5);
-
+        
         // read gyroscope data
+        
 
         // read barometer data
 

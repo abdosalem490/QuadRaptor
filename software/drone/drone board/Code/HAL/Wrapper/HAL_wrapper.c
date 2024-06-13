@@ -67,6 +67,11 @@
  */
 #include "ADXL345_header.h"
 
+/**
+ * @reason: contains definitions for MPU6050
+ */
+#include "MPU6050.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -83,6 +88,8 @@
  * Module Variable Definitions
  *******************************************************************************/
 HAL_ADXL345_Acc_t global_ADXL345ACC_t = {0};
+mpu6050_acc_t global_MPU6050ACC_t = {0};
+mpu6050_gyro_t global_MPU6050GYRO_t = {0};
 
 /******************************************************************************
  * Function Prototypes
@@ -100,10 +107,27 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc)
     if(NULL == arg_pAcc)
         return HAL_WRAPPER_STAT_INVALID_PARAMS;
 
-    // read the accelerometer data from ADXL345
-    HAL_ADXL345_ReadAcc(&MCAL_CFG_adxlSPI, &global_ADXL345ACC_t);
+    // TODO: try reading from ADXL345 around 30 times and see what happens
 
-    // TODO: read acceleration from MPU6050
+    float avg_x = 0.0;
+    float avg_y = 0.0;
+    float avg_z = 0.0;
+
+    // read the accelerometer data from ADXL345
+    for(int i = 0; i < 30; i++)
+    {
+    	HAL_ADXL345_ReadAcc(&MCAL_CFG_adxlSPI, &global_ADXL345ACC_t);
+    	avg_x += (global_ADXL345ACC_t.x / 30.0);
+    	avg_y += (global_ADXL345ACC_t.y / 30.0);
+    	avg_z += (global_ADXL345ACC_t.z / 30.0);
+    }
+
+    avg_x = (avg_x * 4) / 1000;
+    avg_y = (avg_y * 4) / 1000;
+    avg_z = (avg_z * 4) / 1000;
+
+    // read acceleration from MPU6050
+    // mpu6050_accel_read(&global_MPU6050ACC_t.x, &global_MPU6050ACC_t.y, &global_MPU6050ACC_t.z);
 
     arg_pAcc->x = global_ADXL345ACC_t.x;
     arg_pAcc->y = global_ADXL345ACC_t.y;

@@ -68,6 +68,11 @@
 */
 #include "ADXL345_header.h"
 
+/**
+ * @reason: contains initialization function for MPU6050
+ */
+#include "MPU6050.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -113,7 +118,12 @@ HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void)
     HAL_ADXL345_Init(&global_adxl345Config_t, &MCAL_CFG_adxlSPI);
 
 
-    // configure 
+    // configure MPU6050 accelerometer and gyroscope
+    // mpu6050_init();
+
+    // configure HMC5883L
+
+    // configure BMP280
 
     return HAL_Config_STAT_OK;
 }

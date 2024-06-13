@@ -40,6 +40,7 @@
  * |    Date            Version         Author                          Description                                                     |
  * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
  * |    24/05/2023      1.0.0           Abdelrahman Mohamed Salem       Added configurations for SPI of ADXL345.                        |
+ * |    12/06/2023      1.0.0           Mohab Zaghloul                  Added configurations for I2C of MPU6050.                        |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
  
@@ -63,6 +64,7 @@
  * @reason: to configure the pins
 */
 #include "ch32v20x_gpio.h"
+
 
 /**
  * @reason: contains definitons for peripherals
@@ -149,7 +151,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
 
     // configure the pins 
     /******************************************/
-    local_dummy_t.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    local_dummy_t.GPIO_Mode = GPIO_Mode_IPU;
     local_dummy_t.GPIO_Pin = GPIO_Pin_0;
     GPIO_Init(GPIOA, &local_dummy_t);
 
@@ -300,7 +302,8 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     MCAL_CFG_adxlSPI.spiConfig.SPI_CPOL = SPI_CPOL_High;
     MCAL_CFG_adxlSPI.spiConfig.SPI_CPHA = SPI_CPHA_2Edge;
     MCAL_CFG_adxlSPI.spiConfig.SPI_NSS = SPI_NSS_Soft;
-    MCAL_CFG_adxlSPI.spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32; //SPI_BaudRatePrescaler_32; 
+    // IMPORTANT NOTE: setting prescalar for a value higher than 32 (SPI clock must be aroud 0.5 MHZ) causes some errors (I doubt myself in this line)
+    MCAL_CFG_adxlSPI.spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256; //SPI_BaudRatePrescaler_32; 
     MCAL_CFG_adxlSPI.spiConfig.SPI_FirstBit = SPI_FirstBit_MSB;
     MCAL_CFG_adxlSPI.spiConfig.SPI_CRCPolynomial = 0b101;
     SPI_Init(SPI1, &MCAL_CFG_adxlSPI.spiConfig);
@@ -308,7 +311,17 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     GPIO_SetBits(MCAL_CFG_adxlSPI.GPIO, MCAL_CFG_adxlSPI.SlavePin);
 
     /******************************************/
+    I2C_InitTypeDef I2CConfig;
+    I2CConfig.I2C_ClockSpeed = 400000;
+    I2CConfig.I2C_Mode = I2C_Mode_I2C;
+    I2CConfig.I2C_DutyCycle = I2C_DutyCycle_2;
+    I2CConfig.I2C_OwnAddress1 = 0x2F;
+    I2CConfig.I2C_Ack = I2C_Ack_Enable;
+    I2CConfig.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+    I2C_Init(I2C2, &I2CConfig);
 
+    /******************************************/
+    
 
     return MCAL_Config_STAT_OK;
 }

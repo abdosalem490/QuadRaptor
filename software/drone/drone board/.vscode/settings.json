@@ -17,6 +17,11 @@
         "ch32v20x_spi.h": "c",
         "adxl345_header.h": "c",
         "mcal_wrapper.h": "c",
-        "adxl345_config.h": "c"
-    }
+        "adxl345_config.h": "c",
+        "math.h": "c",
+        "corecrt_math.h": "c",
+        "mpu6050.h": "c",
+        "ch32v20x_gpio.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

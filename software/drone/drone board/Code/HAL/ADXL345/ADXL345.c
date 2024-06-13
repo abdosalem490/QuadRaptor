@@ -137,10 +137,9 @@ void HAL_ADXL345_Write_Single(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8Reg
 */
 uint8_t HAL_ADXL345_Read_Single(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8RegisterAddress)
 {
-  uint8_t local_u8Data = 0x80 | arg_u8RegisterAddress;
-  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) &local_u8Data, 1, (uint8_t*) &local_u8Data);
-  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) &local_u8Data, 1, (uint8_t*) &local_u8Data);
-  return local_u8Data;
+  uint8_t local_pu8ArrData[] = {0x80 | arg_u8RegisterAddress, 0};
+  MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) &local_pu8ArrData, 2, (uint8_t*) &local_pu8ArrData);
+  return local_pu8ArrData[1];
 }
 
 
@@ -172,24 +171,20 @@ HAL_ADXL345_ErrStates_t HAL_ADXL345_Init(HAL_ADXL345_config_t* arg_pADXLConfig, 
     LIB_MATH_BTT_ASSIGN_BITS(local_u8Temp, HAL_ADXL345_REG_BW_RATE_RATE, arg_pADXLConfig->bandwidth_rate, 4);
     HAL_ADXL345_Write_Single(arg_pADXLSPI, HAL_ADXL345_REG_BW_RATE, local_u8Temp);
 
-    // configure INT0 and INT1 for DATA_READY & FREE_FALL
-    uint8_t local_u8TempArr[2] = {0};
-    // LIB_MATH_BTT_SET_BIT(local_u8TempArr[0], HAL_ADXL345_REG_INT_ENABLE_DATA_READY);  
-    // LIB_MATH_BTT_SET_BIT(local_u8TempArr[0], HAL_ADXL345_REG_INT_ENABLE_FREE_FALL);  
-    // LIB_MATH_BTT_SET_BIT(local_u8TempArr[1], HAL_ADXL345_REG_INT_MAP_DATA_READY);      
-    LIB_MATH_BTT_SET_BIT(local_u8TempArr[0], arg_pADXLConfig->int0_src);  
-    LIB_MATH_BTT_SET_BIT(local_u8TempArr[0], arg_pADXLConfig->int1_src);  
-    LIB_MATH_BTT_SET_BIT(local_u8TempArr[1], arg_pADXLConfig->int1_src);  
-    HAL_ADXL345_Write_Mutliple(arg_pADXLSPI, HAL_ADXL345_REG_INT_ENABLE, local_u8TempArr, 2);
-
     // configure Data Format for ADXL345
     local_u8Temp = 0;
-    // LIB_MATH_BTT_SET_BIT(local_u8Temp, HAL_ADXL345_REG_DATA_FORMAT_FULL_RES);  
-    // LIB_MATH_BTT_ASSIGN_BITS(local_u8Temp, HAL_ADXL345_REG_DATA_FORMAT_RANGE, 0b10, 2);
-    // HAL_ADXL345_Write_Single(HAL_ADXL345_REG_DATA_FORMAT, local_u8Temp);
-    LIB_MATH_BTT_ASSIGN_BIT(local_u8Temp, HAL_ADXL345_REG_DATA_FORMAT_FULL_RES, arg_pADXLConfig->enableFullRange);  
+    LIB_MATH_BTT_ASSIGN_BIT(local_u8Temp, HAL_ADXL345_REG_DATA_FORMAT_FULL_RES, arg_pADXLConfig->enableFullRange);
     LIB_MATH_BTT_ASSIGN_BITS(local_u8Temp, HAL_ADXL345_REG_DATA_FORMAT_RANGE, arg_pADXLConfig->g_range, 2);
+    LIB_MATH_BTT_SET_BIT(local_u8Temp, HAL_ADXL345_REG_DATA_FORMAT_INT_INVERT);
     HAL_ADXL345_Write_Single(arg_pADXLSPI, HAL_ADXL345_REG_DATA_FORMAT, local_u8Temp);
+
+    // configure INT0 and INT1 for DATA_READY & FREE_FALL
+    uint8_t local_u8TempArr[2] = {0};
+    LIB_MATH_BTT_SET_BIT(local_u8TempArr[0], arg_pADXLConfig->int0_src);  
+    LIB_MATH_BTT_SET_BIT(local_u8TempArr[0], arg_pADXLConfig->int1_src);
+    LIB_MATH_BTT_SET_BIT(local_u8TempArr[1], arg_pADXLConfig->int0_src);
+    HAL_ADXL345_Write_Single(arg_pADXLSPI, HAL_ADXL345_REG_INT_MAP, local_u8TempArr[1]);
+    HAL_ADXL345_Write_Single(arg_pADXLSPI, HAL_ADXL345_REG_INT_ENABLE, local_u8TempArr[0]);
 
 
     // TODO: update offset registers
@@ -205,19 +200,36 @@ HAL_ADXL345_ErrStates_t HAL_ADXL345_Init(HAL_ADXL345_config_t* arg_pADXLConfig, 
 }
 
 
+#include "ch32v20x_gpio.h"
+
 /**
- * 
+ * IMPORTANT NOTE: IC isn't working, it's either a problem with SPI pins routing or the chip is fake
+ * I bought 2 ADXL345 modules, one from AliExpress and the other from free-electronics and both of them
+ * output random data. so ADXL345 won't be working properly until the IC is bought from a reputable distributor.
+ * until then, ADXL345 isn't debuggable, I even compared this code to already implemented from Sparkfun and both are same concept.
+ *
 */
 HAL_ADXL345_ErrStates_t HAL_ADXL345_ReadAcc(MCAL_CONFIG_SPI_t* arg_pADXLSPI, HAL_ADXL345_Acc_t* arg_pReadings_t) 
 {
 
+  uint8_t local_u8Temp = HAL_ADXL345_Read_Single(arg_pADXLSPI, HAL_ADXL345_REG_DEVID);
+  local_u8Temp = HAL_ADXL345_Read_Single(arg_pADXLSPI, HAL_ADXL345_REG_DATA_FORMAT);
+
   uint8_t local_u8Dummy[7] = {0};
   local_u8Dummy[0] = 0xC0 | HAL_ADXL345_REG_DATAX0;
+
+//  while (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14) == 0x01);
+  
+  
   MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) local_u8Dummy, 7, (uint8_t*) local_u8Dummy);
 
   arg_pReadings_t->x = local_u8Dummy[2] << 8 | local_u8Dummy[1];
   arg_pReadings_t->y = local_u8Dummy[4] << 8 | local_u8Dummy[3];
   arg_pReadings_t->z = local_u8Dummy[6] << 8 | local_u8Dummy[5];
+
+//  arg_pReadings_t->x &= (0b1111111111);
+//  arg_pReadings_t->y &= (0b1111111111);
+//  arg_pReadings_t->z &= (0b1111111111);
 
   return HAL_ADXL345_OK;
 }

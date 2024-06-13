@@ -40,8 +40,17 @@
  * |    Date            Version         Author                          Description                                                     |
  * |    16/03/2024      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
  * |    24/05/2024      1.0.0           Abdelrahman Mohamed Salem       added the initialization function.                              |
+ * |    13/06/2024      1.0.0           Abdelrahman Mohamed Salem       ADXL345 is out of service.                                      |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
+
+/**
+ * IMPORTANT NOTE: IC isn't working, it's either a problem with SPI pins routing or the chip is fake
+ * I bought 2 ADXL345 modules, one from AliExpress and the other from free-electronics and both of them
+ * output random data. so ADXL345 won't be working properly until the IC is bought from a reputable distributor.
+ * until then, ADXL345 isn't debuggable, I even compared this code to already implemented from Sparkfun and both are same concept.
+ * 
+*/
 
 #ifndef HAL_ADXL345_HEADER_H_
 #define HAL_ADXL345_HEADER_H_
@@ -162,7 +171,7 @@ typedef struct {
  * <br><b> - HISTORY OF CHANGES - </b>
  * <table align="left" style="width:800px">
  * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 03/09/2023 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * <tr><td> 10/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
  * </table><br><br>
  * <hr>
  */
@@ -198,7 +207,7 @@ HAL_ADXL345_ErrStates_t HAL_ADXL345_Init(HAL_ADXL345_config_t* arg_pADXLConfig, 
  * <br><b> - HISTORY OF CHANGES - </b>
  * <table align="left" style="width:800px">
  * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 03/09/2023 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * <tr><td> 10/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
  * </table><br><br>
  * <hr>
  */

@@ -1,9 +1,9 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   Wrapper File for RTOS function                                                                              |
- * |    @file           :   Service_RTOS_wrapper.h                                                                                      |
- * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   18/05/2024                                                                                                  |
+ * |    @title          :   header file for MPU 6050                                                                                    |
+ * |    @file           :   MPU6050.h                                                                                                   |
+ * |    @author         :   Mohab Zaghloul                                                                                              |
+ * |    @origin_date    :   12/06/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
  * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
@@ -11,7 +11,7 @@
  * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this header file contains useful functions to easily change RTOS without changing much in code              |
+ * |    @brief          :   this file is the header file for MPU6050 Sensor                                                             |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
@@ -38,45 +38,187 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
+ * |    12/06/2023      1.0.0           Mohab Zaghloul                  file Created.                                                   |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
- 
+
+
+#ifndef HAL_MPU6050_H_
+#define HAL_MPU6050_H_
 
 /******************************************************************************
  * Includes
  *******************************************************************************/
 
+#include "stdint.h"
+
 /******************************************************************************
- * Module Preprocessor Constants
+ * Preprocessor Constants
+ *******************************************************************************/
+
+/* Receiver buffer size */
+#define I2C_Rx_BUFFER_SIZE   6
+
+/******************************************************************************
+ * Configuration Constants
+ *******************************************************************************/
+
+/* I2C master mode flag */
+#define MASTER_TRANSMIT_MODE 0
+#define MASTER_RECEIVER_MODE 1
+
+/* MPU6050 Constants */
+#define MPU6050_SLAVE_ADDRESS    (0x68)
+#define MPU6050_REG_PWR_MGMT_1   (0x6B)
+#define MPU6050_REG_CONFIG       (0x1A)
+#define MPU6050_REG_GYRO_CONFIG  (0x1B)
+#define MPU6050_REG_GYRO_OUT     (0x43)
+#define MPU6050_LSB_DPS          (65.5)
+#define MPU6050_REG_ACCEL_CONFIG (0x1C)
+#define MPU6050_REG_ACCEL_OUT    (0x3B)
+#define MPU6050_LSB_G            (4096)
+
+/* Packet Constants */
+#define ROLL        (0)
+#define PITCH       (1)
+#define YAW         (2)
+#define X_AXIS      (0)
+#define Y_AXIS      (1)
+#define Z_AXIS      (2)
+
+/* Kalman Filter constants */
+#define STD_DEV_GYR (4.0)   // Standard Deviation of the gyroscope
+#define STD_DEV_ACC (3.0)   // Standard Deviation of the accelerometer
+
+/******************************************************************************
+ * Macros
  *******************************************************************************/
 
 /******************************************************************************
- * Module Preprocessor Macros
+ * Typedefs
  *******************************************************************************/
 
-/******************************************************************************
- * Module Typedefs
- *******************************************************************************/
+struct packet{
+    float angle_rates[3];
+    float accel[3];
+    float kalman_angles[3];
+    float kalman_uncertainty[3];
+};
+typedef struct packet mpu6050_packet;
+
+
+typedef struct
+{
+    float x;
+    float y;
+    float z;
+} mpu6050_acc_t;
+
+typedef struct
+{
+    float x;
+    float y;
+    float z;
+} mpu6050_gyro_t;
+
 
 /******************************************************************************
- * Module Variable Definitions
+ * Variables
  *******************************************************************************/
+
+/* Receiver buffer */
+extern uint8_t RxData[I2C_Rx_BUFFER_SIZE];
 
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 
-/******************************************************************************
- * Function Definitions
- *******************************************************************************/
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       Initialize gyroscope and accelerometer.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       Only called once.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       None
+ *
+ *  \b Example:
+ * @code
+ * 
+ *          None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 19/05/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void mpu6050_init();
 
 
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       Get gyroscope and accelerometer measurements.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       mpu6050_init must be called once in the program before using this function.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       None
+ *
+ *  \b Example:
+ * @code
+ * 
+ *          None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 12/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void mpu6050_gyro_read(float* roll_rate, float* pitch_rate, float* yaw_rate);
 
 
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       Get gyroscope and accelerometer measurements.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       mpu6050_init must be called once in the program before using this function.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       None
+ *
+ *  \b Example:
+ * @code
+ * 
+ *          None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 12/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void mpu6050_accel_read(float* x_acc, float* y_acc, float* z_acc);
 
-/*************** END OF FUNCTIONS ***************************************************************************/
 
-
-// to be the IdleTask (called when no other tasks are running)
-// void vApplicationIdleHook( void );
+/*** End of File **************************************************************/
+#endif /*HAL_MPU6050_H_*/
