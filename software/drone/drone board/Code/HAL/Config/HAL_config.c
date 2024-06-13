@@ -119,7 +119,7 @@ HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void)
 
 
     // configure MPU6050 accelerometer and gyroscope
-    // mpu6050_init();
+    mpu6050_init();
 
     // configure HMC5883L
 

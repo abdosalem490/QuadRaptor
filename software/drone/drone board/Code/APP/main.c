@@ -227,8 +227,6 @@ RTOS_TaskHandle_t task_AppComm_Handle_t;
 */
 RTOS_TaskHandle_t task_Master_Handle_t;
 
-/************************************************************************/
-HAL_WRAPPER_Acc_t global_Acc_t = {0};
 
 /******************************************************************************
  * Function Prototypes
@@ -243,14 +241,19 @@ HAL_WRAPPER_Acc_t global_Acc_t = {0};
  * @brief: this task is responsible for the collection of sensor data
 */
 void Task_CollectSensorData(void)
-{
+{   
+    HAL_WRAPPER_Acc_t local_Acc_t = {0};
+    HAL_WRAPPER_Gyro_t local_gyro_t = {0};
     while (1)
     {
         // read accelerometer data
-        HAL_WRAPEPR_ReadAcc(&global_Acc_t);
+        HAL_WRAPEPR_ReadAcc(&local_Acc_t);
         
         // read gyroscope data
-        
+        HAL_WRAPEPR_ReadGyro(&local_gyro_t);
+
+        // read magnetometer data
+
 
         // read barometer data
 

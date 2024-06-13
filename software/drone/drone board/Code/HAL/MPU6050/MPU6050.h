@@ -116,9 +116,9 @@ typedef struct
 
 typedef struct
 {
-    float x;
-    float y;
-    float z;
+    float roll;
+    float pitch;
+    float yaw;
 } mpu6050_gyro_t;
 
 

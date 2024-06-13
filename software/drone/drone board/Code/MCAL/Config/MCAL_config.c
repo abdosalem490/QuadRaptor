@@ -302,7 +302,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     MCAL_CFG_adxlSPI.spiConfig.SPI_CPOL = SPI_CPOL_High;
     MCAL_CFG_adxlSPI.spiConfig.SPI_CPHA = SPI_CPHA_2Edge;
     MCAL_CFG_adxlSPI.spiConfig.SPI_NSS = SPI_NSS_Soft;
-    // IMPORTANT NOTE: setting prescalar for a value higher than 32 (SPI clock must be aroud 0.5 MHZ) causes some errors (I doubt myself in this line)
+    // IMPORTANT NOTE: ADXL345 isn't working
     MCAL_CFG_adxlSPI.spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256; //SPI_BaudRatePrescaler_32; 
     MCAL_CFG_adxlSPI.spiConfig.SPI_FirstBit = SPI_FirstBit_MSB;
     MCAL_CFG_adxlSPI.spiConfig.SPI_CRCPolynomial = 0b101;
@@ -319,6 +319,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     I2CConfig.I2C_Ack = I2C_Ack_Enable;
     I2CConfig.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
     I2C_Init(I2C2, &I2CConfig);
+    I2C_Cmd(I2C2, ENABLE);
 
     /******************************************/
     

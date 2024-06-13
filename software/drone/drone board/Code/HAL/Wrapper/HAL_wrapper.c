@@ -100,7 +100,7 @@ mpu6050_gyro_t global_MPU6050GYRO_t = {0};
  *******************************************************************************/
 
 /**
- * 
+ * NOTE: ADXL345 isn't working. tried many methods to debug but either the routing of pcb track isn't good or the IC is fake
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc)
 {
@@ -109,34 +109,46 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc)
 
     // TODO: try reading from ADXL345 around 30 times and see what happens
 
-    float avg_x = 0.0;
-    float avg_y = 0.0;
-    float avg_z = 0.0;
+    // float avg_x = 0.0;
+    // float avg_y = 0.0;
+    // float avg_z = 0.0;
 
     // read the accelerometer data from ADXL345
-    for(int i = 0; i < 30; i++)
-    {
-    	HAL_ADXL345_ReadAcc(&MCAL_CFG_adxlSPI, &global_ADXL345ACC_t);
-    	avg_x += (global_ADXL345ACC_t.x / 30.0);
-    	avg_y += (global_ADXL345ACC_t.y / 30.0);
-    	avg_z += (global_ADXL345ACC_t.z / 30.0);
-    }
+    // for(int i = 0; i < 30; i++)
+    // {
+    // 	HAL_ADXL345_ReadAcc(&MCAL_CFG_adxlSPI, &global_ADXL345ACC_t);
+    // 	avg_x += (global_ADXL345ACC_t.x / 30.0);
+    // 	avg_y += (global_ADXL345ACC_t.y / 30.0);
+    // 	avg_z += (global_ADXL345ACC_t.z / 30.0);
+    // }
 
-    avg_x = (avg_x * 4) / 1000;
-    avg_y = (avg_y * 4) / 1000;
-    avg_z = (avg_z * 4) / 1000;
+    // avg_x = (avg_x * 4) / 1000;
+    // avg_y = (avg_y * 4) / 1000;
+    // avg_z = (avg_z * 4) / 1000;
 
     // read acceleration from MPU6050
-    // mpu6050_accel_read(&global_MPU6050ACC_t.x, &global_MPU6050ACC_t.y, &global_MPU6050ACC_t.z);
+    mpu6050_accel_read(&global_MPU6050ACC_t.x, &global_MPU6050ACC_t.y, &global_MPU6050ACC_t.z);
 
-    arg_pAcc->x = global_ADXL345ACC_t.x;
-    arg_pAcc->y = global_ADXL345ACC_t.y;
-    arg_pAcc->z = global_ADXL345ACC_t.z;
+    arg_pAcc->x = global_MPU6050ACC_t.x;
+    arg_pAcc->y = global_MPU6050ACC_t.y;
+    arg_pAcc->z = global_MPU6050ACC_t.z;
 
     return MCAL_WRAPPER_STAT_OK;
 }
 
 
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro)
+{
+    // read gyroscope from mpu6050
+    mpu6050_gyro_read(&global_MPU6050GYRO_t.roll, &global_MPU6050GYRO_t.pitch, &global_MPU6050GYRO_t.yaw);
+
+    arg_pGyro->pitch = global_MPU6050GYRO_t.pitch;
+    arg_pGyro->roll = global_MPU6050GYRO_t.roll;
+    arg_pGyro->yaw = global_MPU6050GYRO_t.yaw;
+}
 
 /*************** END OF FUNCTIONS ***************************************************************************/
 

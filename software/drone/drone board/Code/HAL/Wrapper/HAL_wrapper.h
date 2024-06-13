@@ -89,12 +89,20 @@ typedef enum {
  */
 typedef struct
 {
-  int16_t x; /**< acceleration in x-direction */
-  int16_t y; /**< acceleration in y-direction */
-  int16_t z; /**< acceleration in z-direction */
+  float x; /**< acceleration in x-direction */
+  float y; /**< acceleration in y-direction */
+  float z; /**< acceleration in z-direction */
 } HAL_WRAPPER_Acc_t;
 
-
+/**
+ * @brief: contains definitions to be used with reading gyroscope data
+ */
+typedef struct
+{
+  float roll; /**< gyroscope in x-direction */
+  float pitch; /**< gyroscope in y-direction */
+  float yaw; /**< gyroscope in z-direction */
+} HAL_WRAPPER_Gyro_t;
 
 /******************************************************************************
  * Variables
@@ -143,6 +151,49 @@ typedef struct
  * <hr>
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc);
+
+
+
+
+/**
+ *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro);
+ *  \b Description                              :       this functions is used as a wrapper function to the function of reading gyroscope from different sensors on the board.
+ *  @param  arg_pAcc [OUT]                      :       base address to store the received data from the I2C upon transfer.
+ *  @note                                       :       this is a polling function halting the process execution until the I2C data is transferred.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_Acc_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "HAL_wrapper.h"
+ * 
+ * 
+ * int main() {
+ * 
+ * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ * if(HAL_Config_STAT_OK == local_errState)
+ * {
+ *  HAL_WRAPPER_Gyro_t *temp = {0};
+ *  local_errState = HAL_WRAPEPR_ReadGyro(temp);
+ *  if(HAL_WRAPPER_STAT_OK == local_errState)
+ *  {
+ *  
+ *  }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 13/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro);
 
 /*** End of File **************************************************************/
 #endif /*HAL_WRAPPER_HEADER_H_*/
