@@ -22,7 +22,9 @@
         "corecrt_math.h": "c",
         "mpu6050.h": "c",
         "ch32v20x_gpio.h": "c",
-        "hal_wrapper.h": "c"
+        "hal_wrapper.h": "c",
+        "hal_config.h": "c",
+        "main.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

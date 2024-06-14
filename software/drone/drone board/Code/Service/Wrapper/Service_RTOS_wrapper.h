@@ -42,6 +42,7 @@
  * |    21/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_StartSchedular'.               |
  * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_CreateBlockingQueue'.          |
  * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_AppendToBlockingQueue'.        |
+ * |    14/06/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_ReadFromBlockingQueue'.        |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -88,7 +89,6 @@ typedef struct tskTaskControlBlock * RTOS_TaskHandle_t;
  * @brief: the handle for the queue through which we can deal with RTOS queues
 */
 typedef struct QueueDefinition * RTOS_QueueHandle_t;
- 
 
 /**
  * @brief: the type of function that will represent the task
@@ -102,6 +102,7 @@ typedef enum {
   SERVICE_RTOS_STAT_OK,
   SERVICE_RTOS_STAT_INVALID_PARAMS,
   SERVICE_RTOS_STAT_QUEUE_FULL,
+  SERVICE_RTOS_STAT_QUEUE_EMPTY,
 } SERVICE_RTOS_ErrStat_t;
 
 /******************************************************************************
@@ -304,6 +305,53 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CreateBlockingQueue(uint16_t arg_u16QueueLen
  * <hr>
  */
 SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToAdd, RTOS_QueueHandle_t arg_QueueHandle);
+
+/**
+ *  \b function                                 :       SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle);
+ *  \b Description                              :       this functions is used as a wrapper function to receive item from a blocking Queue for interprocess communication.
+ *  @param  arg_u32TimeoutMS [IN]               :       The maximum amount of time in Millisecond the task should block waiting for space to become available on the queue, should it already be empty. The call will return immediately if this is set to 0.
+ *  @param  arg_pItemToReceive [IN]             :       A pointer to the item that is to be received from the queue.
+ *  @param  arg_QueueHandle [IN]                :       The handle to the queue on which the item is to be posted.
+ *  @note                                       :       Any reading to this Queue while the queue is empty will make the task in blocked state and any write to the queue while the queue is full will make the task in blocked task.
+ *  \b PRE-CONDITION                            :       a Queue must be created beforehand.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @SERVICE_RTOS_ErrStat_t in "Service_RTOS_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "Service_RTOS_wrapper.h"
+ * 
+ * RTOS_QueueHandle_t Queue1_Handler;
+ * 
+ * typedef struct Message 
+ * {
+ *  char ucMessageID;
+ *  char ucData[ 20 ];
+ * }Message_t;
+ * 
+ * int main() {
+ * Message_t message = {0};
+ * SERVICE_RTOS_ErrStat_t local_TaskCreateState_t = SERVICE_RTOS_CreateBlockingQueue(10, sizeof(Message_t), &Queue1_Handler);
+ * if(SERVICE_RTOS_STAT_OK == local_TaskCreateState_t)
+ * {  
+ *    if(SERVICE_RTOS_ReadFromBlockingQueue(100, (const void*)&message, Queue1_Handler) == SERVICE_RTOS_STAT_OK)
+ *    {
+ *      // do what you want here
+ *    }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 14/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle);
 
 /*** End of File **************************************************************/
 #endif /*SERVICE_RTOS_WRAPPER_H_*/

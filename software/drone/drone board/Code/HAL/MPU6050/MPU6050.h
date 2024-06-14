@@ -78,18 +78,6 @@
 #define MPU6050_REG_ACCEL_OUT    (0x3B)
 #define MPU6050_LSB_G            (4096)
 
-/* Packet Constants */
-#define ROLL        (0)
-#define PITCH       (1)
-#define YAW         (2)
-#define X_AXIS      (0)
-#define Y_AXIS      (1)
-#define Z_AXIS      (2)
-
-/* Kalman Filter constants */
-#define STD_DEV_GYR (4.0)   // Standard Deviation of the gyroscope
-#define STD_DEV_ACC (3.0)   // Standard Deviation of the accelerometer
-
 /******************************************************************************
  * Macros
  *******************************************************************************/

@@ -1,9 +1,9 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   Wrapper File for RTOS function                                                                              |
- * |    @file           :   Service_RTOS_wrapper.h                                                                                      |
- * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   18/05/2024                                                                                                  |
+ * |    @title          :   Sensor fusion utility for readings correction                                                               |
+ * |    @file           :   SensorFusion.h                                                                                              |
+ * |    @author         :   Mohab Zaghloul                                                                                              |
+ * |    @origin_date    :   14/06/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
  * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
@@ -11,7 +11,7 @@
  * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this header file contains useful functions to easily change RTOS without changing much in code              |
+ * |    @brief          :   this file is the main file for correction of sensor readings                                                |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
@@ -38,63 +38,44 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
- * |    21/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_StartSchedular'.               |
- * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_CreateBlockingQueue'.          |
- * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_AppendToBlockingQueue'.        |
- * |    14/06/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_ReadFromBlockingQueue'.        |
+ * |    14/06/2023      1.0.0           Mohab Zaghloul                  file Created.                                                   |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
- 
+
 
 /******************************************************************************
  * Includes
  *******************************************************************************/
+
 /**
- * @reason: contains standard definitions for standard integers
+ * 
  */
-#include "stdint.h"
+#include "SensorFusion.h"
 
 /**
- * @reason: contains definition for NULL
+ * 
  */
-#include "common.h"
+#include "main.h"
 
 /**
- * @reason: contains constants common values
+ * 
  */
-#include "constants.h"
+#include "HAL_wrapper.h"
 
 /**
- * @reason: contains useful functions that deals with bit level math
+ * 
  */
-#include "math_btt.h"
-
-
-/**
- * @reason: contains definition for our functions
-*/
-#include "Service_RTOS_wrapper.h"
-
-
-/**
- * @reason: contains functions of our RTOS
- */
-#include "FreeRTOS.h"
-
-/**
- * @reason: contains functions related to RTOS tasks
-*/
-#include "task.h"
-
-/**
- * @reason: contains functions related to RTOS queues
-*/
-#include "queue.h"
+#include <math.h>
 
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
+
+/* Kalman Filter constants */
+#define STD_DEV_GYR (4.0)   // Standard Deviation of the gyroscope
+#define STD_DEV_ACC (3.0)   // Standard Deviation of the accelerometer
+
+# define M_PI           3.14159265358979323846  /* pi */
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -112,118 +93,46 @@
  * Function Prototypes
  *******************************************************************************/
 
+/**
+ * 
+ */
+void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanInput, float KalmanMeasurement, float Ts, float process_noise, float measure_covar);
+
+/**
+ * 
+ */
+
+
 /******************************************************************************
  * Function Definitions
  *******************************************************************************/
 
-
 /**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_TaskCreate(SERVICE_RTOS_TaskFunction_t arg_pFuncTaskFunction, const char * const arg_pu8TaskName, uint16_t arg_u16TaskStackDepth, uint32_t arg_u32TaskPriority, RTOS_TaskHandle_t* arg_pTaskHandle)
+ *
+ */
+void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanInput, float KalmanMeasurement, float Ts, float process_noise, float measure_covar)
 {
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-
-    if(NULL == arg_pFuncTaskFunction || NULL == arg_pu8TaskName  || 0 == arg_u16TaskStackDepth  || NULL == arg_pTaskHandle)
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else{
-        // create the task
-        xTaskCreate((TaskFunction_t)arg_pFuncTaskFunction,
-                (const char *)arg_pu8TaskName,
-                (uint16_t)arg_u16TaskStackDepth,
-                (void *)NULL,
-                (UBaseType_t)arg_u32TaskPriority,
-                (TaskHandle_t *)&arg_pTaskHandle);
-    }
-
-    return local_ErrStatus;
-}
-
-
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_StartSchedular(void)
-{
-    vTaskStartScheduler();
-
-    return SERVICE_RTOS_STAT_OK;
+    float KalmanGain;
+    *KalmanState = *KalmanState + Ts*KalmanInput;
+    *KalmanUncertainty = *KalmanUncertainty + Ts*Ts * process_noise*process_noise;
+    KalmanGain = *KalmanUncertainty * 1/(1*(*KalmanUncertainty) + measure_covar*measure_covar);
+    *KalmanState = *KalmanState + KalmanGain*(KalmanMeasurement-*KalmanState);
+    *KalmanUncertainty = (1-KalmanGain) * (*KalmanUncertainty);
 }
 
 /**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CreateBlockingQueue(uint16_t arg_u16QueueLen, uint16_t arg_u16ElementSize, RTOS_QueueHandle_t* arg_pQueueHandle)
+ *
+ */
+void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusionDataItem_t* arg_pFusedReadings)
 {
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+    
+    float measured_roll, measured_pitch;
+    measured_roll  = atan(arg_pSensorsReadings->Acc.y / sqrt(arg_pSensorsReadings->Acc.x * arg_pSensorsReadings->Acc.x + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/M_PI);
+    measured_pitch = -atan(arg_pSensorsReadings->Acc.x / sqrt(arg_pSensorsReadings->Acc.y * arg_pSensorsReadings->Acc.y + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/M_PI);
 
-    if(0 == arg_u16QueueLen|| 0 == arg_u16ElementSize  || NULL == arg_pQueueHandle) 
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else
-    {
-        *arg_pQueueHandle = xQueueCreate((UBaseType_t)arg_u16QueueLen, (UBaseType_t) arg_u16ElementSize);
-
-        if(NULL == arg_pQueueHandle)
-        {
-            local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-        }
-        else
-        {
-            // do nothing
-        }
-    }
-
-    return local_ErrStatus;
+    kalman_filter(&arg_pFusedReadings->roll, &arg_pFusedReadings->roll_uncertainty, arg_pSensorsReadings->Gyro.roll, measured_roll, SENSOR_SAMPLE_PERIOD, STD_DEV_GYR, STD_DEV_ACC);
+    kalman_filter(&arg_pFusedReadings->pitch, &arg_pFusedReadings->pitch_uncertainty, arg_pSensorsReadings->Gyro.pitch, measured_pitch, SENSOR_SAMPLE_PERIOD, STD_DEV_GYR, STD_DEV_ACC);
 }
  
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToAdd, RTOS_QueueHandle_t arg_QueueHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
 
-    if(NULL == arg_pItemToAdd || NULL == arg_QueueHandle)
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else
-    {
-        if(xQueueSendToBack((QueueHandle_t)arg_QueueHandle, (const void *)arg_pItemToAdd, (TickType_t)(arg_u32TimeoutMS / portTICK_PERIOD_MS)) != pdPASS)
-        {
-            local_ErrStatus = SERVICE_RTOS_STAT_QUEUE_FULL;
-        }
-    }
-
-    return local_ErrStatus;
-}
-
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-
-    if(NULL == arg_pItemToReceive || NULL == arg_QueueHandle)
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else
-    {
-        if(xQueueReceive((QueueHandle_t)arg_QueueHandle, (const void *)arg_pItemToReceive, (TickType_t)(arg_u32TimeoutMS / portTICK_PERIOD_MS)) != pdPASS)
-        {
-            local_ErrStatus = SERVICE_RTOS_STAT_QUEUE_EMPTY;
-        }
-    }
-
-    return local_ErrStatus;  
-}
 /*************** END OF FUNCTIONS ***************************************************************************/
- 
-// to be the IdleTask (called when no other tasks are running)
-// void vApplicationIdleHook( void );

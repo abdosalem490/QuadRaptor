@@ -148,6 +148,8 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro)
     arg_pGyro->pitch = global_MPU6050GYRO_t.pitch;
     arg_pGyro->roll = global_MPU6050GYRO_t.roll;
     arg_pGyro->yaw = global_MPU6050GYRO_t.yaw;
+
+    return HAL_WRAPPER_STAT_OK;
 }
 
 /*************** END OF FUNCTIONS ***************************************************************************/

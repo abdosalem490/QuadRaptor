@@ -29,6 +29,7 @@ Code/MCAL/Debug \
 Code/MCAL/Peripheral/src \
 Code/MCAL/Startup \
 Code/MCAL/Wrapper \
+Code/Middleware/SensorFusion \
 Code/Service/FreeRTOS \
 Code/Service/FreeRTOS/portable/Common \
 Code/Service/FreeRTOS/portable/GCC/RISC-V \

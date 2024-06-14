@@ -1,9 +1,9 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   Wrapper File for RTOS function                                                                              |
- * |    @file           :   Service_RTOS_wrapper.h                                                                                      |
+ * |    @title          :   Application Code                                                                                            |
+ * |    @file           :   main.h                                                                                                      |
  * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   18/05/2024                                                                                                  |
+ * |    @origin_date    :   14/06/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
  * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
@@ -11,7 +11,7 @@
  * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this header file contains useful functions to easily change RTOS without changing much in code              |
+ * |    @brief          :   this file is the header for main entry to our application code that will run                                |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
@@ -38,63 +38,29 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
- * |    21/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_StartSchedular'.               |
- * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_CreateBlockingQueue'.          |
- * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_AppendToBlockingQueue'.        |
- * |    14/06/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_ReadFromBlockingQueue'.        |
+ * |    14/06/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
- 
+
+
+
+#ifndef MAIN_H_
+#define MAIN_H_
 
 /******************************************************************************
  * Includes
  *******************************************************************************/
+
 /**
- * @reason: contains standard definitions for standard integers
+ * @reason: contains typedefs needed
  */
-#include "stdint.h"
-
-/**
- * @reason: contains definition for NULL
- */
-#include "common.h"
-
-/**
- * @reason: contains constants common values
- */
-#include "constants.h"
-
-/**
- * @reason: contains useful functions that deals with bit level math
- */
-#include "math_btt.h"
-
-
-/**
- * @reason: contains definition for our functions
-*/
-#include "Service_RTOS_wrapper.h"
-
-
-/**
- * @reason: contains functions of our RTOS
- */
-#include "FreeRTOS.h"
-
-/**
- * @reason: contains functions related to RTOS tasks
-*/
-#include "task.h"
-
-/**
- * @reason: contains functions related to RTOS queues
-*/
-#include "queue.h"
+#include "HAL_wrapper.h"
 
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
+
+#define SENSOR_SAMPLE_PERIOD 1
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -103,6 +69,46 @@
 /******************************************************************************
  * Module Typedefs
  *******************************************************************************/
+
+/************************************************************************/
+/**
+ * @brief: this is the struct definition of the items of the 'queue_RawSensorData_Handle_t' elements
+*/
+typedef struct {
+    HAL_WRAPPER_Acc_t Acc;
+    HAL_WRAPPER_Gyro_t Gyro;
+}RawSensorDataItem_t;
+
+/**
+ * @brief: this is the struct definition of the items of the 'queue_FusedSensorData_Handle_t' elements
+*/
+typedef struct {
+    
+    // fused kalman angles
+    float roll;
+    float yaw;
+    float pitch;
+
+    // kalman uncertainty for each angle
+    float roll_uncertainty;
+    float yaw_uncertainty;
+    float pitch_uncertainty;
+
+} SensorFusionDataItem_t;
+
+/**
+ * @brief: this is the struct definition of the items of the 'queue_AppCommToDrone_Handle_t' elements
+*/
+typedef struct {
+    uint16_t test;  // TODO: edit
+}AppToDroneDataItem_t;
+
+/**
+ * @brief: this is the struct definition of the items of the 'queue_DroneCommToApp_Handle_t' elements
+*/
+typedef struct {
+    uint16_t test;  // TODO: edit
+}DroneToAppDataItem_t;
 
 /******************************************************************************
  * Module Variable Definitions
@@ -117,113 +123,6 @@
  *******************************************************************************/
 
 
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_TaskCreate(SERVICE_RTOS_TaskFunction_t arg_pFuncTaskFunction, const char * const arg_pu8TaskName, uint16_t arg_u16TaskStackDepth, uint32_t arg_u32TaskPriority, RTOS_TaskHandle_t* arg_pTaskHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-
-    if(NULL == arg_pFuncTaskFunction || NULL == arg_pu8TaskName  || 0 == arg_u16TaskStackDepth  || NULL == arg_pTaskHandle)
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else{
-        // create the task
-        xTaskCreate((TaskFunction_t)arg_pFuncTaskFunction,
-                (const char *)arg_pu8TaskName,
-                (uint16_t)arg_u16TaskStackDepth,
-                (void *)NULL,
-                (UBaseType_t)arg_u32TaskPriority,
-                (TaskHandle_t *)&arg_pTaskHandle);
-    }
-
-    return local_ErrStatus;
-}
-
-
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_StartSchedular(void)
-{
-    vTaskStartScheduler();
-
-    return SERVICE_RTOS_STAT_OK;
-}
-
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CreateBlockingQueue(uint16_t arg_u16QueueLen, uint16_t arg_u16ElementSize, RTOS_QueueHandle_t* arg_pQueueHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-
-    if(0 == arg_u16QueueLen|| 0 == arg_u16ElementSize  || NULL == arg_pQueueHandle) 
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else
-    {
-        *arg_pQueueHandle = xQueueCreate((UBaseType_t)arg_u16QueueLen, (UBaseType_t) arg_u16ElementSize);
-
-        if(NULL == arg_pQueueHandle)
-        {
-            local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-        }
-        else
-        {
-            // do nothing
-        }
-    }
-
-    return local_ErrStatus;
-}
- 
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToAdd, RTOS_QueueHandle_t arg_QueueHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-
-    if(NULL == arg_pItemToAdd || NULL == arg_QueueHandle)
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else
-    {
-        if(xQueueSendToBack((QueueHandle_t)arg_QueueHandle, (const void *)arg_pItemToAdd, (TickType_t)(arg_u32TimeoutMS / portTICK_PERIOD_MS)) != pdPASS)
-        {
-            local_ErrStatus = SERVICE_RTOS_STAT_QUEUE_FULL;
-        }
-    }
-
-    return local_ErrStatus;
-}
-
-/**
- * 
-*/
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle)
-{
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-
-    if(NULL == arg_pItemToReceive || NULL == arg_QueueHandle)
-    {
-        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
-    }
-    else
-    {
-        if(xQueueReceive((QueueHandle_t)arg_QueueHandle, (const void *)arg_pItemToReceive, (TickType_t)(arg_u32TimeoutMS / portTICK_PERIOD_MS)) != pdPASS)
-        {
-            local_ErrStatus = SERVICE_RTOS_STAT_QUEUE_EMPTY;
-        }
-    }
-
-    return local_ErrStatus;  
-}
 /*************** END OF FUNCTIONS ***************************************************************************/
- 
-// to be the IdleTask (called when no other tasks are running)
-// void vApplicationIdleHook( void );
+
+#endif /*MAIN_H_*/

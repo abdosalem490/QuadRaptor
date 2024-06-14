@@ -73,7 +73,15 @@
  */
 #include "HAL_wrapper.h"
 
+/**
+ * @reason: contains typedef for main code
+ */
+#include "main.h"
 
+/**
+ * @reason: contains sensors fusion functionality along with kalman filter
+ */
+#include "SensorFusion.h"
 
 /******************************************************************************
  * Module Preprocessor Constants
@@ -152,6 +160,11 @@
  * Module Typedefs
  *******************************************************************************/
 
+/******************************************************************************
+ * Module Variable Definitions
+ *******************************************************************************/
+
+
 /************************************************************************/
 /**
  * @brief: this is the queue that the sensor data collection task will put its output into it
@@ -172,39 +185,6 @@ RTOS_QueueHandle_t queue_AppCommToDrone_Handle_t;
  * @brief: this is the queue that the app communication task will put its output into it from drone board to the app board
 */
 RTOS_QueueHandle_t queue_DroneCommToApp_Handle_t;
-
-/************************************************************************/
-/**
- * @brief: this is the struct definition of the items of the 'queue_RawSensorData_Handle_t' elements
-*/
-typedef struct RawSensorData{
-    uint16_t test;  // TODO: edit
-}RawSensorDataItem_t;
-
-/**
- * @brief: this is the struct definition of the items of the 'queue_FusedSensorData_Handle_t' elements
-*/
-typedef struct SensorFusionData{
-    uint16_t test;  // TODO: edit
-}SensorFusionDataItem_t;
-
-/**
- * @brief: this is the struct definition of the items of the 'queue_AppCommToDrone_Handle_t' elements
-*/
-typedef struct AppToDroneData{
-    uint16_t test;  // TODO: edit
-}AppToDroneDataItem_t;
-
-/**
- * @brief: this is the struct definition of the items of the 'queue_DroneCommToApp_Handle_t' elements
-*/
-typedef struct DroneToAppData{
-    uint16_t test;  // TODO: edit
-}DroneToAppDataItem_t;
-
-/******************************************************************************
- * Module Variable Definitions
- *******************************************************************************/
 
 /************************************************************************/
 /**
@@ -244,6 +224,8 @@ void Task_CollectSensorData(void)
 {   
     HAL_WRAPPER_Acc_t local_Acc_t = {0};
     HAL_WRAPPER_Gyro_t local_gyro_t = {0};
+    RawSensorDataItem_t local_item_t = {0};
+
     while (1)
     {
         // read accelerometer data
@@ -254,13 +236,16 @@ void Task_CollectSensorData(void)
 
         // read magnetometer data
 
-
         // read barometer data
 
         // read temperature data
 
+        // assign variables
+        local_item_t.Acc = local_Acc_t;
+        local_item_t.Gyro = local_gyro_t;
 
-
+        // push the data into the queue for fusion
+        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_item_t, queue_RawSensorData_Handle_t);
     }
 }
 
@@ -270,8 +255,24 @@ void Task_CollectSensorData(void)
 */
 void Task_SensorFusion(void)
 {
+    RawSensorDataItem_t local_in_t = {0};
+    SensorFusionDataItem_t local_out_t = {0};
+    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+
     while (1)
     {
+        // read item from raw sensor queue
+        local_ErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(1000, (const void *) &local_in_t, queue_RawSensorData_Handle_t);
+
+        // check if we got back a reading
+        if(SERVICE_RTOS_STAT_QUEUE_EMPTY == local_ErrStatus)
+        {
+            // apply kalman filter with sensor fusion
+            SensorFuseWithKalman(&local_in_t, &local_out_t);
+
+            // append to the queue the the current state
+            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
+        }
 
     }
 }
@@ -284,6 +285,19 @@ void Task_AppComm(void)
 {
     while (1)
     {
+        // check if there anything app board is sending
+        if(1)
+        {
+            // change the state
+        }
+
+        // append the new state to the queue
+
+        // check if there anything to send to the App board
+        if(1)
+        {
+            // send the info to the board using UART
+        }
 
     }
 }
@@ -296,6 +310,17 @@ void Task_Master(void)
 {
     while (1)
     {
+        // check for new State from AppComm
+        if(1)
+        {
+            // assign the required state
+        }
+
+        // get sensor fused readings with kalman filter
+        
+        // apply PID to compute error
+
+        // apply actions on the motors
 
     }
 }
