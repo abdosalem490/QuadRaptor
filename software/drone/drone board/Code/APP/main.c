@@ -249,7 +249,7 @@ void Task_CollectSensorData(void)
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
 
 // FOR SERIAL PLOTTER
-// printf("%f,%f,%f,\n", local_gyro_t.roll, local_gyro_t.pitch, local_gyro_t.yaw);
+//        printf("%f,%f,%f,\r\n", local_gyro_t.roll, local_gyro_t.pitch, local_gyro_t.yaw);
 
         // assign variables
         local_out_t.Acc = local_Acc_t;
@@ -259,8 +259,8 @@ void Task_CollectSensorData(void)
         // push the data into the queue for fusion
         SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
 
-        // sleep for 4 ms
-        SERVICE_RTOS_BlockFor(4);
+        // sleep for 5 ms
+        SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
     }
 }
 
@@ -271,6 +271,7 @@ void Task_CollectSensorData(void)
 void Task_SensorFusion(void)
 {
     RawSensorDataItem_t local_in_t = {0};
+    SensorFusionDataItem_t local_temp_t = {0};
     SensorFusionDataItem_t local_out_t = {0};
     SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
 
@@ -280,13 +281,20 @@ void Task_SensorFusion(void)
         local_ErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(1000, (const void *) &local_in_t, queue_RawSensorData_Handle_t);
 
         // check if we got back a reading
-        if(SERVICE_RTOS_STAT_QUEUE_EMPTY == local_ErrStatus)
+        if(SERVICE_RTOS_STAT_OK == local_ErrStatus)
         {
             // apply kalman filter with sensor fusion
-            SensorFuseWithKalman(&local_in_t, &local_out_t);
+            SensorFuseWithKalman(&local_in_t, &local_temp_t);
+
+            // actual measurements showed that roll and pitch are reversed and pitch is in negative
+            local_out_t.pitch = -local_temp_t.roll;
+            local_out_t.roll = local_temp_t.pitch;
+
+            // FOR SERIAL PLOTTER
+//              printf("%f,%f\n\r", local_out_t.pitch, local_out_t.roll);
 
             // append to the queue the the current state
-            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
+//            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
         }
 
     }
@@ -360,7 +368,7 @@ int main(void)
     HAL_Config_ConfigAllHW();
 
     // TODO: comment the below line
-    // USART_Printf_Init(115200);
+//     USART_Printf_Init(115200);
 
     // create the Queue for sensor collection data task to put its data into it
     SERVICE_RTOS_CreateBlockingQueue(QUEUE_RAW_SENSOR_DATA_LEN,

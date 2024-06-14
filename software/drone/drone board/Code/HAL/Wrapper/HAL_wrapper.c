@@ -136,7 +136,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc)
     mpu6050_accel_read(&global_MPU6050ACC_t.x, &global_MPU6050ACC_t.y, &global_MPU6050ACC_t.z);
 
     // account for the placement of the IC on the PCB
-    global_MPU6050ACC_t.x = -global_MPU6050ACC_t.x;
+   global_MPU6050ACC_t.x = global_MPU6050ACC_t.x;
     global_MPU6050ACC_t.y = -global_MPU6050ACC_t.y;
 //    global_MPU6050ACC_t.z = global_MPU6050ACC_t.z;
 

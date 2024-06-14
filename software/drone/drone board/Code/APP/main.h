@@ -63,7 +63,7 @@
 /**
  * @brief: this is how frequent we collect sensors data in MS
  */
-#define SENSOR_SAMPLE_PERIOD 4
+#define SENSOR_SAMPLE_PERIOD 5
 
 /******************************************************************************
  * Module Preprocessor Macros

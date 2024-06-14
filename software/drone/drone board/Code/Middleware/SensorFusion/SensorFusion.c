@@ -126,7 +126,7 @@ void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanI
 void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusionDataItem_t* arg_pFusedReadings)
 {
     
-    float measured_roll, measured_pitch, Ts;
+    float measured_roll, measured_pitch, Ts, temp;
     Ts = SENSOR_SAMPLE_PERIOD/1000.0;
 
     measured_roll  = atan(arg_pSensorsReadings->Acc.y / sqrt(arg_pSensorsReadings->Acc.x * arg_pSensorsReadings->Acc.x + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/M_PI);
@@ -134,6 +134,7 @@ void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusio
 
     kalman_filter(&arg_pFusedReadings->roll, &arg_pFusedReadings->roll_uncertainty, arg_pSensorsReadings->Gyro.roll, measured_roll, Ts, STD_DEV_GYR, STD_DEV_ACC);
     kalman_filter(&arg_pFusedReadings->pitch, &arg_pFusedReadings->pitch_uncertainty, arg_pSensorsReadings->Gyro.pitch, measured_pitch, Ts, STD_DEV_GYR, STD_DEV_ACC);
+
 }
  
 
