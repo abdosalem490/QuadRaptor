@@ -224,7 +224,9 @@ void Task_CollectSensorData(void)
 {   
     HAL_WRAPPER_Acc_t local_Acc_t = {0};
     HAL_WRAPPER_Gyro_t local_gyro_t = {0};
-    RawSensorDataItem_t local_item_t = {0};
+    HAL_WRAPPER_Magnet_t local_magnet_t = {0};
+
+    RawSensorDataItem_t local_out_t = {0};
 
     while (1)
     {
@@ -235,17 +237,30 @@ void Task_CollectSensorData(void)
         HAL_WRAPEPR_ReadGyro(&local_gyro_t);
 
         // read magnetometer data
+        HAL_WRAPEPR_ReadMagnet(&local_magnet_t);
 
         // read barometer data
 
         // read temperature data
 
+// FOR SERIAL MONITOR
+//        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
+//        printf("MPU6050 Gyro: roll: %f,  pitch: %f,  yaw: %f\r\n", local_gyro_t.roll, local_gyro_t.pitch, local_gyro_t.yaw);
+//        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
+
+// FOR SERIAL PLOTTER
+// printf("%f,%f,%f,\n", local_gyro_t.roll, local_gyro_t.pitch, local_gyro_t.yaw);
+
         // assign variables
-        local_item_t.Acc = local_Acc_t;
-        local_item_t.Gyro = local_gyro_t;
+        local_out_t.Acc = local_Acc_t;
+        local_out_t.Gyro = local_gyro_t;
+        local_out_t.Magnet = local_magnet_t;
 
         // push the data into the queue for fusion
-        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_item_t, queue_RawSensorData_Handle_t);
+        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
+
+        // sleep for 4 ms
+        SERVICE_RTOS_BlockFor(4);
     }
 }
 
@@ -344,6 +359,9 @@ int main(void)
     // configure the external hardware as sensors, motors, etc... 
     HAL_Config_ConfigAllHW();
 
+    // TODO: comment the below line
+    // USART_Printf_Init(115200);
+
     // create the Queue for sensor collection data task to put its data into it
     SERVICE_RTOS_CreateBlockingQueue(QUEUE_RAW_SENSOR_DATA_LEN,
                                     sizeof(RawSensorDataItem_t),
@@ -372,12 +390,12 @@ int main(void)
                 TASK_SENSOR_COLLECT_PRIO,
                 &task_CollectSensorData_Handle_t);
 
-    // // create a task for fusing sensor data
-    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_SensorFusion,
-    //             "Sensor Fusion",
-    //             TASK_SENSOR_FUSION_STACK_SIZE,
-    //             TASK_SENSOR_FUSION_PRIO,
-    //             &task_SensorFusion_Handle_t);
+    // create a task for fusing sensor data
+    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_SensorFusion,
+                "Sensor Fusion",
+                TASK_SENSOR_FUSION_STACK_SIZE,
+                TASK_SENSOR_FUSION_PRIO,
+                &task_SensorFusion_Handle_t);
 
     // // create a task for communication with app board 
     // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,

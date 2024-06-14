@@ -99,10 +99,22 @@ typedef struct
  */
 typedef struct
 {
-  float roll; /**< gyroscope in x-direction */
+  float roll;  /**< gyroscope in x-direction */
   float pitch; /**< gyroscope in y-direction */
-  float yaw; /**< gyroscope in z-direction */
+  float yaw;   /**< gyroscope in z-direction */
 } HAL_WRAPPER_Gyro_t;
+
+
+/**
+ * @brief: contains definitions to be used with reading Magnetometer data
+ */
+typedef struct
+{
+  float x;  /**< Magnetometer in x-direction */
+  float y;  /**< Magnetometer in y-direction */
+  float z;  /**< Magnetometer in z-direction */
+} HAL_WRAPPER_Magnet_t;
+
 
 /******************************************************************************
  * Variables
@@ -158,7 +170,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc);
 /**
  *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro);
  *  \b Description                              :       this functions is used as a wrapper function to the function of reading gyroscope from different sensors on the board.
- *  @param  arg_pAcc [OUT]                      :       base address to store the received data from the I2C upon transfer.
+ *  @param  arg_pGyro [OUT]                     :       base address to store the received data from the I2C upon transfer.
  *  @note                                       :       this is a polling function halting the process execution until the I2C data is transferred.
  *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
  *  \b POST-CONDITION                           :       None.
@@ -194,6 +206,48 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc);
  * <hr>
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro);
+
+
+/**
+ *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet);
+ *  \b Description                              :       this functions is used as a wrapper function to the function of reading magnetometer from different sensors on the board.
+ *  @param  arg_pMagnet [OUT]                   :       base address to store the received data from the I2C upon transfer.
+ *  @note                                       :       this is a polling function halting the process execution until the I2C data is transferred.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_Acc_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "HAL_wrapper.h"
+ * 
+ * 
+ * int main() {
+ * 
+ * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ * if(HAL_Config_STAT_OK == local_errState)
+ * {
+ *  HAL_WRAPPER_Magnet_t *temp = {0};
+ *  local_errState = HAL_WRAPEPR_ReadMagnet(temp);
+ *  if(HAL_WRAPPER_STAT_OK == local_errState)
+ *  {
+ *    
+ *  }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 14/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet);
+
 
 /*** End of File **************************************************************/
 #endif /*HAL_WRAPPER_HEADER_H_*/

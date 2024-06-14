@@ -86,15 +86,6 @@
  * Typedefs
  *******************************************************************************/
 
-struct packet{
-    float angle_rates[3];
-    float accel[3];
-    float kalman_angles[3];
-    float kalman_uncertainty[3];
-};
-typedef struct packet mpu6050_packet;
-
-
 typedef struct
 {
     float x;

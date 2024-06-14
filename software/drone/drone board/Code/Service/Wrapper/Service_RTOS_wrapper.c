@@ -223,6 +223,18 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32Timeou
 
     return local_ErrStatus;  
 }
+
+/**
+ * 
+ */
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_BlockFor(uint32_t arg_u32TimeMS)
+{
+    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+
+    vTaskDelay((TickType_t)(arg_u32TimeMS / portTICK_PERIOD_MS));
+   
+    return local_ErrStatus;
+}
 /*************** END OF FUNCTIONS ***************************************************************************/
  
 // to be the IdleTask (called when no other tasks are running)

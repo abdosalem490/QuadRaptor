@@ -1,7 +1,7 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   Sensor fusion utility for readings correction                                                               |
- * |    @file           :   SensorFusion.h                                                                                              |
+ * |    @title          :   header file for HMC5883L                                                                                    |
+ * |    @file           :   HMC5883.h                                                                                                   |
  * |    @author         :   Mohab Zaghloul                                                                                              |
  * |    @origin_date    :   14/06/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
@@ -11,7 +11,7 @@
  * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this file is the main file for correction of sensor readings                                                |
+ * |    @brief          :   this file is the header file for HMC5883L Sensor                                                            |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
@@ -43,50 +43,70 @@
  */
 
 
+#ifndef HAL_HMC5883L_H_
+#define HAL_HMC5883L_H_
+
 /******************************************************************************
  * Includes
  *******************************************************************************/
 
-/**
- * 
- */
-#include "SensorFusion.h"
-
-/**
- * 
- */
-#include "main.h"
-
-/**
- * 
- */
-#include "HAL_wrapper.h"
-
-/**
- * 
- */
-#include <math.h>
 
 /******************************************************************************
- * Module Preprocessor Constants
+ * Preprocessor Constants
  *******************************************************************************/
 
-/* Kalman Filter constants */
-#define STD_DEV_GYR (4.0)   // Standard Deviation of the gyroscope
-#define STD_DEV_ACC (3.0)   // Standard Deviation of the accelerometer
+/* I2C master mode flag */
+#define MASTER_TRANSMIT_MODE 0
+#define MASTER_RECEIVER_MODE 1
 
-# define M_PI           3.14159265358979323846  /* pi */
+/* Receiver buffer size */
+#define I2C_Rx_BUFFER_SIZE   6
+
+/* HMC5883L Constants */
+#define HMC5883L_SLAVE_ADDRESS   (0x1E)
+#define HMC5883L_SLAVE_WRITE     (0x00)
+#define HMC5883L_SLAVE_READ      (0x01)
+#define HMC5883L_REG_MODE        (0x02)
+#define HMC5883L_CONTINUOUS_MODE (0x00)
+#define HMC5883L_SINGLE_MODE     (0x01)
+#define HMC5883L_REG_CONFIG_A    (0x00)
+#define HMC5883L_SAMPLES_8       (0x60)
+#define HMC5883L_OUTPUT_RATE     (0x14)
+#define HMC5883L_REG_CONFIG_B    (0x01)
+#define HMC5883L_RANGE_1_3       (0x20)
+#define HMC5883L_GAIN            (1090.0)
+
+/* MPU6050 auxiliary options*/
+#define GY86_AUXILIARY           (1)
+#define MPU6050_SLAVE_ADDRESS    (0x68)
+#define MPU6050_REG_USER_CTRL    (0x6A)
+#define MPU6050_DISABLE_MASTER   (0x00)
+#define MPU6050_REG_BYPASS       (0x37)
+#define MPU6050_ENABLE_BYPASS    (0x02)
+#define MPU6050_REG_PWR_MGMT_1   (0x6B)
+
 
 /******************************************************************************
- * Module Preprocessor Macros
+ * Configuration Constants
  *******************************************************************************/
 
 /******************************************************************************
- * Module Typedefs
+ * Macros
  *******************************************************************************/
 
 /******************************************************************************
- * Module Variable Definitions
+ * Typedefs
+ *******************************************************************************/
+
+struct packet{
+    float magnetometer_raw_x;
+    float magnetometer_raw_y;
+    float magnetometer_raw_z;
+};
+typedef struct packet hmc5883l_packet;
+
+/******************************************************************************
+ * Variables
  *******************************************************************************/
 
 /******************************************************************************
@@ -94,47 +114,64 @@
  *******************************************************************************/
 
 /**
- * 
- */
-void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanInput, float KalmanMeasurement, float Ts, float process_noise, float measure_covar);
-
-/**
- * 
- */
-
-
-/******************************************************************************
- * Function Definitions
- *******************************************************************************/
-
-/**
+ *  \b function                                 :       None
+ *  \b Description                              :       Initialize magnetometer.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None.
+ *  @param  arg_u16TaskStackDepth [IN]          :       None.
+ *  @param  arg_u32TaskPriority [IN]            :       None.
+ *  @param  arg_pTaskHandle [OUT]               :       None.
+ *  @note                                       :       Only called once.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None.
+ *  @see                                        :       None.
  *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 14/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
-void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanInput, float KalmanMeasurement, float Ts, float process_noise, float measure_covar)
-{
-    float KalmanGain;
-    *KalmanState = *KalmanState + Ts*KalmanInput;
-    *KalmanUncertainty = *KalmanUncertainty + Ts*Ts * process_noise*process_noise;
-    KalmanGain = *KalmanUncertainty * 1/(1*(*KalmanUncertainty) + measure_covar*measure_covar);
-    *KalmanState = *KalmanState + KalmanGain*(KalmanMeasurement-*KalmanState);
-    *KalmanUncertainty = (1-KalmanGain) * (*KalmanUncertainty);
-}
+void hmc5883l_init();
 
 /**
+ *  \b function                                 :       None
+ *  \b Description                              :       Get magnetometer measurements.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None.
+ *  @param  arg_u16TaskStackDepth [IN]          :       None.
+ *  @param  arg_u32TaskPriority [IN]            :       None.
+ *  @param  arg_pTaskHandle [OUT]               :       None.
+ *  @note                                       :       hmc5883l_init must be called once in the program before using this function.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None.
+ *  @see                                        :       None.
  *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 14/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
-void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusionDataItem_t* arg_pFusedReadings)
-{
-    
-    float measured_roll, measured_pitch, Ts;
-    Ts = SENSOR_SAMPLE_PERIOD/1000.0;
+void hmc5883l_read(hmc5883l_packet* data);
 
-    measured_roll  = atan(arg_pSensorsReadings->Acc.y / sqrt(arg_pSensorsReadings->Acc.x * arg_pSensorsReadings->Acc.x + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/M_PI);
-    measured_pitch = -atan(arg_pSensorsReadings->Acc.x / sqrt(arg_pSensorsReadings->Acc.y * arg_pSensorsReadings->Acc.y + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/M_PI);
-
-    kalman_filter(&arg_pFusedReadings->roll, &arg_pFusedReadings->roll_uncertainty, arg_pSensorsReadings->Gyro.roll, measured_roll, Ts, STD_DEV_GYR, STD_DEV_ACC);
-    kalman_filter(&arg_pFusedReadings->pitch, &arg_pFusedReadings->pitch_uncertainty, arg_pSensorsReadings->Gyro.pitch, measured_pitch, Ts, STD_DEV_GYR, STD_DEV_ACC);
-}
- 
-
-/*************** END OF FUNCTIONS ***************************************************************************/
+/*** End of File **************************************************************/
+#endif /*HAL_HMC5883L_H_*/

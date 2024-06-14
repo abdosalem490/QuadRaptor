@@ -49,7 +49,7 @@
 /**
  * 
  */
-#include "mpu6050.h"
+#include "MPU6050.h"
 
 /**
  * 

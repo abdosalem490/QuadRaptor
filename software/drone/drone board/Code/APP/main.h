@@ -60,7 +60,10 @@
  * Module Preprocessor Constants
  *******************************************************************************/
 
-#define SENSOR_SAMPLE_PERIOD 1
+/**
+ * @brief: this is how frequent we collect sensors data in MS
+ */
+#define SENSOR_SAMPLE_PERIOD 4
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -77,6 +80,7 @@
 typedef struct {
     HAL_WRAPPER_Acc_t Acc;
     HAL_WRAPPER_Gyro_t Gyro;
+    HAL_WRAPPER_Magnet_t Magnet;
 }RawSensorDataItem_t;
 
 /**

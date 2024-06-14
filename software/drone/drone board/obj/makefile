@@ -22,6 +22,7 @@ RM := rm -rf
 -include Code/MCAL/Config/subdir.mk
 -include Code/HAL/Wrapper/subdir.mk
 -include Code/HAL/MPU6050/subdir.mk
+-include Code/HAL/HMC5883L/subdir.mk
 -include Code/HAL/Config/subdir.mk
 -include Code/HAL/ADXL345/subdir.mk
 -include Code/APP/subdir.mk
@@ -60,7 +61,7 @@ all: Drone\ Board.elf secondary-outputs
 Drone\ Board.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GNU RISC-V Cross C Linker'
-	riscv-none-embed-gcc -march=rv32imac -mabi=ilp32 -msmall-data-limit=8 -msave-restore -Os -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Wunused  -g -T "D:\codes\PROJECTS\fourth year\GP\repo\QuadRaptor\software\drone\drone board\Code\MCAL\Linker\Link.ld" -nostartfiles -Xlinker --gc-sections -Wl,-Map,"Drone Board.map" --specs=nano.specs --specs=nosys.specs -o "Drone Board.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	riscv-none-embed-gcc -march=rv32imac -mabi=ilp32 -msmall-data-limit=8 -msave-restore -Os -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Wunused  -g -T "D:\codes\PROJECTS\fourth year\GP\repo\QuadRaptor\software\drone\drone board\Code\MCAL\Linker\Link.ld" -nostartfiles -Xlinker --gc-sections -Wl,-Map,"Drone Board.map" --specs=nano.specs -u _printf_float --specs=nosys.specs -o "Drone Board.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

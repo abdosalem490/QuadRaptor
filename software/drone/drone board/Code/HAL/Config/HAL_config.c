@@ -73,6 +73,11 @@
  */
 #include "MPU6050.h"
 
+/**
+ * @reason: contains initialization function for HMC5883
+ */
+#include "HMC5883.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -122,6 +127,7 @@ HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void)
     mpu6050_init();
 
     // configure HMC5883L
+    hmc5883l_init();
 
     // configure BMP280
 

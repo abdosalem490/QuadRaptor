@@ -72,6 +72,11 @@
  */
 #include "MPU6050.h"
 
+/**
+ * @reason: contains definition for HMC5883L
+ */
+#include "HMC5883.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -90,6 +95,7 @@
 HAL_ADXL345_Acc_t global_ADXL345ACC_t = {0};
 mpu6050_acc_t global_MPU6050ACC_t = {0};
 mpu6050_gyro_t global_MPU6050GYRO_t = {0};
+hmc5883l_packet global_HMC5883MAGNET_t = {0};
 
 /******************************************************************************
  * Function Prototypes
@@ -129,6 +135,11 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc)
     // read acceleration from MPU6050
     mpu6050_accel_read(&global_MPU6050ACC_t.x, &global_MPU6050ACC_t.y, &global_MPU6050ACC_t.z);
 
+    // account for the placement of the IC on the PCB
+    global_MPU6050ACC_t.x = -global_MPU6050ACC_t.x;
+    global_MPU6050ACC_t.y = -global_MPU6050ACC_t.y;
+//    global_MPU6050ACC_t.z = global_MPU6050ACC_t.z;
+
     arg_pAcc->x = global_MPU6050ACC_t.x;
     arg_pAcc->y = global_MPU6050ACC_t.y;
     arg_pAcc->z = global_MPU6050ACC_t.z;
@@ -145,6 +156,11 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro)
     // read gyroscope from mpu6050
     mpu6050_gyro_read(&global_MPU6050GYRO_t.roll, &global_MPU6050GYRO_t.pitch, &global_MPU6050GYRO_t.yaw);
 
+    // account for the placement of the IC on the PCB
+    global_MPU6050GYRO_t.roll = -global_MPU6050GYRO_t.roll;
+    global_MPU6050GYRO_t.pitch = -global_MPU6050GYRO_t.pitch;
+//    global_MPU6050GYRO_t.yaw = global_MPU6050GYRO_t.yaw;
+
     arg_pGyro->pitch = global_MPU6050GYRO_t.pitch;
     arg_pGyro->roll = global_MPU6050GYRO_t.roll;
     arg_pGyro->yaw = global_MPU6050GYRO_t.yaw;
@@ -152,8 +168,26 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro)
     return HAL_WRAPPER_STAT_OK;
 }
 
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet)
+{
+    // read gyroscope from hmc5883l
+    hmc5883l_read(&global_HMC5883MAGNET_t);
+
+    // account for the placement of the IC on the PCB
+    global_HMC5883MAGNET_t.magnetometer_raw_x = -global_HMC5883MAGNET_t.magnetometer_raw_y;
+    global_HMC5883MAGNET_t.magnetometer_raw_y = -global_HMC5883MAGNET_t.magnetometer_raw_x;
+//    global_HMC5883MAGNET_t.magnetometer_raw_x = global_HMC5883MAGNET_t.magnetometer_raw_x;
+
+
+    arg_pMagnet->x = global_HMC5883MAGNET_t.magnetometer_raw_x;
+    arg_pMagnet->y = global_HMC5883MAGNET_t.magnetometer_raw_y;
+    arg_pMagnet->z = global_HMC5883MAGNET_t.magnetometer_raw_z;
+
+    return HAL_WRAPPER_STAT_OK;
+
+}
+
 /*************** END OF FUNCTIONS ***************************************************************************/
-
-
-// to be the IdleTask (called when no other tasks are running)
-// void vApplicationIdleHook( void );

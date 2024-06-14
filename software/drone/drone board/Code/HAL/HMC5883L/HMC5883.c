@@ -1,7 +1,7 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   Sensor fusion utility for readings correction                                                               |
- * |    @file           :   SensorFusion.h                                                                                              |
+ * |    @title          :   header file for HMC5883L                                                                                    |
+ * |    @file           :   HMC5883.c                                                                                                   |
  * |    @author         :   Mohab Zaghloul                                                                                              |
  * |    @origin_date    :   14/06/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
@@ -11,7 +11,7 @@
  * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this file is the main file for correction of sensor readings                                                |
+ * |    @brief          :   this file is the source file for HMC5883L Sensor                                                            |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
@@ -42,7 +42,6 @@
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
-
 /******************************************************************************
  * Includes
  *******************************************************************************/
@@ -50,32 +49,21 @@
 /**
  * 
  */
-#include "SensorFusion.h"
+#include "HMC5883.h"
 
 /**
  * 
  */
-#include "main.h"
+#include "stdint.h"
 
 /**
  * 
  */
-#include "HAL_wrapper.h"
-
-/**
- * 
- */
-#include <math.h>
+#include "MCAL_wrapper.h"
 
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
-
-/* Kalman Filter constants */
-#define STD_DEV_GYR (4.0)   // Standard Deviation of the gyroscope
-#define STD_DEV_ACC (3.0)   // Standard Deviation of the accelerometer
-
-# define M_PI           3.14159265358979323846  /* pi */
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -93,48 +81,95 @@
  * Function Prototypes
  *******************************************************************************/
 
-/**
- * 
- */
-void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanInput, float KalmanMeasurement, float Ts, float process_noise, float measure_covar);
-
-/**
- * 
- */
-
-
 /******************************************************************************
  * Function Definitions
  *******************************************************************************/
 
 /**
- *
+ * 
  */
-void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanInput, float KalmanMeasurement, float Ts, float process_noise, float measure_covar)
+void hmc5883l_init()
 {
-    float KalmanGain;
-    *KalmanState = *KalmanState + Ts*KalmanInput;
-    *KalmanUncertainty = *KalmanUncertainty + Ts*Ts * process_noise*process_noise;
-    KalmanGain = *KalmanUncertainty * 1/(1*(*KalmanUncertainty) + measure_covar*measure_covar);
-    *KalmanState = *KalmanState + KalmanGain*(KalmanMeasurement-*KalmanState);
-    *KalmanUncertainty = (1-KalmanGain) * (*KalmanUncertainty);
-}
+
+    #if GY86_AUXILIARY != 0
+    /**
+    Register: USER_CTRL (0x6A)
+    *  Disable the MPU6050 master mode. This is a prerequisite for the next step
+    **/
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_USER_CTRL);
+    I2C_write(MPU6050_DISABLE_MASTER);
+    I2C_stop();
+
+    /**
+    Register: BYPASS_CTRL (0x37)
+    *  Enables bypass mode. This connects the main I2C bus to the auxiliary one.
+    **/
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_BYPASS);
+    I2C_write(MPU6050_ENABLE_BYPASS);
+    I2C_stop();
+
+    /**
+    Register: PWR_MGMT_1 (0x6B = 107)
+    *  Selects the clock source: 8MHz oscillator
+    *  Disables the following bits: Reset, Sleep, Cycle
+    *  Does not disable Temperature sensor.
+    **/
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(MPU6050_REG_PWR_MGMT_1);
+    I2C_write(0);
+    I2C_stop();
+
+    // printf("BYPASS ENABLED\r\n");
+    #endif
+
+
+    /**
+    Register: CONFIG_A (0x00)
+    *  Sets the samples per measurement output to 8
+    *  Sets the output data rate to 30Hz
+    **/
+    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(HMC5883L_REG_CONFIG_A);
+    I2C_write(HMC5883L_SAMPLES_8 | HMC5883L_OUTPUT_RATE);
+    I2C_stop();
+
+    /**
+    Register: CONFIG_B (0x00)
+    *  Sets the sensor field range to 1.3 Ga
+    **/
+    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(HMC5883L_REG_CONFIG_B);
+    I2C_write(HMC5883L_RANGE_1_3);
+    I2C_stop();
+
+    /**
+    Register: MODE_REG (0x02)
+    *  Sets the measurement mode to continuous measurement mode
+    **/
+    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(HMC5883L_REG_MODE);
+    I2C_write(HMC5883L_CONTINUOUS_MODE);
+    I2C_stop();
+
+}  
+
+
 
 /**
- *
+ * 
  */
-void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusionDataItem_t* arg_pFusedReadings)
+void hmc5883l_read(hmc5883l_packet* data)
 {
-    
-    float measured_roll, measured_pitch, Ts;
-    Ts = SENSOR_SAMPLE_PERIOD/1000.0;
+    // Get sensor readings
+    I2C_requestFrom(HMC5883L_SLAVE_ADDRESS, I2C_Rx_BUFFER_SIZE);
 
-    measured_roll  = atan(arg_pSensorsReadings->Acc.y / sqrt(arg_pSensorsReadings->Acc.x * arg_pSensorsReadings->Acc.x + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/M_PI);
-    measured_pitch = -atan(arg_pSensorsReadings->Acc.x / sqrt(arg_pSensorsReadings->Acc.y * arg_pSensorsReadings->Acc.y + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/M_PI);
+    data->magnetometer_raw_x = (I2C_read()<<8 | I2C_read()) / HMC5883L_GAIN;
+    data->magnetometer_raw_y = (I2C_read()<<8 | I2C_read()) / HMC5883L_GAIN;
+    data->magnetometer_raw_z = (I2C_read()<<8 | I2C_read()) / HMC5883L_GAIN;
 
-    kalman_filter(&arg_pFusedReadings->roll, &arg_pFusedReadings->roll_uncertainty, arg_pSensorsReadings->Gyro.roll, measured_roll, Ts, STD_DEV_GYR, STD_DEV_ACC);
-    kalman_filter(&arg_pFusedReadings->pitch, &arg_pFusedReadings->pitch_uncertainty, arg_pSensorsReadings->Gyro.pitch, measured_pitch, Ts, STD_DEV_GYR, STD_DEV_ACC);
 }
- 
+
 
 /*************** END OF FUNCTIONS ***************************************************************************/
