@@ -78,6 +78,11 @@
  */
 #include "HMC5883.h"
 
+/**
+ * @reason: contains initialization function for ESCs
+ */
+#include "ESC.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -130,6 +135,9 @@ HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void)
     hmc5883l_init();
 
     // configure BMP280
+
+    // configure ESCs
+    HAL_ESC_init();
 
     return HAL_Config_STAT_OK;
 }

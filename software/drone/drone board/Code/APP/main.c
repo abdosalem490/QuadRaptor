@@ -331,6 +331,7 @@ void Task_AppComm(void)
 */
 void Task_Master(void)
 {
+    HAL_WRAPPER_MotorSpeeds_t local_MotorSpeeds = {0};
     while (1)
     {
         // check for new State from AppComm
@@ -344,7 +345,7 @@ void Task_Master(void)
         // apply PID to compute error
 
         // apply actions on the motors
-
+        HAL_WRAPEPR_SetESCSeeds(&local_MotorSpeeds);
     }
 }
 
@@ -361,11 +362,16 @@ int main(void)
     // configure NVIC
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
+    // delay init for initial configuration (DON'T USE IT INSIDE TASKS BECAUSE FREERTOS IS USING SAME COUNTER REGISTER)
+    Delay_Init();
+
     // configure all pins and peripherals 
     MCAL_Config_ConfigAllPins();
 
     // configure the external hardware as sensors, motors, etc... 
     HAL_Config_ConfigAllHW();
+
+
 
     // TODO: comment the below line
 //     USART_Printf_Init(115200);

@@ -115,6 +115,18 @@ typedef struct
   float z;  /**< Magnetometer in z-direction */
 } HAL_WRAPPER_Magnet_t;
 
+/**
+ * @brief: contains defintions to be used to set motor speeds associated with ESCs
+ */
+typedef struct 
+{
+  uint8_t topLeftSpeed; /**< speed of top left motor in range 0 to 100 */
+  uint8_t topRightSpeed; /**< speed of top Right motor in range 0 to 100 */
+  uint8_t bottomLeftSpeed; /**< speed of bottom left motor in range 0 to 100 */
+  uint8_t bottomRightSpeed; /**< speed of bottom right motor in range 0 to 100 */
+} HAL_WRAPPER_MotorSpeeds_t;
+
+
 
 /******************************************************************************
  * Variables
@@ -131,7 +143,7 @@ typedef struct
  *  @note                                       :       this is a polling function halting the process execution until the SPI data is transferred.
  *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
  *  \b POST-CONDITION                           :       None.
- *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_Acc_t in "HAL_wrapper.h")
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
  *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
  *  \b Example:
@@ -174,7 +186,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc);
  *  @note                                       :       this is a polling function halting the process execution until the I2C data is transferred.
  *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
  *  \b POST-CONDITION                           :       None.
- *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_Acc_t in "HAL_wrapper.h")
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
  *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
  *  \b Example:
@@ -215,7 +227,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro);
  *  @note                                       :       this is a polling function halting the process execution until the I2C data is transferred.
  *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
  *  \b POST-CONDITION                           :       None.
- *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_Acc_t in "HAL_wrapper.h")
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
  *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
  *  \b Example:
@@ -248,6 +260,51 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro);
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet);
 
+
+/**
+ *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_SetESCSeeds(HAL_WRAPPER_MotorSpeeds_t *arg_pMotorsSpeed);
+ *  \b Description                              :       this functions is used as a wrapper function to set the speeds of ESCs motors.
+ *  @param  arg_pMotorsSpeed [INT]              :       base address of new motors speeds to set, refer to @HAL_WRAPPER_MotorSpeeds_t in "HAL_wrapper.h".
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       Motors Speeds are changed.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "HAL_wrapper.h"
+ * 
+ * 
+ * int main() {
+ * HAL_WRAPPER_MotorSpeeds_t speeds = {
+ *  .topLeftSpeed = 50,
+ *  .topRightSpeed = 10,
+ *  .bottomLeftSpeed = 30,
+ *  .bottomRightSpeed = 40
+ * };
+ * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ * if(HAL_Config_STAT_OK == local_errState)
+ * {
+ *  HAL_WRAPPER_Magnet_t *temp = {0};
+ *  local_errState = HAL_WRAPEPR_SetESCSeeds(&speeds);
+ *  if(HAL_WRAPPER_STAT_OK == local_errState)
+ *  {
+ *    // motor speeds are set
+ *  }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 15/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_SetESCSeeds(HAL_WRAPPER_MotorSpeeds_t *arg_pMotorsSpeed);
 
 /*** End of File **************************************************************/
 #endif /*HAL_WRAPPER_HEADER_H_*/

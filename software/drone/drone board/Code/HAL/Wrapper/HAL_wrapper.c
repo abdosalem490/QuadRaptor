@@ -77,6 +77,11 @@
  */
 #include "HMC5883.h"
 
+/**
+ * @reason: contains functions for ESCs driver
+ */
+#include "ESC.h" 
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -136,7 +141,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc)
     mpu6050_accel_read(&global_MPU6050ACC_t.x, &global_MPU6050ACC_t.y, &global_MPU6050ACC_t.z);
 
     // account for the placement of the IC on the PCB
-   global_MPU6050ACC_t.x = global_MPU6050ACC_t.x;
+   global_MPU6050ACC_t.x = -global_MPU6050ACC_t.x;
     global_MPU6050ACC_t.y = -global_MPU6050ACC_t.y;
 //    global_MPU6050ACC_t.z = global_MPU6050ACC_t.z;
 
@@ -188,6 +193,25 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet)
 
     return HAL_WRAPPER_STAT_OK;
 
+}
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_SetESCSeeds(HAL_WRAPPER_MotorSpeeds_t *arg_pMotorsSpeed)
+{
+    if(arg_pMotorsSpeed->topLeftSpeed > 100 || arg_pMotorsSpeed->topRightSpeed > 100 || arg_pMotorsSpeed->bottomLeftSpeed > 100 || arg_pMotorsSpeed->bottomRightSpeed > 100)
+    {
+        return HAL_WRAPPER_STAT_INVALID_PARAMS;
+    }
+
+    // set the new speeds
+    HAL_ESC_setSpeed(HAL_ESC_MOTOR_TOP_LEFT, arg_pMotorsSpeed->topLeftSpeed);
+    HAL_ESC_setSpeed(HAL_ESC_MOTOR_TOP_RIGHT, arg_pMotorsSpeed->topRightSpeed);
+    HAL_ESC_setSpeed(HAL_ESC_MOTOR_BOTTOM_LEFT, arg_pMotorsSpeed->bottomLeftSpeed);
+    HAL_ESC_setSpeed(HAL_ESC_MOTOR_BOTTOM_RIGHT, arg_pMotorsSpeed->bottomRightSpeed);
+
+    return HAL_WRAPPER_STAT_OK;
 }
 
 /*************** END OF FUNCTIONS ***************************************************************************/

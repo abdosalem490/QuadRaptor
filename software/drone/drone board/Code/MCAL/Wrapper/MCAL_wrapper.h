@@ -42,6 +42,7 @@
  * |    11/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPEPR_SPI_POLL_TRANSFER'.                       |
  * |    12/06/2023      1.0.0           Mohab Zaghloul                  created 'I2C_start_transmission', 'I2C_write', 'I2C_stop',      |
  * |                                                                            'I2C_requestFrom', 'I2C_read' functions.                |
+ * |    15/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPEPR_TIM4_PWM_OUT'.                            |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -88,6 +89,15 @@ typedef enum {
   MCAL_WRAPPER_STAT_INVALID_PARAMS,
 } MCAL_WRAPPER_ErrStat_t;
 
+/**
+ * @brief: define which channel of time we are taking about
+ */
+typedef enum {
+  MCAL_WRAPPER_TIM_CH1, /**< timer channel 1*/
+  MCAL_WRAPPER_TIM_CH2, /**< timer channel 2*/
+  MCAL_WRAPPER_TIM_CH3, /**< timer channel 3*/
+  MCAL_WRAPPER_TIM_CH4, /**< timer channel 4*/
+} MCAL_WRAPPER_TIM_CH_t;
 
 /******************************************************************************
  * Variables
@@ -284,6 +294,47 @@ uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity);
  */
 uint8_t I2C_read();
 
+
+/**
+ *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_channel_t, uint8_t arg_u8DutyPercent);
+ *  \b Description                              :       this functions is used as a wrapper function to the function of changing pwm signal of TIM4.
+ *  @param  arg_channel_t [IN]                  :       which channel of TIM4 PWM channels to change its duty cycle, refer to @MCAL_WRAPPER_TIM_CH_t in "MCAL_wrapper.h".
+ *  @param  arg_u8DutyPercent [IN]              :       percent of period to make signal high, possible values are from 1 to 100.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       make sure to call configure the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       the PWM duty cycle of the output is changed.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @MCAL_WRAPPER_ErrStat_t in "MCAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "MCAL_wrapper.h"
+ * 
+ * 
+ * int main() {
+ * 
+ * MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
+ * if(MCAL_Config_STAT_OK == local_errState)
+ * {
+ *  uint8_t temp = 0;
+ *  local_errState = MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH2, 1);
+ *  if(MCAL_WRAPPER_STAT_OK == local_errState)
+ *  {
+ *  
+ *  }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 11/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_channel_t, uint8_t arg_u8DutyPercent);
 
 /*** End of File **************************************************************/
 #endif /*MCAL_WRAPPER_HEADER_H_*/

@@ -127,7 +127,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
 
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, DISABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, DISABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, DISABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_WWDG, DISABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, DISABLE);
@@ -322,7 +322,31 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     I2C_Cmd(I2C2, ENABLE);
 
     /******************************************/
+    TIM_TimeBaseInitTypeDef local_tim4Init_t = {0};
+    local_tim4Init_t.TIM_CounterMode = TIM_CounterMode_CenterAligned1;
+    local_tim4Init_t.TIM_ClockDivision = TIM_CKD_DIV4;
+    local_tim4Init_t.TIM_Prescaler = 144-1;
+    local_tim4Init_t.TIM_Period = 10000;
+    TIM_TimeBaseInit(TIM4, &local_tim4Init_t);
+
+    TIM_OCInitTypeDef local_pwm_t = {0};
+    local_pwm_t.TIM_OCMode = TIM_OCMode_PWM2;
+    local_pwm_t.TIM_OutputState = TIM_OutputState_Enable;
+    local_pwm_t.TIM_Pulse = 0; // 0 ms
+    local_pwm_t.TIM_OCPolarity = TIM_OCPolarity_Low;
+
+    TIM_OC1Init(TIM4, &local_pwm_t);
+    TIM_OC2Init(TIM4, &local_pwm_t);
+    TIM_OC3Init(TIM4, &local_pwm_t);
+    TIM_OC4Init(TIM4, &local_pwm_t);
     
+	TIM_CtrlPWMOutputs(TIM4, ENABLE );
+	TIM_OC1PreloadConfig( TIM4, TIM_OCPreload_Disable );
+	TIM_OC2PreloadConfig( TIM4, TIM_OCPreload_Disable );
+	TIM_OC3PreloadConfig( TIM4, TIM_OCPreload_Disable );
+	TIM_OC4PreloadConfig( TIM4, TIM_OCPreload_Disable );
+	TIM_ARRPreloadConfig( TIM4, ENABLE );
+	TIM_Cmd( TIM4, ENABLE );
 
     return MCAL_Config_STAT_OK;
 }
