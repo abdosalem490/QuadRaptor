@@ -64,7 +64,7 @@ inline uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity){
 
     I2C_start_transmission(address, MASTER_RECEIVER_MODE);
 
-    while(i < I2C_Rx_BUFFER_SIZE){
+    while(i < quantity){
         if( I2C_GetFlagStatus( I2C2, I2C_FLAG_RXNE ) !=  RESET ){
             RxData[i] = I2C_ReceiveData( I2C2 );
             i++;
@@ -106,11 +106,20 @@ inline void I2C_init(){
 }
 
 
+/* Calibration Constants */
+const float mag_bias[3] = {29.903845, 0.116055, 0};
+const float scale_factor[3][3] = {
+        {0.002867, 0, 0},
+        {0, 378.507759, 0},
+        {0, 0, 378.507759}
+        };
+#define PI 3.14159
+
 void hmc5883l_init()
 {
     I2C_init_ch32();
 
-    #if GY86_AUXILIARY != 0
+    #if GY87_AUXILIARY != 0
     /**
     Register: USER_CTRL (0x6A)
     *  Disable the MPU6050 master mode. This is a prerequisite for the next step
@@ -140,22 +149,30 @@ void hmc5883l_init()
     I2C_write(0);
     I2C_stop();
 
-    printf("BYPASS ENABLED\r\n");
     #endif
 
 
     /**
-    Register: CONFIG_A (0x00)
-    *  Sets the samples per measurement output to 8
-    *  Sets the output data rate to 30Hz
+    Register: MODE_REG (0x02)
+    *  Sets the measurement mode
     **/
     I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
-    I2C_write(HMC5883L_REG_CONFIG_A);
-    I2C_write(HMC5883L_SAMPLES_8 | HMC5883L_OUTPUT_RATE);
+    I2C_write(HMC5883L_REG_MODE);
+    I2C_write(HMC5883L_CONTINUOUS_MODE);
     I2C_stop();
 
     /**
-    Register: CONFIG_B (0x00)
+    Register: CONFIG_A (0x00)
+    *  Sets the samples per measurement output to 8
+    *  Sets the output data rate to 15Hz
+    **/
+    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(HMC5883L_REG_CONFIG_A);
+    I2C_write(HMC5883L_SAMPLES_1 | HMC5883L_OUTPUT_RATE_15);
+    I2C_stop();
+
+    /**
+    Register: CONFIG_B (0x01)
     *  Sets the sensor field range to 1.3 Ga
     **/
     I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
@@ -163,26 +180,68 @@ void hmc5883l_init()
     I2C_write(HMC5883L_RANGE_1_3);
     I2C_stop();
 
-    /**
-    Register: MODE_REG (0x02)
-    *  Sets the measurement mode to continuous measurement mode
-    **/
-    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
-    I2C_write(HMC5883L_REG_MODE);
-    I2C_write(HMC5883L_CONTINUOUS_MODE);
-    I2C_stop();
 
 }
 
+void compute_azimuth(hmc5883l_packet* data)
+{
+    float declination_angle, heading;
+    // Declination angle
+    declination_angle = (DECLINATION_DEGREE + (DECLINATION_MINUTE / 60.0)) / (180 / PI);
+    // Calculate heading
+    heading = atan2(data->calibrated[Y_AXIS], data->calibrated[X_AXIS]);
+    heading += declination_angle;
+
+    if(heading < 0)
+        heading += 2*PI;
+    if(heading > 2*PI)
+        heading -= 2*PI;
+
+    data->azimuth = heading * (180/PI);
+}
+
+void hmc5883l_normalize(hmc5883l_packet* data)
+{
+    data->calibrated[X_AXIS] = (data->raw[X_AXIS] - X_OFFSET) / SCALE;
+    data->calibrated[Y_AXIS] = (data->raw[Y_AXIS] - Y_OFFSET) / SCALE;
+}
 
 void hmc5883l_read(hmc5883l_packet* data)
 {
+    /**
+    * Registers: Magnetometer measurements (0x03 to 0x08)
+    */
+    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(HMC5883L_REG_DATA);
+    I2C_stop();
+
     // Get sensor readings
     I2C_requestFrom(HMC5883L_SLAVE_ADDRESS, I2C_Rx_BUFFER_SIZE);
 
-    data->magnetometer_raw[X_AXIS] = (I2C_read()<<8 | I2C_read()) / HMC5883L_GAIN;
-    data->magnetometer_raw[Y_AXIS] = (I2C_read()<<8 | I2C_read()) / HMC5883L_GAIN;
-    data->magnetometer_raw[Z_AXIS] = (I2C_read()<<8 | I2C_read()) / HMC5883L_GAIN;
+    data->raw[X_AXIS] = (I2C_read()<<8 | I2C_read());
+    data->raw[Z_AXIS] = (I2C_read()<<8 | I2C_read());
+    data->raw[Y_AXIS] = (I2C_read()<<8 | I2C_read());
+
+    hmc5883l_normalize(data);
+    compute_azimuth(data);
 
 }
 
+
+void getIDs(char* A, char* B, char* C)
+{
+    /**
+    * Registers: Magnetometer measurements (0x43 to 0x48 = 67 to 72)
+    */
+    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(HMC5883L_REG_ID);
+    I2C_stop();
+
+
+    // Get id values
+    I2C_requestFrom(HMC5883L_SLAVE_ADDRESS, 3);
+
+    *A = I2C_read();
+    *B = I2C_read();
+    *C = I2C_read();
+}
