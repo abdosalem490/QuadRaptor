@@ -106,14 +106,8 @@ inline void I2C_init(){
 }
 
 
-/* Calibration Constants */
-const float mag_bias[3] = {29.903845, 0.116055, 0};
-const float scale_factor[3][3] = {
-        {0.002867, 0, 0},
-        {0, 378.507759, 0},
-        {0, 0, 378.507759}
-        };
-#define PI 3.14159
+
+#define PI 3.14159265
 
 void hmc5883l_init()
 {
