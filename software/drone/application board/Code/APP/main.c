@@ -222,6 +222,14 @@ void Task_RCComm(void)
 {   
     data_t local_RCData_t = {0};
 
+    // TODO: remove the below code
+    local_RCData_t.data.move.roll = -63;
+    local_RCData_t.data.move.pitch = -3;
+    local_RCData_t.data.move.thrust = 10;
+    local_RCData_t.data.move.yaw = 52;
+    local_RCData_t.data.move.turnOnLeds = 0;
+    local_RCData_t.data.move.playMusic = 1;
+
     while (1)
     {
         // check if there is anything to receive from nrf module
@@ -239,8 +247,8 @@ void Task_RCComm(void)
             // send data
         }
 
-        // push the data into the queue for sending to master task
-        // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
+        // push the data into the queue for sending to drone communication task
+        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_RCData_t, queue_AppCommToDrone_Handle_t);
 
         // push the data into the queue for sending to actions task
         // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
@@ -267,7 +275,7 @@ void Task_TakeAction(void)
         // check if we got back a reading
         if(SERVICE_RTOS_STAT_OK == local_ErrStatus)
         {
-
+            
         }
 
     }
@@ -379,12 +387,12 @@ int main(void)
                 TASK_RC_COMM_PRIO,
                 &task_RCComm_Handle_t);
 
-    // create a task for fusing sensor data
-    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_TakeAction,
-                "Take Action",
-                TASK_TACK_ACTION_STACK_SIZE,
-                TASK_TAKE_ACTIONS_PRIO,
-                &task_TakeAction_Handle_t);
+    // // create a task for fusing sensor data
+    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_TakeAction,
+    //             "Take Action",
+    //             TASK_TACK_ACTION_STACK_SIZE,
+    //             TASK_TAKE_ACTIONS_PRIO,
+    //             &task_TakeAction_Handle_t);
 
     // create a task for communication with app board 
     SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_DroneComm,
