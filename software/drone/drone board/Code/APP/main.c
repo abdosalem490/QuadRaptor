@@ -293,7 +293,7 @@ void Task_SensorFusion(void)
     while (1)
     {
         // read item from raw sensor queue
-        local_ErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(1000, (const void *) &local_in_t, queue_RawSensorData_Handle_t, &local_u8LenOfRemaining);
+        local_ErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(1000, (void *) &local_in_t, queue_RawSensorData_Handle_t, &local_u8LenOfRemaining);
 
         // check if we got back a reading
         if(SERVICE_RTOS_STAT_OK == local_ErrStatus)
@@ -358,7 +358,7 @@ void Task_AppComm(void)
         SERVICE_RTOS_WaitForNotification(1000);
 
         // check if there is anything in the queue to be sent
-        local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (const void *) &local_MsgToSend_t, queue_RawSensorData_Handle_t, &local_u8LenOfRemaining);
+        local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_MsgToSend_t, queue_DroneCommToApp_Handle_t, &local_u8LenOfRemaining);
 
         // loop until all message are sent
         while (local_u8LenOfRemaining && SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
@@ -370,7 +370,7 @@ void Task_AppComm(void)
             HAL_WRAPPER_ReceiveSendAppCommMessage(&global_AppCommMsg_t);
 
             // read next message
-            local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (const void *) &local_MsgToSend_t, queue_RawSensorData_Handle_t, &local_u8LenOfRemaining);
+            local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_MsgToSend_t, queue_DroneCommToApp_Handle_t, &local_u8LenOfRemaining);
         }
         
         // check if there anything app board is sending

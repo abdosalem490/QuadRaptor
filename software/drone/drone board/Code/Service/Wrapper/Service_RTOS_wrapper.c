@@ -207,7 +207,7 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32Timeou
 /**
  * 
 */
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle, uint8_t* lenOfRemainingItems)
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle, uint8_t* lenOfRemainingItems)
 {
     SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
 
@@ -217,13 +217,13 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32Timeou
     }
     else
     {
-        if(xQueueReceive((QueueHandle_t)arg_QueueHandle, (const void *)arg_pItemToReceive, (TickType_t)(arg_u32TimeoutMS / portTICK_PERIOD_MS)) != pdPASS)
+        if(xQueueReceive((QueueHandle_t)arg_QueueHandle, (void *)arg_pItemToReceive, (TickType_t)(arg_u32TimeoutMS / portTICK_PERIOD_MS)) != pdPASS)
         {
             local_ErrStatus = SERVICE_RTOS_STAT_QUEUE_EMPTY;
         }
         else
         {
-            lenOfRemainingItems = uxQueueMessagesWaiting((QueueHandle_t)arg_QueueHandle);
+            *lenOfRemainingItems = uxQueueMessagesWaiting((QueueHandle_t)arg_QueueHandle);
         }
     }
 

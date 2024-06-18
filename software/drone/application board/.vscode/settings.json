@@ -1,0 +1,30 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        "freertos.h": "c",
+        "service_rtos_wrapper.h": "c",
+        "math_btt.h": "c",
+        "task.h": "c",
+        "common.h": "c",
+        "constants.h": "c",
+        "stdint.h": "c",
+        "debug.h": "c",
+        "ch32v20x.h": "c",
+        "ch32v20x_i2c.h": "c",
+        "gpio.h": "c",
+        "queue.h": "c",
+        "mcal_config.h": "c",
+        "ch32v20x_spi.h": "c",
+        "adxl345_header.h": "c",
+        "mcal_wrapper.h": "c",
+        "adxl345_config.h": "c",
+        "math.h": "c",
+        "corecrt_math.h": "c",
+        "mpu6050.h": "c",
+        "ch32v20x_gpio.h": "c",
+        "hal_wrapper.h": "c",
+        "hal_config.h": "c",
+        "main.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}

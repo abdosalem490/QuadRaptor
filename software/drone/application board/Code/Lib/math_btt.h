@@ -430,6 +430,7 @@
  */
 #define LIB_MATH_BTT_CLR_BIT(VAR, BTT_NO) \
     VAR = ((VAR) & (~(1 << (BTT_NO))))
+    
 /**
  *  \b Macro                        :       LIB_MATH_BTT_TOGGLE_BIT(VAR, BTT_NO)
  *  \b Description                  :       this macro is used to toggle only one bit of a variable so that 0 becomes 1 and 1 becomes 0.

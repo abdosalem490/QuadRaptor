@@ -287,6 +287,10 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     
     /******************************************/
     local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP; 
+    local_dummy_t.GPIO_Pin = GPIO_Pin_13;
+    GPIO_Init(GPIOC, &local_dummy_t);
+
+    local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP; 
     local_dummy_t.GPIO_Pin = GPIO_Pin_14;
     GPIO_Init(GPIOC, &local_dummy_t);
 

@@ -1,21 +1,21 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   constants                                                                                                   |
- * |    @file           :   constants.h                                                                                                 |
+ * |    @title          :   configuration file for the external hardware                                                                |
+ * |    @file           :   HAL_config.h                                                                                                |
  * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   28/07/2023                                                                                                  |
+ * |    @origin_date    :   18/06/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
- * |    @tool_chain     :   GNU Tools for STM32                                                                                         |
+ * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
  * |    @C_standard     :   ISO C99 (-std=c99)                                                                                          |
- * |    @target         :   stm32f407VGTX                                                                                               |
+ * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this file contains some common definitions which seems to be compiler dependent                             |
+ * |    @brief          :   this file configure all the HAL layer hardware                                                              |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
- * |    Copyright (c) - 2023 - Abdelrahman Mohamed Salem - All Rights Reserved                                                          |
+ * |    Copyright (c) - 2024 - Abdelrahman Mohamed Salem - All Rights Reserved                                                          |
  * |                                                                                                                                    |
  * |    Permission is hereby granted, free of charge, to any person obtaining a copy                                                    |
  * |    of this software and associated documentation files (the "Software"), to deal                                                   |
@@ -38,12 +38,13 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    15/07/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
+ * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
-#ifndef LIB_CONSTANTS_H_
-#define LIB_CONSTANTS_H_
+
+#ifndef HAL_CONFIG_HEADER_H_
+#define HAL_CONFIG_HEADER_H_
 
 /******************************************************************************
  * Includes
@@ -52,50 +53,6 @@
 /******************************************************************************
  * Preprocessor Constants
  *******************************************************************************/
-
-/**
- * @enum: LIB_Constants_DriverStates_t
- * @brief: this is mostly used in configurations to configure whether something is enabled or disabled
- */
-typedef enum
-{
-    LIB_CONSTANTS_DISABLED = 0,     /**< that means the thing we are dealing with is diabled*/
-    LIB_CONSTANTS_ENABLED = 1,      /**< that means the thing we are dealing with is enabled*/
-    LIB_CONSTANTS_MAX_DRIVER_STATE, /**< that value should never be used and it's only used by the implementation code for verifying the input*/
-} LIB_CONSTANTS_DriverStates_t;
-
-/**
- * @enum: LIB_CONSTANTS_LogicalStates_t
- * @brief: this is mostly used in dealing with things that have digital values (HIGH and LOW)
- */
-typedef enum
-{
-    LIB_CONSTANTS_LOW = 0,         /**< that means the thing we are dealing with is having a logic high volt*/
-    LIB_CONSTANTS_HIGH = 1,        /**< that means the thing we are dealing with is is having a logic low volt*/
-    LIB_CONSTANTS_MAX_LOGIC_STATE, /**< that value should never be used and it's only used by the implementation code for verifying the input*/
-} LIB_CONSTANTS_LogicalStates_t;
-
-/**
- * @enum: LIB_CONSTANTS_LockStates_t
- * @brief: this is mostly used in dealing with things that have locking and unlocking sequences
- */
-typedef enum
-{
-    LIB_CONSTANTS_UNLOCKED = 0,   /**< that means the thing we are dealing with is un locked (can't be dealt with)*/
-    LIB_CONSTANTS_LOCKED = 1,     /**< that means the thing we are dealing with is locked (can be dealt with)*/
-    LIB_CONSTANTS_MAX_LOCK_STATE, /**< that value should never be used and it's only used by the implementation code for verifying the input*/
-} LIB_CONSTANTS_LockStates_t;
-
-/**
- * @enum: LIB_CONSTANTS_OperationState_t
- * @brief: this is mostly used in dealing with things that have a success of failure operation
- */
-typedef enum
-{
-    LIB_CONSTANTS_FAIL = 0,     /**< that means a successful operation*/
-    LIB_CONSTANTS_SUCCESS = 1,  /**< that means a failure operation*/
-    LIB_CONSTANTS_MAX_OP_STATE, /**< that value should never be used and it's only used by the implementation code for verifying the input*/
-} LIB_CONSTANTS_OperationState_t;
 
 /******************************************************************************
  * Configuration Constants
@@ -109,13 +66,54 @@ typedef enum
  * Typedefs
  *******************************************************************************/
 
+/**
+ * @brief: contains error states for this module
+*/
+typedef enum {
+  HAL_Config_STAT_OK,
+  HAL_Config_STAT_INVALID_PARAMS,
+} HAL_Config_ErrStat_t;
+
 /******************************************************************************
  * Variables
  *******************************************************************************/
+
 
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 
+/**
+ *  \b function                                 :       HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void);
+ *  \b Description                              :       this functions is used to configure all the external hardware of the MCU given the application.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       make sure to call configure the peripherals of the HAL beforehand.
+ *  \b POST-CONDITION                           :       all external hardware to the MCU are configured.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_Config_ErrStat_t in "HAL_config.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "HAL_config.h"
+ * 
+ * int main() {
+ * HAL_Config_ErrStat_t local_TaskCreateState_t = HAL_Config_ConfigAllHW();
+ * if(SERVICE_RTOS_STAT_OK == local_TaskCreateState_t)
+ * {
+ *  // the pins are configured successfully
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 24/05/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void);
+
 /*** End of File **************************************************************/
-#endif /*LIB_CONSTANTS_H_*/
+#endif /*HAL_CONFIG_HEADER_H_*/
