@@ -59,18 +59,13 @@
  * Preprocessor Constants
  *******************************************************************************/
 
-/* Declination angle */
-#define DECLINATION_DEGREE 4
-#define DECLINATION_MINUTE 51
-
-/* Calibration Results */
-#define X_OFFSET 259.0
-#define Y_OFFSET -163.0
-#define SCALE 385.0
 
 /******************************************************************************
  * Configuration Constants
  *******************************************************************************/
+/* Declination angle */
+#define DECLINATION_DEGREE 4
+#define DECLINATION_MINUTE 51
 
 /******************************************************************************
  * Macros

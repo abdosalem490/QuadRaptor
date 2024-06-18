@@ -94,6 +94,12 @@
 #define MPU6050_REG_PWR_MGMT_1   (0x6B)
 
 
+/* Calibration Results */
+#define X_OFFSET 259.0
+#define Y_OFFSET -163.0
+#define Z_OFFSET 0.0
+#define SCALE 385.0
+#define PI 3.14159265
 
 /******************************************************************************
  * Configuration Constants
@@ -192,6 +198,37 @@ void hmc5883l_init();
  * <hr>
  */
 void hmc5883l_read(hmc5883l_packet* data);
+
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       Get magnetometer measurements.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None.
+ *  @param  arg_u16TaskStackDepth [IN]          :       None.
+ *  @param  arg_u32TaskPriority [IN]            :       None.
+ *  @param  arg_pTaskHandle [OUT]               :       None.
+ *  @note                                       :       hmc5883l_init must be called once in the program before using this function.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None.
+ *  @see                                        :       None.
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 14/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void hmc5883l_normalize(hmc5883l_packet* data);
+
 
 /*** End of File **************************************************************/
 #endif /*HAL_HMC5883L_H_*/

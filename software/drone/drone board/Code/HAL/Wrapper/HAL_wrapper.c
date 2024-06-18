@@ -178,18 +178,21 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro)
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet)
 {
+    int16_t temp = 0;
     // read gyroscope from hmc5883l
     hmc5883l_read(&global_HMC5883MAGNET_t);
 
     // account for the placement of the IC on the PCB
+    temp = -global_HMC5883MAGNET_t.magnetometer_raw_x;
     global_HMC5883MAGNET_t.magnetometer_raw_x = -global_HMC5883MAGNET_t.magnetometer_raw_y;
-    global_HMC5883MAGNET_t.magnetometer_raw_y = -global_HMC5883MAGNET_t.magnetometer_raw_x;
-//    global_HMC5883MAGNET_t.magnetometer_raw_x = global_HMC5883MAGNET_t.magnetometer_raw_x;
+    global_HMC5883MAGNET_t.magnetometer_raw_y = temp;
+
+    hmc5883l_normalize(&global_HMC5883MAGNET_t);
 
 
-    arg_pMagnet->x = global_HMC5883MAGNET_t.magnetometer_raw_x;
-    arg_pMagnet->y = global_HMC5883MAGNET_t.magnetometer_raw_y;
-    arg_pMagnet->z = global_HMC5883MAGNET_t.magnetometer_raw_z;
+    arg_pMagnet->x = global_HMC5883MAGNET_t.calibrated_x;
+    arg_pMagnet->y = global_HMC5883MAGNET_t.calibrated_y;
+    arg_pMagnet->z = global_HMC5883MAGNET_t.calibrated_z;
 
     return HAL_WRAPPER_STAT_OK;
 

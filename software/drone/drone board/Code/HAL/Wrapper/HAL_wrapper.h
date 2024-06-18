@@ -118,13 +118,9 @@ typedef struct
  */
 typedef struct
 {
-  // float x;  /**< Magnetometer in x-direction */
-  // float y;  /**< Magnetometer in y-direction */
-  // float z;  /**< Magnetometer in z-direction */  
-  
-  int16_t x;  /**< Magnetometer in x-direction */
-  int16_t y;  /**< Magnetometer in y-direction */
-  int16_t z;  /**< Magnetometer in z-direction */
+  float x;  /**< Magnetometer in x-direction */
+  float y;  /**< Magnetometer in y-direction */
+  float z;  /**< Magnetometer in z-direction */  
 } HAL_WRAPPER_Magnet_t;
 
 /**

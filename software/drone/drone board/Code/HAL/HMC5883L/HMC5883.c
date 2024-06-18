@@ -61,6 +61,11 @@
  */
 #include "MCAL_wrapper.h"
 
+/**
+ * 
+ */
+#include <math.h>
+
 
 /******************************************************************************
  * Module Preprocessor Constants
@@ -174,5 +179,13 @@ void hmc5883l_read(hmc5883l_packet* data)
     data->magnetometer_raw_y = (I2C_read()<<8 | I2C_read());
 }
 
+
+
+void hmc5883l_normalize(hmc5883l_packet* data)
+{
+    data->calibrated_x = (data->magnetometer_raw_x - X_OFFSET) / SCALE;
+    data->calibrated_y = (data->magnetometer_raw_y - Y_OFFSET) / SCALE;
+    data->calibrated_z = (data->magnetometer_raw_z - Z_OFFSET) / SCALE;
+}
 
 /*************** END OF FUNCTIONS ***************************************************************************/
