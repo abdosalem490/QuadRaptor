@@ -260,7 +260,7 @@ void Task_CollectSensorData(void)
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
 
 // FOR SERIAL PLOTTER
-       printf("%d,%d,%d\r\n", local_magnet_t.x, local_magnet_t.y, local_magnet_t.z);
+    //    printf("%d,%d,%d\r\n", local_magnet_t.x, local_magnet_t.y, local_magnet_t.z);
 
         // assign variables
         local_out_t.Acc = local_Acc_t;
@@ -268,11 +268,11 @@ void Task_CollectSensorData(void)
         local_out_t.Magnet = local_magnet_t;
 
         // push the data into the queue for fusion
-        // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
+        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
 
         // sleep for 5 ms
         // SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
-        SERVICE_RTOS_BlockFor(100);
+        SERVICE_RTOS_BlockFor(5);
     }
 }
 
@@ -303,6 +303,7 @@ void Task_SensorFusion(void)
             // actual measurements showed that roll and pitch are reversed and pitch is in negative
             local_out_t.pitch = -local_temp_t.roll;
             local_out_t.roll = local_temp_t.pitch;
+            local_out_t.yaw = local_temp_t.yaw;
 
             // read temperature data
             local_DataToSendtoApp_t.data.data.info.temperature = 22.2;
@@ -318,14 +319,14 @@ void Task_SensorFusion(void)
 
 
             // FOR SERIAL PLOTTER
-//          printf("%f,%f\n\r", local_out_t.pitch, local_out_t.roll);
+            printf("%f,%f,%f\n\r", local_out_t.pitch, local_out_t.roll, local_out_t.yaw);
 
             // append to the queue the the current state
         //    SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
 
             // push data into queue to be sent to the app board and notify the AppComm with new data
-            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
-            SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);
+            // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
+            // SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);
             
         }
 
@@ -472,11 +473,11 @@ int main(void)
                 &task_CollectSensorData_Handle_t);
 
     // create a task for fusing sensor data
-    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_SensorFusion,
-    //             "Sensor Fusion",
-    //             TASK_SENSOR_FUSION_STACK_SIZE,
-    //             TASK_SENSOR_FUSION_PRIO,
-    //             &task_SensorFusion_Handle_t);
+    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_SensorFusion,
+                "Sensor Fusion",
+                TASK_SENSOR_FUSION_STACK_SIZE,
+                TASK_SENSOR_FUSION_PRIO,
+                &task_SensorFusion_Handle_t);
 
 //    // create a task for communication with app board
 //    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,

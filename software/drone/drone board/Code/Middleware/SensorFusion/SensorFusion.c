@@ -173,8 +173,7 @@ void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusio
     measured_yaw = compute_azimuth(mag_x, mag_y);
 
     kalman_filter(&(arg_pFusedReadings->yaw), &(arg_pFusedReadings->yaw_uncertainty), arg_pSensorsReadings->Gyro.yaw, measured_yaw, Ts, STD_DEV_GYR, STD_DEV_MAG);
-
-
+    
 }
  
 
