@@ -43,6 +43,8 @@
  * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_CreateBlockingQueue'.          |
  * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_AppendToBlockingQueue'.        |
  * |    14/06/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_ReadFromBlockingQueue'.        |
+ * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       added support for getting remaining messages in queue in the.   |
+ * |                                                                    function 'SERVICE_RTOS_ReadFromBlockingQueue'.                  |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
  
@@ -205,7 +207,7 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32Timeou
 /**
  * 
 */
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle)
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle, uint8_t* lenOfRemainingItems)
 {
     SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
 
@@ -218,6 +220,10 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32Timeou
         if(xQueueReceive((QueueHandle_t)arg_QueueHandle, (const void *)arg_pItemToReceive, (TickType_t)(arg_u32TimeoutMS / portTICK_PERIOD_MS)) != pdPASS)
         {
             local_ErrStatus = SERVICE_RTOS_STAT_QUEUE_EMPTY;
+        }
+        else
+        {
+            lenOfRemainingItems = uxQueueMessagesWaiting((QueueHandle_t)arg_QueueHandle);
         }
     }
 
@@ -235,6 +241,52 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_BlockFor(uint32_t arg_u32TimeMS)
    
     return local_ErrStatus;
 }
+
+
+/**
+ * 
+ */
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_WaitForNotification(uint32_t arg_u32TimeoutMS)
+{
+    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+
+    ulTaskNotifyTake(pdFALSE, pdMS_TO_TICKS(arg_u32TimeoutMS));
+
+    return local_ErrStatus;
+}
+
+/**
+ * 
+ */
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_Notify(RTOS_TaskHandle_t arg_TaskToNotify_t, uint8_t arg_u8IsFromISR)
+{
+    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+
+    if(NULL == arg_TaskToNotify_t)
+    {
+        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
+    }
+    else 
+    {
+        if(LIB_CONSTANTS_DISABLED == arg_u8IsFromISR)
+        {
+            xTaskNotifyGive(arg_TaskToNotify_t);
+        } 
+        else if(LIB_CONSTANTS_ENABLED == arg_u8IsFromISR)
+        {
+            vTaskNotifyGiveFromISR(arg_TaskToNotify_t, NULL);
+        }
+        else
+        {
+            //
+        }
+    }
+
+    return local_ErrStatus;
+
+}
+
+
 /*************** END OF FUNCTIONS ***************************************************************************/
  
 // to be the IdleTask (called when no other tasks are running)

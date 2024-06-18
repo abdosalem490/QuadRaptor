@@ -59,7 +59,7 @@
  */
 typedef enum
 {
-    LIB_CONSTANTS_DISABLED = 0,     /**< that means the thing we are dealing with is diabled*/
+    LIB_CONSTANTS_DISABLED = 0,     /**< that means the thing we are dealing with is disabled*/
     LIB_CONSTANTS_ENABLED = 1,      /**< that means the thing we are dealing with is enabled*/
     LIB_CONSTANTS_MAX_DRIVER_STATE, /**< that value should never be used and it's only used by the implementation code for verifying the input*/
 } LIB_CONSTANTS_DriverStates_t;

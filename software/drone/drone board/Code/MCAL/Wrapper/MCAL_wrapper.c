@@ -43,6 +43,7 @@
  * |    12/06/2023      1.0.0           Mohab Zaghloul                  created 'I2C_start_transmission', 'I2C_write', 'I2C_stop',      |
  * |                                                                            'I2C_requestFrom', 'I2C_read' functions.                |
  * |    15/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPEPR_TIM4_PWM_OUT'.                            |
+ * |    15/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_SendDataThroughUART4'.                    |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
  
@@ -81,6 +82,11 @@
  */
 #include "MPU6050.h"
 
+/**
+ * @reason: contains UART functionality
+ */
+#include "ch32v20x_usart.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -96,10 +102,15 @@
 /******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
+functionCallBack_t global_UART4RecCallback = NULL;
 
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
+
+/**
+ * @brief: USART4 IRQ handler
+ */
 
 /******************************************************************************
  * Function Definitions
@@ -239,5 +250,81 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_chann
 
     return MCAL_WRAPPER_STAT_OK;
 }
+
+/**
+ * 
+ */
+void UART4_IRQHandler(void)
+{
+    if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET)
+    {
+    	global_UART4RecCallback();
+    }
+}
+
+/**
+ * 
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SetUART4RecCallBack(functionCallBack_t arg_pUARTCallBack)
+{
+    if(arg_pUARTCallBack == NULL)
+    {
+        return MCAL_WRAPPER_STAT_INVALID_PARAMS;
+    }
+
+    global_UART4RecCallback = arg_pUARTCallBack;
+
+    return MCAL_WRAPPER_STAT_OK;
+}
+
+/**
+ * 
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen)
+{
+    if(NULL == arg_pu8Data)
+    {
+        return MCAL_WRAPPER_STAT_INVALID_PARAMS;
+    }
+
+    while (arg_u16DataLen > 0)
+    {
+        USART_SendData(UART4, (uint16_t) *arg_pu8Data);
+        while(USART_GetFlagStatus(UART4, USART_FLAG_TXE) == RESET) /* waiting for sending finish */
+        arg_pu8Data++;
+        arg_u16DataLen--;
+    }
+    
+
+    return MCAL_WRAPPER_STAT_OK;
+}
+
+/**
+ * 
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen)
+{
+    if(NULL == arg_pu8Data)
+    {
+        return MCAL_WRAPPER_STAT_INVALID_PARAMS;
+    }
+
+    // disable receive interrupt
+    USART_ITConfig(UART4, USART_IT_RXNE, DISABLE);
+
+    while (arg_u16DataLen > 0)
+    {
+        while(USART_GetFlagStatus(UART4, USART_FLAG_RXNE) == RESET);
+        *arg_pu8Data = USART_ReceiveData(UART4);
+        arg_pu8Data++;
+        arg_u16DataLen--;
+    }
+
+    // enable receive interrupt
+    USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
+
+    return MCAL_WRAPPER_STAT_OK;
+}
+
 
 /*************** END OF FUNCTIONS ***************************************************************************/

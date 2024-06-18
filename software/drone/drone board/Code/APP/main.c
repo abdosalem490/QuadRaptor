@@ -207,6 +207,12 @@ RTOS_TaskHandle_t task_AppComm_Handle_t;
 */
 RTOS_TaskHandle_t task_Master_Handle_t;
 
+/************************************************************************/
+/**
+ * @brief: strcut through which we will communicate with app board 
+*/
+HAL_WRAPPER_AppCommMsg_t global_AppCommMsg_t = {0};
+
 
 /******************************************************************************
  * Function Prototypes
@@ -215,6 +221,13 @@ RTOS_TaskHandle_t task_Master_Handle_t;
 /******************************************************************************
  * Function Definitions
  *******************************************************************************/
+
+/************************************************************************/
+void UARTReceivedISR(void)
+{
+    SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_ENABLED);
+    global_AppCommMsg_t.dataIsToReceive = 1;
+}
 
 /************************************************************************/
 /**
@@ -231,17 +244,17 @@ void Task_CollectSensorData(void)
     while (1)
     {
         // read accelerometer data
-        HAL_WRAPEPR_ReadAcc(&local_Acc_t);
+        HAL_WRAPPER_ReadAcc(&local_Acc_t);
         
         // read gyroscope data
-        HAL_WRAPEPR_ReadGyro(&local_gyro_t);
+        HAL_WRAPPER_ReadGyro(&local_gyro_t);
 
         // read magnetometer data
-        HAL_WRAPEPR_ReadMagnet(&local_magnet_t);
+        HAL_WRAPPER_ReadMagnet(&local_magnet_t);
 
         // read barometer data
 
-        // read temperature data
+        
 
 // FOR SERIAL MONITOR
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
@@ -274,11 +287,13 @@ void Task_SensorFusion(void)
     SensorFusionDataItem_t local_temp_t = {0};
     SensorFusionDataItem_t local_out_t = {0};
     SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+    DroneToAppDataItem_t local_DataToSendtoApp_t = {0};
+    uint8_t local_u8LenOfRemaining = 0;
 
     while (1)
     {
         // read item from raw sensor queue
-        local_ErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(1000, (const void *) &local_in_t, queue_RawSensorData_Handle_t);
+        local_ErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(1000, (const void *) &local_in_t, queue_RawSensorData_Handle_t, &local_u8LenOfRemaining);
 
         // check if we got back a reading
         if(SERVICE_RTOS_STAT_OK == local_ErrStatus)
@@ -290,11 +305,29 @@ void Task_SensorFusion(void)
             local_out_t.pitch = -local_temp_t.roll;
             local_out_t.roll = local_temp_t.pitch;
 
+            // read temperature data
+            local_DataToSendtoApp_t.data.data.info.temperature = 22.2;
+
+            // read battery charge
+            local_DataToSendtoApp_t.data.data.info.batteryCharge = 76;
+
+            // assign current altitude
+            local_DataToSendtoApp_t.data.data.info.altitude = 12.3;
+
+            // assign distanceToOrigin (TODO)
+            local_DataToSendtoApp_t.data.data.info.distanceToOrigin = 1.5;
+
+
             // FOR SERIAL PLOTTER
-//              printf("%f,%f\n\r", local_out_t.pitch, local_out_t.roll);
+//          printf("%f,%f\n\r", local_out_t.pitch, local_out_t.roll);
 
             // append to the queue the the current state
-//            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
+        //    SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
+
+            // push data into queue to be sent to the app board and notify the AppComm with new data
+            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
+            SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);
+            
         }
 
     }
@@ -306,21 +339,49 @@ void Task_SensorFusion(void)
 */
 void Task_AppComm(void)
 {
+    
+    SERVICE_RTOS_ErrStat_t local_RTOSErrStatus = SERVICE_RTOS_STAT_OK;
+    AppToDroneDataItem_t local_MsgToRec_t = {0};
+    DroneToAppDataItem_t local_MsgToSend_t = {0};
+    uint8_t local_u8LenOfRemaining = 0;
+
+    // assign pointers and lengths of data to be always received
+    global_AppCommMsg_t.dataToReceive = (uint8_t*) &local_MsgToRec_t.data;
+    global_AppCommMsg_t.dataToReceiveLen = sizeof(local_MsgToRec_t.data);
+    global_AppCommMsg_t.dataToSend = (uint8_t*)&local_MsgToSend_t.data;
+    global_AppCommMsg_t.dataToSendLen = sizeof(local_MsgToSend_t.data);
+
+
     while (1)
     {
+        // wait for notification
+        SERVICE_RTOS_WaitForNotification(1000);
+
+        // check if there is anything in the queue to be sent
+        local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (const void *) &local_MsgToSend_t, queue_RawSensorData_Handle_t, &local_u8LenOfRemaining);
+
+        // loop until all message are sent
+        while (local_u8LenOfRemaining && SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
+        {
+            // set needed variables
+            global_AppCommMsg_t.dataIsToSend = 1;
+
+            // send the message
+            HAL_WRAPPER_ReceiveSendAppCommMessage(&global_AppCommMsg_t);
+
+            // read next message
+            local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (const void *) &local_MsgToSend_t, queue_RawSensorData_Handle_t, &local_u8LenOfRemaining);
+        }
+        
         // check if there anything app board is sending
-        if(1)
-        {
-            // change the state
+        if(global_AppCommMsg_t.dataIsToReceive)
+        {   
+            // receive the message
+            HAL_WRAPPER_ReceiveSendAppCommMessage(&global_AppCommMsg_t);
         }
 
-        // append the new state to the queue
+        // append the new state received to the queue
 
-        // check if there anything to send to the App board
-        if(1)
-        {
-            // send the info to the board using UART
-        }
 
     }
 }
@@ -331,9 +392,18 @@ void Task_AppComm(void)
 */
 void Task_Master(void)
 {
+
     HAL_WRAPPER_MotorSpeeds_t local_MotorSpeeds = {0};
+    SERVICE_RTOS_ErrStat_t local_RTOSErrStatus = SERVICE_RTOS_STAT_OK;
+    SensorFusionDataItem_t local_SensorFusedReadings_t = {0};
+//    uint8_t local_u8LenOfRemaining = 0;
+
     while (1)
     {
+
+        // read sensor fused readings
+        // local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (const void *) &local_SensorFusedReadings_t, queue_FusedSensorData_Handle_t);
+
         // check for new State from AppComm
         if(1)
         {
@@ -345,7 +415,7 @@ void Task_Master(void)
         // apply PID to compute error
 
         // apply actions on the motors
-        HAL_WRAPEPR_SetESCSeeds(&local_MotorSpeeds);
+        HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
     }
 }
 
@@ -411,12 +481,12 @@ int main(void)
                 TASK_SENSOR_FUSION_PRIO,
                 &task_SensorFusion_Handle_t);
 
-    // // create a task for communication with app board 
-    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
-    //             "App Communication",
-    //             TASK_APP_COMM_STACK_SIZE,
-    //             TASK_APP_COMM_PRIO,
-    //             &task_AppComm_Handle_t);
+    // create a task for communication with app board 
+    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
+                "App Communication",
+                TASK_APP_COMM_STACK_SIZE,
+                TASK_APP_COMM_PRIO,
+                &task_AppComm_Handle_t);
 
     // // create a task for master
     // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_Master,

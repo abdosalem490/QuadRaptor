@@ -76,6 +76,11 @@
 */
 #include "ch32v20x_spi.h"
 
+/**
+ * @reason: contains definitions for USART
+ */
+#include "ch32v20x_usart.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -133,7 +138,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, DISABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, DISABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, DISABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, DISABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, DISABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C2, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, DISABLE);
@@ -220,7 +225,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_dummy_t.GPIO_Pin = GPIO_Pin_0;
     GPIO_Init(GPIOB, &local_dummy_t);
 
-    local_dummy_t.GPIO_Mode = GPIO_Mode_AF_PP;
+    local_dummy_t.GPIO_Mode = GPIO_Mode_IN_FLOATING;
     local_dummy_t.GPIO_Pin = GPIO_Pin_1;
     GPIO_Init(GPIOB, &local_dummy_t);
 
@@ -228,7 +233,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_dummy_t.GPIO_Pin = GPIO_Pin_2;
     GPIO_Init(GPIOB, &local_dummy_t);
 
-    local_dummy_t.GPIO_Mode = GPIO_Mode_AF_PP;
+    local_dummy_t.GPIO_Mode = GPIO_Mode_IN_FLOATING;
     local_dummy_t.GPIO_Pin = GPIO_Pin_3;
     GPIO_Init(GPIOB, &local_dummy_t);
 
@@ -347,6 +352,28 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
 	TIM_OC4PreloadConfig( TIM4, TIM_OCPreload_Disable );
 	TIM_ARRPreloadConfig( TIM4, ENABLE );
 	TIM_Cmd( TIM4, ENABLE );
+
+    /******************************************/
+    USART_InitTypeDef local_usart4_t = {0};
+    local_usart4_t.USART_BaudRate = 115200;
+    local_usart4_t.USART_WordLength = USART_WordLength_8b;
+    local_usart4_t.USART_StopBits = USART_StopBits_1;
+    local_usart4_t.USART_Parity = USART_Parity_No;
+    local_usart4_t.USART_HardwareFlowControl = USART_HardwareFlowControl_RTS_CTS;
+    local_usart4_t.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
+    USART_Init(UART4, &local_usart4_t);
+
+    USART_ClockInitTypeDef local_usart4_clock_t = {0};
+    local_usart4_clock_t.USART_Clock = USART_Clock_Enable;
+    local_usart4_clock_t.USART_CPHA = USART_CPOL_Low;
+    local_usart4_clock_t.USART_CPOL = USART_CPHA_1Edge;
+    local_usart4_clock_t.USART_LastBit = USART_LastBit_Enable;
+    USART_ClockInit(UART4, &local_usart4_clock_t);
+
+    USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
+
+    USART_Cmd(UART4, ENABLE);
+
 
     return MCAL_Config_STAT_OK;
 }

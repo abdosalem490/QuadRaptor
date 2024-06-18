@@ -113,7 +113,7 @@ hmc5883l_packet global_HMC5883MAGNET_t = {0};
 /**
  * NOTE: ADXL345 isn't working. tried many methods to debug but either the routing of pcb track isn't good or the IC is fake
  */
-HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc)
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc)
 {
     if(NULL == arg_pAcc)
         return HAL_WRAPPER_STAT_INVALID_PARAMS;
@@ -156,7 +156,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc)
 /**
  * 
  */
-HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro)
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro)
 {
     // read gyroscope from mpu6050
     mpu6050_gyro_read(&global_MPU6050GYRO_t.roll, &global_MPU6050GYRO_t.pitch, &global_MPU6050GYRO_t.yaw);
@@ -176,7 +176,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro)
 /**
  * 
  */
-HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet)
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet)
 {
     // read gyroscope from hmc5883l
     hmc5883l_read(&global_HMC5883MAGNET_t);
@@ -198,7 +198,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet)
 /**
  * 
  */
-HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_SetESCSeeds(HAL_WRAPPER_MotorSpeeds_t *arg_pMotorsSpeed)
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SetESCSpeeds(HAL_WRAPPER_MotorSpeeds_t *arg_pMotorsSpeed)
 {
     if(arg_pMotorsSpeed->topLeftSpeed > 100 || arg_pMotorsSpeed->topRightSpeed > 100 || arg_pMotorsSpeed->bottomLeftSpeed > 100 || arg_pMotorsSpeed->bottomRightSpeed > 100)
     {
@@ -210,6 +210,37 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPEPR_SetESCSeeds(HAL_WRAPPER_MotorSpeeds_t *arg_pMo
     HAL_ESC_setSpeed(HAL_ESC_MOTOR_TOP_RIGHT, arg_pMotorsSpeed->topRightSpeed);
     HAL_ESC_setSpeed(HAL_ESC_MOTOR_BOTTOM_LEFT, arg_pMotorsSpeed->bottomLeftSpeed);
     HAL_ESC_setSpeed(HAL_ESC_MOTOR_BOTTOM_RIGHT, arg_pMotorsSpeed->bottomRightSpeed);
+
+    return HAL_WRAPPER_STAT_OK;
+}
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SetAppCommRecCallBack(functionCallBack_t arg_pUARTCallBack)
+{
+    MCAL_WRAPPER_SetUART4RecCallBack(arg_pUARTCallBack);
+    return HAL_WRAPPER_STAT_OK;
+}
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReceiveSendAppCommMessage(HAL_WRAPPER_AppCommMsg_t* arg_AppCommMsg_t)
+{
+    // check if there anything to receive
+    if(arg_AppCommMsg_t->dataIsToReceive)
+    {
+        MCAL_WRAPPER_ReceiveDataThroughUART4(arg_AppCommMsg_t->dataToReceive, arg_AppCommMsg_t->dataToReceiveLen);
+        arg_AppCommMsg_t->dataIsToReceive = 0;
+    }
+
+    // check if there is anything to send
+    if(arg_AppCommMsg_t->dataIsToSend)
+    {
+        MCAL_WRAPPER_SendDataThroughUART4(arg_AppCommMsg_t->dataToSend, arg_AppCommMsg_t->dataToSendLen);
+        arg_AppCommMsg_t->dataIsToSend = 0;
+    }
 
     return HAL_WRAPPER_STAT_OK;
 }

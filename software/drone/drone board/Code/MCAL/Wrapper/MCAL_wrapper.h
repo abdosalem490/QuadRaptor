@@ -43,6 +43,9 @@
  * |    12/06/2023      1.0.0           Mohab Zaghloul                  created 'I2C_start_transmission', 'I2C_write', 'I2C_stop',      |
  * |                                                                            'I2C_requestFrom', 'I2C_read' functions.                |
  * |    15/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPEPR_TIM4_PWM_OUT'.                            |
+ * |    17/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_SetUART4RecCallBack'.                     |
+ * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_SendDataThroughUART4'.                    |
+ * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_ReceiveDataThroughUART4'.                 |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -64,6 +67,11 @@
  * @reason: contains standard definitions for int
  */
 #include "stdint.h"
+
+/**
+ * @reason: contains common definitions
+ */
+#include "common.h"
 
 /******************************************************************************
  * Preprocessor Constants
@@ -335,6 +343,135 @@ uint8_t I2C_read();
  * <hr>
  */
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_channel_t, uint8_t arg_u8DutyPercent);
+
+/**
+ *  \b function                                 :       MCAL_WRAPPER_SetUART4RecCallBack HAL_WRAPPER_SetUART4CallBack(functionCallBack_t *arg_pUARTCallBack);
+ *  \b Description                              :       this functions is used as a wrapper function to set callback function to execute when UART4 receives anything.
+ *  @param  arg_pUARTCallBack [IN]              :       base address of function to be executed when UART4 receives anything.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       Callback function is assigned to be executed whenever UART4 receives anything.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "MCAL_wrapper.h"
+ * 
+ * void func(void)
+ * {
+ *  // callback code
+ * }
+ * 
+ * int main() {
+ *  MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
+ *  if(MCAL_Config_STAT_OK == local_errState)
+ *  {
+ *    local_errState = MCAL_WRAPPER_SetUART4RecCallBack(func);
+ *    if(MCAL_WRAPPER_STAT_OK == local_errState)
+ *    {
+ *    
+ *    }
+ *  }
+ * }
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 17/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SetUART4RecCallBack(functionCallBack_t arg_pUARTCallBack);
+
+
+/**
+ *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen);
+ *  \b Description                              :       this functions is used as a wrapper function to send data through UART4.
+ *  @param  arg_pu8Data [IN]                    :       base address of data to be send over UART4.
+ *  @param  arg_u16DataLen [IN]                 :       length of data in bytes to be send over UART4.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       data is sent over UART4.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "MCAL_wrapper.h"
+ * 
+ * 
+ * int main() {
+ *  MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
+ *  uint8_t data[] = [0, 1, 2, 4];
+ *  if(MCAL_Config_STAT_OK == local_errState)
+ *  {
+ *    local_errState = MCAL_WRAPPER_SendDataThroughUART4(data, 4);
+ *    if(HAL_WRAPPER_STAT_OK == local_errState)
+ *    {
+ *      // data is sent successfully
+ *    }
+ *  }
+ * }
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen);
+
+
+/**
+ *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen);
+ *  \b Description                              :       this functions is used as a wrapper function to send receive through UART4.
+ *  @param  arg_pu8Data [IN]                    :       base address of data to be received over UART4.
+ *  @param  arg_u16DataLen [IN]                 :       length of data in bytes to be received over UART4.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       data is received over UART4.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "MCAL_wrapper.h"
+ * 
+ * void func(void)
+ * {
+ *    SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_ENABLED);
+ * }
+ * 
+ * int main() {
+ *  MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
+ *  uint8_t data[4];
+ *  if(MCAL_Config_STAT_OK == local_errState)
+ *  {
+ *    local_errState = MCAL_WRAPPER_ReceiveDataThroughUART4(data, 4);
+ *    if(HAL_WRAPPER_STAT_OK == local_errState)
+ *    {
+ *      // data is sent successfully
+ *    }
+ *  }
+ * }
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen);
+
 
 /*** End of File **************************************************************/
 #endif /*MCAL_WRAPPER_HEADER_H_*/

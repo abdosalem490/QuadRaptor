@@ -39,6 +39,7 @@
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
  * |    14/06/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
+ * |    17/06/2023      1.0.0           Abdelrahman Mohamed Salem       added extra defs for structs to be sent over air.               |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -55,6 +56,11 @@
  * @reason: contains typedefs needed
  */
 #include "HAL_wrapper.h"
+
+/**
+ * @reason: contains definitions for standard integer definitions
+ */
+#include "stdint.h"
 
 /******************************************************************************
  * Module Preprocessor Constants
@@ -75,13 +81,59 @@
 
 /************************************************************************/
 /**
+* @brief: defines the data to be sent over nrf module (over the air)
+*/
+typedef enum {
+  DATA_TYPE_MOVE,   // from remote to drone
+  DATA_TYPE_EXTRAS, // from remote to drone
+  DATA_TYPE_INFO,   // from drone to remote
+} DATA_TYPE_t;
+
+/**
+* @brief: struct defines data that holds: yaw, roll, pitch, thrust commands
+*/
+typedef struct __attribute__((packed)){
+  int8_t roll;
+  int8_t pitch;
+  int8_t thrust;
+  int8_t yaw;
+  uint8_t turnOnLeds;
+  uint8_t playMusic;
+} move_command_t;
+
+
+/**
+* @brief: struct defines data that holds info coming from the drone like temperature, battery charge, etc...
+*/
+typedef struct __attribute__((packed)){
+  float distanceToOrigin;
+  float altitude;
+  float temperature;
+  uint8_t batteryCharge;
+} drone_info_t;
+
+/**
+* @brief: the struct that to be sent over the air
+*/
+typedef struct __attribute__((packed)){
+  uint8_t type;
+
+  union {
+    move_command_t move;
+    drone_info_t info;
+  } data;
+
+} data_t;
+
+/************************************************************************/
+/**
  * @brief: this is the struct definition of the items of the 'queue_RawSensorData_Handle_t' elements
 */
 typedef struct {
     HAL_WRAPPER_Acc_t Acc;
     HAL_WRAPPER_Gyro_t Gyro;
     HAL_WRAPPER_Magnet_t Magnet;
-}RawSensorDataItem_t;
+} RawSensorDataItem_t;
 
 /**
  * @brief: this is the struct definition of the items of the 'queue_FusedSensorData_Handle_t' elements
@@ -100,19 +152,20 @@ typedef struct {
 
 } SensorFusionDataItem_t;
 
+
 /**
  * @brief: this is the struct definition of the items of the 'queue_AppCommToDrone_Handle_t' elements
 */
 typedef struct {
-    uint16_t test;  // TODO: edit
-}AppToDroneDataItem_t;
+    data_t data;  // the variable through which we will send and recieve data
+} AppToDroneDataItem_t;
 
 /**
  * @brief: this is the struct definition of the items of the 'queue_DroneCommToApp_Handle_t' elements
 */
 typedef struct {
-    uint16_t test;  // TODO: edit
-}DroneToAppDataItem_t;
+    data_t data;  // the variable through which we will send and receive data
+} DroneToAppDataItem_t;
 
 /******************************************************************************
  * Module Variable Definitions

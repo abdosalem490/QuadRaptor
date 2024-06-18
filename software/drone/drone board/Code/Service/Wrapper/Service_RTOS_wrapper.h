@@ -44,6 +44,10 @@
  * |    22/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_AppendToBlockingQueue'.        |
  * |    14/06/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_ReadFromBlockingQueue'.        |
  * |    14/06/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_BlockFor'.                     |
+ * |    17/06/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_WaitForNotification' and       |
+ * |                                                                    'SERVICE_RTOS_Notify'                                           |
+ * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       added support for getting remaining messages in queue in the.   |
+ * |                                                                    function 'SERVICE_RTOS_ReadFromBlockingQueue'.                  |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -104,6 +108,7 @@ typedef enum {
   SERVICE_RTOS_STAT_INVALID_PARAMS,
   SERVICE_RTOS_STAT_QUEUE_FULL,
   SERVICE_RTOS_STAT_QUEUE_EMPTY,
+  SERVICE_RTOS_STAT_QUEUE_NOT_EMPTY,
 } SERVICE_RTOS_ErrStat_t;
 
 /******************************************************************************
@@ -290,7 +295,8 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CreateBlockingQueue(uint16_t arg_u16QueueLen
  * SERVICE_RTOS_ErrStat_t local_TaskCreateState_t = SERVICE_RTOS_CreateBlockingQueue(10, sizeof(Message_t), &Queue1_Handler);
  * if(SERVICE_RTOS_STAT_OK == local_TaskCreateState_t)
  * {  
- *    if(SERVICE_RTOS_AppendToBlockingQueue(100, (const void*)&message, Queue1_Handler) == SERVICE_RTOS_STAT_OK)
+ *    
+ *    if(SERVICE_RTOS_AppendToBlockingQueue(100, (const void*)&message, Queue1_Handler, ) == SERVICE_RTOS_STAT_OK)
  *    {
  *      // do what you want here
  *    }
@@ -308,11 +314,12 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CreateBlockingQueue(uint16_t arg_u16QueueLen
 SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToAdd, RTOS_QueueHandle_t arg_QueueHandle);
 
 /**
- *  \b function                                 :       SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle);
+ *  \b function                                 :       SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle, uint8_t* lenOfRemainingItems);
  *  \b Description                              :       this functions is used as a wrapper function to receive item from a blocking Queue for interprocess communication.
  *  @param  arg_u32TimeoutMS [IN]               :       The maximum amount of time in Millisecond the task should block waiting for space to become available on the queue, should it already be empty. The call will return immediately if this is set to 0.
  *  @param  arg_pItemToReceive [IN]             :       A pointer to the item that is to be received from the queue.
  *  @param  arg_QueueHandle [IN]                :       The handle to the queue on which the item is to be posted.
+ *  @param  lenOfRemainingItems [OUT]           :       base address of the variable to store in it the number of remaining items in the queue.
  *  @note                                       :       Any reading to this Queue while the queue is empty will make the task in blocked state and any write to the queue while the queue is full will make the task in blocked task.
  *  \b PRE-CONDITION                            :       a Queue must be created beforehand.
  *  \b POST-CONDITION                           :       None.
@@ -337,7 +344,8 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32Timeou
  * SERVICE_RTOS_ErrStat_t local_TaskCreateState_t = SERVICE_RTOS_CreateBlockingQueue(10, sizeof(Message_t), &Queue1_Handler);
  * if(SERVICE_RTOS_STAT_OK == local_TaskCreateState_t)
  * {  
- *    if(SERVICE_RTOS_ReadFromBlockingQueue(100, (const void*)&message, Queue1_Handler) == SERVICE_RTOS_STAT_OK)
+ *    uint8_t lenOfRemainingItems = 0;
+ *    if(SERVICE_RTOS_ReadFromBlockingQueue(100, (const void*)&message, Queue1_Handler, &lenOfRemainingItems) == SERVICE_RTOS_STAT_OK)
  *    {
  *      // do what you want here
  *    }
@@ -352,7 +360,7 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_AppendToBlockingQueue(uint32_t arg_u32Timeou
  * </table><br><br>
  * <hr>
  */
-SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle);
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32TimeoutMS, const void * arg_pItemToReceive, RTOS_QueueHandle_t arg_QueueHandle, uint8_t* lenOfRemainingItems);
 
 
 /**
@@ -404,6 +412,133 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32Timeou
  * <hr>
  */
 SERVICE_RTOS_ErrStat_t SERVICE_RTOS_BlockFor(uint32_t arg_u32TimeMS);
+
+
+
+/**
+ *  \b function                                 :       SERVICE_RTOS_ErrStat_t SERVICE_RTOS_WaitForNotification(uint32_t arg_u32TimeoutMS);
+ *  \b Description                              :       this functions is used as a wrapper function to put a task in block state until being notified by another task for a specific period of time.
+ *  @param  arg_u32TimeoutMS [IN]               :       The maximum amount of time in Millisecond the task should block For.
+ *  @note                                       :       it will put the task that calls it in blocking mode.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @SERVICE_RTOS_ErrStat_t in "Service_RTOS_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "Service_RTOS_wrapper.h"
+ * 
+ * RTOS_TaskHandle_t Task1Task_Handler;
+ * 
+ * void task2_task(void *pvParameters)
+ * {
+ *   while (1)
+ *   {
+ *       printf("task2 entry\r\n");
+ *       GPIO_ResetBits(GPIOA, GPIO_Pin_1);
+ *       SERVICE_RTOS_BlockFor(500);
+ *       GPIO_SetBits(GPIOA, GPIO_Pin_1);
+ *       SERVICE_RTOS_BlockFor(500);
+ * 
+ *       SERVICE_RTOS_WaitForNotification(500); // task waits for notification
+ *      
+ *   }
+ * }
+ * 
+ * int main() {
+ * SERVICE_RTOS_ErrStat_t local_TaskCreateState_t = SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)task2_task, "task", 256, 3, &Task1Task_Handler);
+ * if(SERVICE_RTOS_STAT_OK == local_TaskCreateState_t)
+ * {
+ *  if(SERVICE_RTOS_STAT_OK ==  SERVICE_RTOS_StartSchedular())
+ *  {
+ *    // do what you want here
+ *  }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 17/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_WaitForNotification(uint32_t arg_u32TimeoutMS);
+
+/**
+ *  \b function                                 :       SERVICE_RTOS_ErrStat_t SERVICE_RTOS_Notify(RTOS_TaskHandle_t arg_TaskToNotify_t, uint8_t arg_u8IsFromISR);
+ *  \b Description                              :       this functions is used as a wrapper function to notify a task to wake up from block state.
+ *  @param  arg_TaskToNotify_t [IN]             :       which task to notify to wakeup.
+ *  @param  arg_u8IsFromISR [IN]                :       is this function being called from ISR or not, refer to @LIB_CONSTANTS_DriverStates_t in "constants.h".
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @SERVICE_RTOS_ErrStat_t in "Service_RTOS_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "Service_RTOS_wrapper.h"
+ * 
+ * RTOS_TaskHandle_t Task1Task_Handler;
+ * RTOS_TaskHandle_t Task2Task_Handler;
+ * 
+ * void task2_task(void *pvParameters)
+ * {
+ *   while (1)
+ *   {
+ *       printf("task2 entry\r\n");
+ *       GPIO_ResetBits(GPIOA, GPIO_Pin_1);
+ *       SERVICE_RTOS_BlockFor(500);
+ *       GPIO_SetBits(GPIOA, GPIO_Pin_1);
+ *       SERVICE_RTOS_BlockFor(500);
+ * 
+ *       SERVICE_RTOS_WaitForNotification(500); // task waits for notification
+ *      
+ *   }
+ * }
+ * void task1_task(void *pvParameters)
+ * {
+ *   while (1)
+ *   {
+ *       printf("task2 entry\r\n");
+ *       GPIO_ResetBits(GPIOA, GPIO_Pin_1);
+ *       SERVICE_RTOS_BlockFor(500);
+ *       GPIO_SetBits(GPIOA, GPIO_Pin_1);
+ *       SERVICE_RTOS_BlockFor(500);
+ * 
+ *       SERVICE_RTOS_Notify(Task1Task_Handler, LIB_CONSTANTS_DISABLED); // task2 is notified to wake up
+ *      
+ *   }
+ * }
+ * 
+ * int main() {
+ * SERVICE_RTOS_ErrStat_t local_TaskCreateState_t = SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)task1_task, "task", 256, 3, &Task1Task_Handler);
+ * SERVICE_RTOS_ErrStat_t local_TaskCreateState_t = SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)task2_task, "task", 256, 3, &Task2Task_Handler);
+ * if(SERVICE_RTOS_STAT_OK == local_TaskCreateState_t)
+ * {
+ *  if(SERVICE_RTOS_STAT_OK ==  SERVICE_RTOS_StartSchedular())
+ *  {
+ *    // do what you want here
+ *  }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 17/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_Notify(RTOS_TaskHandle_t arg_TaskToNotify_t, uint8_t arg_u8IsFromISR);
+
+
 
 /*** End of File **************************************************************/
 #endif /*SERVICE_RTOS_WRAPPER_H_*/

@@ -117,10 +117,10 @@ typedef enum {
   DATA_TYPE_MOVE,   // from remote to drone
   DATA_TYPE_EXTRAS, // from remote to drone
   DATA_TYPE_INFO,   // from drone to remote
-}DATA_TYPE_t;
+} DATA_TYPE_t;
 
 // struct defines data that holds: yaw, roll, pitch, thurst commands
-typedef struct{
+typedef struct __attribute__((packed)){
   int8_t roll;
   int8_t pitch;
   int8_t thurst;
@@ -131,7 +131,7 @@ typedef struct{
 
 
 // struct defines data that holds info coming from the drone like temperature, battery charge, etc...
-typedef struct{
+typedef struct __attribute__((packed)){
   float distanceToOrigin;
   float altitude;
   float temperature;
@@ -139,8 +139,8 @@ typedef struct{
 }drone_info_t;
 
 // the struct that to be sent over the air
-typedef struct{
-  DATA_TYPE_t type;
+typedef struct __attribute__((packed)){
+  uint8_t type;
 
   union {
     move_command_t move;
@@ -163,6 +163,7 @@ typedef enum {
   FLIGHT_STATUS_DE_ARMING,   
   FLIGHT_STATUS_RETURNING_HOME,   
 }FLIGHT_STATUS_t;
+
 const char *flight_status[] =
 {
   [FLIGHT_STATUS_MONITOR] = "monitoring",
