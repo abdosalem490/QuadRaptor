@@ -389,17 +389,40 @@ void imu_init()
 
 void imu_read(imu_data* data)
 {
+    float roll_rad, pitch_rad;
+    float mag_x, mag_y, mag_z;
     float measured_roll, measured_pitch, measured_yaw;
 
     mpu6050_read(&(data->mpu6050));
     hmc5883l_read(&(data->hmc5883l));
 
-    measured_roll  = atan(data->mpu6050.accel[Y_AXIS]/sqrt(data->mpu6050.accel[X_AXIS]*data->mpu6050.accel[X_AXIS] + data->mpu6050.accel[Z_AXIS]*data->mpu6050.accel[Z_AXIS])) * 1/(3.142/180);
-    measured_pitch = -atan(data->mpu6050.accel[X_AXIS]/sqrt(data->mpu6050.accel[Y_AXIS]*data->mpu6050.accel[Y_AXIS] + data->mpu6050.accel[Z_AXIS]*data->mpu6050.accel[Z_AXIS])) * 1/(3.142/180);
-    measured_yaw = data->hmc5883l.azimuth;
+    roll_rad = atan(data->mpu6050.accel[Y_AXIS]/sqrt(data->mpu6050.accel[X_AXIS]*data->mpu6050.accel[X_AXIS] + data->mpu6050.accel[Z_AXIS]*data->mpu6050.accel[Z_AXIS]));
+    pitch_rad = -atan(data->mpu6050.accel[X_AXIS]/sqrt(data->mpu6050.accel[Y_AXIS]*data->mpu6050.accel[Y_AXIS] + data->mpu6050.accel[Z_AXIS]*data->mpu6050.accel[Z_AXIS]));
+
+    measured_roll  = roll_rad  * (180/PI);
+    measured_pitch = pitch_rad * (180/PI);
 
     kalman_filter(&(data->kalman_angles[ROLL]), &(data->kalman_uncertainty[ROLL]), data->mpu6050.angle_rates[ROLL], measured_roll, 1, STD_DEV_GYR, STD_DEV_ACC);
     kalman_filter(&(data->kalman_angles[PITCH]), &(data->kalman_uncertainty[PITCH]), data->mpu6050.angle_rates[PITCH], measured_pitch, 1, STD_DEV_GYR, STD_DEV_ACC);
+
+    // Yaw angle
+    roll_rad = data->kalman_angles[ROLL] * (PI/180);
+    pitch_rad = data->kalman_angles[PITCH] * (PI/180);
+
+    mag_x = data->hmc5883l.calibrated[X_AXIS];
+    mag_y = data->hmc5883l.calibrated[Y_AXIS];
+    mag_z = data->hmc5883l.calibrated[Z_AXIS];
+
+    mag_x = mag_x*cos(roll_rad);
+    mag_y = mag_y*cos(pitch_rad);
+
+//    measured_yaw = atan2(mag_y, mag_x) * (180/PI);
+    data->hmc5883l.calibrated[X_AXIS] = mag_x;
+    data->hmc5883l.calibrated[Y_AXIS] = mag_y;
+    compute_azimuth(&(data->hmc5883l));
+    measured_yaw = data->hmc5883l.azimuth;
+
     kalman_filter(&(data->kalman_angles[YAW]), &(data->kalman_uncertainty[YAW]), data->mpu6050.angle_rates[YAW], measured_yaw, 1, STD_DEV_GYR, STD_DEV_MAG);
+
 
 }
