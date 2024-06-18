@@ -254,15 +254,13 @@ void Task_CollectSensorData(void)
 
         // read barometer data
 
-        
-
 // FOR SERIAL MONITOR
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
 //        printf("MPU6050 Gyro: roll: %f,  pitch: %f,  yaw: %f\r\n", local_gyro_t.roll, local_gyro_t.pitch, local_gyro_t.yaw);
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
 
 // FOR SERIAL PLOTTER
-//        printf("%f,%f,%f,\r\n", local_gyro_t.roll, local_gyro_t.pitch, local_gyro_t.yaw);
+       printf("%d,%d,%d\r\n", local_magnet_t.x, local_magnet_t.y, local_magnet_t.z);
 
         // assign variables
         local_out_t.Acc = local_Acc_t;
@@ -270,10 +268,11 @@ void Task_CollectSensorData(void)
         local_out_t.Magnet = local_magnet_t;
 
         // push the data into the queue for fusion
-        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
+        // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
 
         // sleep for 5 ms
-        SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
+        // SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
+        SERVICE_RTOS_BlockFor(100);
     }
 }
 
@@ -441,10 +440,8 @@ int main(void)
     // configure the external hardware as sensors, motors, etc... 
     HAL_Config_ConfigAllHW();
 
-
-
     // TODO: comment the below line
-//     USART_Printf_Init(115200);
+    USART_Printf_Init(115200);
 
     // create the Queue for sensor collection data task to put its data into it
     SERVICE_RTOS_CreateBlockingQueue(QUEUE_RAW_SENSOR_DATA_LEN,
@@ -475,18 +472,18 @@ int main(void)
                 &task_CollectSensorData_Handle_t);
 
     // create a task for fusing sensor data
-    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_SensorFusion,
-                "Sensor Fusion",
-                TASK_SENSOR_FUSION_STACK_SIZE,
-                TASK_SENSOR_FUSION_PRIO,
-                &task_SensorFusion_Handle_t);
+    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_SensorFusion,
+    //             "Sensor Fusion",
+    //             TASK_SENSOR_FUSION_STACK_SIZE,
+    //             TASK_SENSOR_FUSION_PRIO,
+    //             &task_SensorFusion_Handle_t);
 
-    // create a task for communication with app board 
-    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
-                "App Communication",
-                TASK_APP_COMM_STACK_SIZE,
-                TASK_APP_COMM_PRIO,
-                &task_AppComm_Handle_t);
+//    // create a task for communication with app board
+//    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
+//                "App Communication",
+//                TASK_APP_COMM_STACK_SIZE,
+//                TASK_APP_COMM_PRIO,
+//                &task_AppComm_Handle_t);
 
     // // create a task for master
     // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_Master,

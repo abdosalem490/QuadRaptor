@@ -75,7 +75,7 @@
 #define STD_DEV_GYR (4.0)   // Standard Deviation of the gyroscope
 #define STD_DEV_ACC (3.0)   // Standard Deviation of the accelerometer
 
-# define M_PI           3.14159265358979323846  /* pi */
+# define PI           3.14159265358979323846  /* pi */
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -107,6 +107,35 @@ void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanI
  * Function Definitions
  *******************************************************************************/
 
+// /**
+//  * 
+//  */
+// void compute_azimuth(hmc5883l_packet* data)
+// {
+//     float declination_angle, heading;
+//     // Declination angle
+//     declination_angle = (DECLINATION_DEGREE + (DECLINATION_MINUTE / 60.0)) / (180 / PI);
+//     // Calculate heading
+//     heading = atan2(data->calibrated_y, data->calibrated_x);
+//     heading += declination_angle;
+
+//     if(heading < 0)
+//         heading += 2*PI;
+//     if(heading > 2*PI)
+//         heading -= 2*PI;
+
+//     data->azimuth = heading * (180/PI);
+// }
+
+// /**
+//  * 
+//  */
+// void hmc5883l_normalize(hmc5883l_packet* data)
+// {
+//     data->calibrated_x = (data->magnetometer_raw_x - X_OFFSET) / SCALE;
+//     data->calibrated_y = (data->magnetometer_raw_y - Y_OFFSET) / SCALE;
+// }
+
 /**
  *
  */
@@ -129,8 +158,8 @@ void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusio
     float measured_roll, measured_pitch, Ts;
     Ts = SENSOR_SAMPLE_PERIOD/1000.0;
 
-    measured_roll  = atan(arg_pSensorsReadings->Acc.y / sqrt(arg_pSensorsReadings->Acc.x * arg_pSensorsReadings->Acc.x + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/M_PI);
-    measured_pitch = -atan(arg_pSensorsReadings->Acc.x / sqrt(arg_pSensorsReadings->Acc.y * arg_pSensorsReadings->Acc.y + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/M_PI);
+    measured_roll  = atan(arg_pSensorsReadings->Acc.y / sqrt(arg_pSensorsReadings->Acc.x * arg_pSensorsReadings->Acc.x + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/PI);
+    measured_pitch = -atan(arg_pSensorsReadings->Acc.x / sqrt(arg_pSensorsReadings->Acc.y * arg_pSensorsReadings->Acc.y + arg_pSensorsReadings->Acc.z * arg_pSensorsReadings->Acc.z) ) * (180/PI);
 
     kalman_filter(&arg_pFusedReadings->roll, &arg_pFusedReadings->roll_uncertainty, arg_pSensorsReadings->Gyro.roll, measured_roll, Ts, STD_DEV_GYR, STD_DEV_ACC);
     kalman_filter(&arg_pFusedReadings->pitch, &arg_pFusedReadings->pitch_uncertainty, arg_pSensorsReadings->Gyro.pitch, measured_pitch, Ts, STD_DEV_GYR, STD_DEV_ACC);

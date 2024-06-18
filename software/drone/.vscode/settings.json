@@ -1,3 +1,10 @@
 {
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "*.ejs": "html",
+        "stdint.h": "c",
+        "mcal_wrapper.h": "c",
+        "hmc5883.h": "c",
+        "hal_wrapper.h": "c"
+    }
 }

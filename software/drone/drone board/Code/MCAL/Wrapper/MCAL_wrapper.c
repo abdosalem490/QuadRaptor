@@ -203,7 +203,7 @@ uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity){
 
     I2C_start_transmission(address, MASTER_RECEIVER_MODE);
 
-    while(i < I2C_Rx_BUFFER_SIZE){
+    while(i < quantity){
         if( I2C_GetFlagStatus( I2C2, I2C_FLAG_RXNE ) !=  RESET ){
             RxData[i] = I2C_ReceiveData( I2C2 );
             i++;
