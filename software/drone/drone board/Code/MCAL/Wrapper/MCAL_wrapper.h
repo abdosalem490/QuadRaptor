@@ -47,6 +47,7 @@
  * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_SendDataThroughUART4'.                    |
  * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_ReceiveDataThroughUART4'.                 |
  * |    20/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_UART4RecITConfig'.                        |
+ * |    21/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_DelayMS'.                                    |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -394,14 +395,14 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_chann
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_UART4RecITConfig(LIB_CONSTANTS_DriverStates_t arg_Enable_Disable_t);
 
 /**
- *  \b function                                 :       MCAL_WRAPPER_SetUART4RecCallBack HAL_WRAPPER_SetUART4CallBack(functionCallBack_t *arg_pUARTCallBack);
+ *  \b function                                 :       MCAL_WRAPPER_SetUART4RecCallBack MCAL_WRAPPER_SetUART4CallBack(functionCallBack_t *arg_pUARTCallBack);
  *  \b Description                              :       this functions is used as a wrapper function to set callback function to execute when UART4 receives anything.
  *  @param  arg_pUARTCallBack [IN]              :       base address of function to be executed when UART4 receives anything.
  *  @note                                       :       None.
  *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
  *  \b POST-CONDITION                           :       Callback function is assigned to be executed whenever UART4 receives anything.
- *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
- *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @MCAL_WRAPPER_ErrStat_t in "MCAL_wrapper.h")
+ *  @see                                        :       MCAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
  *  \b Example:
  * @code
@@ -444,8 +445,8 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SetUART4RecCallBack(functionCallBack_t arg_p
  *  @note                                       :       None.
  *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
  *  \b POST-CONDITION                           :       data is sent over UART4.
- *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
- *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @MCAL_WRAPPER_ErrStat_t in "MCAL_wrapper.h")
+ *  @see                                        :       MCAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
  *  \b Example:
  * @code
@@ -459,7 +460,7 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SetUART4RecCallBack(functionCallBack_t arg_p
  *  if(MCAL_Config_STAT_OK == local_errState)
  *  {
  *    local_errState = MCAL_WRAPPER_SendDataThroughUART4(data, 4);
- *    if(HAL_WRAPPER_STAT_OK == local_errState)
+ *    if(MCAL_WRAPPER_STAT_OK == local_errState)
  *    {
  *      // data is sent successfully
  *    }
@@ -504,7 +505,7 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, u
  *  if(MCAL_Config_STAT_OK == local_errState)
  *  {
  *    local_errState = MCAL_WRAPPER_ReceiveDataThroughUART4(data, 4);
- *    if(HAL_WRAPPER_STAT_OK == local_errState)
+ *    if(MCAL_WRAPPER_STAT_OK == local_errState)
  *    {
  *      // data is sent successfully
  *    }
@@ -521,6 +522,42 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, u
  */
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen);
 
+/**
+ *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendCommMessage(uint8_t arg_pu8Msg);
+ *  \b Description                              :       this functions is used as a wrapper function to delay for a given MS.
+ *  @param  arg_u16MS [IN]                      :       time to delay for in Milliseconds.
+ *  @note                                       :       This is a blocking function until the delay is achieved and it uses Timer2.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @MCAL_WRAPPER_ErrStat_t in "MCAL_wrapper.h")
+ *  @see                                        :       MCAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "MCAL_wrapper.h"
+ * 
+ * int main() {
+ *  MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
+ *  if(MCAL_Config_STAT_OK == local_errState)
+ *  {
+ *    local_errState = MCAL_WRAPPER_DelayMS(15);
+ *    if(MCAL_WRAPPER_STAT_OK == local_errState)
+ *    {
+ *      // function delay success
+ *    }
+ *  }
+ * }
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 21/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayMS(uint16_t arg_u16MS);
 
 /*** End of File **************************************************************/
 #endif /*MCAL_WRAPPER_HEADER_H_*/

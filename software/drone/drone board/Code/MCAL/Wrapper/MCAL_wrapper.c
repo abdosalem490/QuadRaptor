@@ -87,6 +87,11 @@
  */
 #include "ch32v20x_usart.h"
 
+/**
+ * @reason: contains timer functionality
+ */
+#include "ch32v20x_tim.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -361,5 +366,18 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data
     return MCAL_WRAPPER_STAT_OK;
 }
 
+/**
+ * 
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayMS(uint16_t arg_u16MS)
+{
+    TIM_ClearFlag(TIM2, TIM_FLAG_Update);
+    TIM_SetCounter(TIM2, arg_u16MS);
+    TIM_Cmd( TIM2, ENABLE );
+    while (TIM_GetCounter(TIM2) < arg_u16MS+1);
+    TIM_Cmd( TIM2, DISABLE );
+
+    return MCAL_WRAPPER_STAT_OK;   
+}
 
 /*************** END OF FUNCTIONS ***************************************************************************/

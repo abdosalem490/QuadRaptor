@@ -130,7 +130,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, DISABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, DISABLE);
 
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, DISABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, DISABLE);
@@ -356,6 +356,18 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
 	TIM_OC4PreloadConfig( TIM4, TIM_OCPreload_Disable );
 	TIM_ARRPreloadConfig( TIM4, ENABLE );
 	TIM_Cmd( TIM4, ENABLE );
+
+    /******************************************/
+    TIM_TimeBaseInitTypeDef local_tim2Init_t = {0};
+    local_tim2Init_t.TIM_CounterMode = TIM_CounterMode_Down;
+    local_tim2Init_t.TIM_ClockDivision = TIM_CKD_DIV4;
+    local_tim2Init_t.TIM_Prescaler = 36000-1;
+    local_tim2Init_t.TIM_Period = 30000;
+    TIM_TimeBaseInit(TIM2, &local_tim2Init_t);
+	TIM_ARRPreloadConfig( TIM2, ENABLE );
+    TIM_UpdateRequestConfig(TIM2, TIM_UpdateSource_Regular);
+    TIM_UpdateDisableConfig(TIM2, ENABLE);
+	// TIM_Cmd( TIM2, ENABLE );
 
     /******************************************/
 

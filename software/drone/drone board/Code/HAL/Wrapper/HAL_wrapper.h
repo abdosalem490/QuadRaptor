@@ -43,7 +43,6 @@
  * |    17/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_ReceiveSendAppCommMessage'.                  |
  * |    20/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_DisableEnableAppCommRecCallBack'.            |
  * |    20/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_GetAppCommMessageType'.                      |
- * |    21/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_DelayMS'.                                    |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -560,43 +559,6 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_GetCommMessage(uint8_t* arg_pu8Msg);
  * <hr>
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SendCommMessage(uint8_t arg_pu8Msg);
-
-/**
- *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SendCommMessage(uint8_t arg_pu8Msg);
- *  \b Description                              :       this functions is used as a wrapper function to delay for a given MS.
- *  @param  arg_u16MS [IN]                      :       time to delay for in Milliseconds.
- *  @note                                       :       This is a blocking function until the delay is achieved.
- *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
- *  \b POST-CONDITION                           :       None.
- *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
- *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
- *
- *  \b Example:
- * @code
- * 
- * #include "HAL_wrapper.h"
- * 
- * int main() {
- *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
- *  if(HAL_Config_STAT_OK == local_errState)
- *  {
- *    local_errState = HAL_WRAPPER_DelayMS(15);
- *    if(HAL_WRAPPER_STAT_OK == local_errState)
- *    {
- *      // function delay success
- *    }
- *  }
- * }
- * @endcode
- *
- * <br><b> - HISTORY OF CHANGES - </b>
- * <table align="left" style="width:800px">
- * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 21/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
- * </table><br><br>
- * <hr>
- */
-HAL_WRAPPER_ErrStat_t HAL_WRAPPER_DelayMS(uint16_t arg_u16MS);
 
 /*** End of File **************************************************************/
 #endif /*HAL_WRAPPER_HEADER_H_*/

@@ -451,6 +451,7 @@ void Task_AppComm(void)
     }
 }
 
+
 /************************************************************************/
 /**
  * @brief: this is the master task that will take action upon commands given from the application board or new updates from the sensor data to stabilize the drone
