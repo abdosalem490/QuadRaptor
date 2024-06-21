@@ -98,6 +98,11 @@ functionCallBack_t global_UART4RecCallback = NULL;
  * Function Prototypes
  *******************************************************************************/
 
+/**
+ * @brief: USART4 IRQ handler
+ */
+ void UART4_IRQHandler(void); // __attribute__((interrupt("WCH-Interrupt-fast")));  
+
 /******************************************************************************
  * Function Definitions
  *******************************************************************************/
@@ -141,11 +146,12 @@ functionCallBack_t global_UART4RecCallback = NULL;
  */
 void UART4_IRQHandler(void)
 {
-    if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET)
+    if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET && NULL != global_UART4RecCallback)
     {
-    	global_UART4RecCallback();
+		global_UART4RecCallback();
     }
 }
+
 
 /**
  * 
@@ -165,8 +171,48 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SetUART4RecCallBack(functionCallBack_t arg_p
 /**
  * 
  */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_UART4RecITConfig(LIB_CONSTANTS_DriverStates_t arg_Enable_Disable_t)
+{
+
+
+	NVIC_InitTypeDef  uart_nvic_t = {0};
+    uart_nvic_t.NVIC_IRQChannel = UART4_IRQn;
+    uart_nvic_t.NVIC_IRQChannelPreemptionPriority = 1;
+    uart_nvic_t.NVIC_IRQChannelSubPriority = 1;
+
+    switch (arg_Enable_Disable_t)
+    {
+    case LIB_CONSTANTS_DISABLED:
+            // disable receive interrupt
+            USART_ITConfig(UART4, USART_IT_RXNE, DISABLE);
+            // configure NVIC for uart4 interrupt channel
+            uart_nvic_t.NVIC_IRQChannelCmd = DISABLE;
+            NVIC_Init(&uart_nvic_t);
+        break;
+
+    case LIB_CONSTANTS_ENABLED:
+            // enable receive interrupt
+            USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
+            // configure NVIC for uart4 interrupt channel
+            uart_nvic_t.NVIC_IRQChannelCmd = ENABLE;
+            NVIC_Init(&uart_nvic_t);
+        break;
+
+    default:
+        break;
+    }
+    
+    return MCAL_WRAPPER_STAT_OK;
+}
+
+
+/**
+ * 
+ */
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen)
 {
+    MCAL_WRAPPER_ErrStat_t local_errState_t = MCAL_WRAPPER_STAT_OK;
+
     if(NULL == arg_pu8Data)
     {
         return MCAL_WRAPPER_STAT_INVALID_PARAMS;
@@ -174,14 +220,13 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, u
 
     while (arg_u16DataLen > 0)
     {
+    	while(USART_GetFlagStatus(UART4, USART_FLAG_TXE) == RESET); /* waiting for sending finish */
         USART_SendData(UART4, (uint16_t) *arg_pu8Data);
-        while(USART_GetFlagStatus(UART4, USART_FLAG_TXE) == RESET) /* waiting for sending finish */
         arg_pu8Data++;
         arg_u16DataLen--;
     }
-    
 
-    return MCAL_WRAPPER_STAT_OK;
+    return local_errState_t;
 }
 
 /**
@@ -194,19 +239,15 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data
         return MCAL_WRAPPER_STAT_INVALID_PARAMS;
     }
 
-    // disable receive interrupt
-    USART_ITConfig(UART4, USART_IT_RXNE, DISABLE);
-
     while (arg_u16DataLen > 0)
     {
-        while(USART_GetFlagStatus(UART4, USART_FLAG_RXNE) == RESET);
+       while(USART_GetFlagStatus(UART4, USART_FLAG_RXNE) == RESET);
         *arg_pu8Data = USART_ReceiveData(UART4);
         arg_pu8Data++;
         arg_u16DataLen--;
+        // clear the interrupt by writing 0 
+        USART_ClearFlag(UART4, USART_IT_RXNE);
     }
-
-    // enable receive interrupt
-    USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
 
     return MCAL_WRAPPER_STAT_OK;
 }

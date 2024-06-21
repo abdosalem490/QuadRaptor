@@ -5,6 +5,10 @@
         "stdint.h": "c",
         "mcal_wrapper.h": "c",
         "hmc5883.h": "c",
-        "hal_wrapper.h": "c"
+        "hal_wrapper.h": "c",
+        "common.h": "c",
+        "constants.h": "c",
+        "freertos.h": "c",
+        "task.h": "c"
     }
 }

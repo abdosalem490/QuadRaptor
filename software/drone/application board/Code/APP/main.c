@@ -198,6 +198,10 @@ RTOS_TaskHandle_t task_DroneComm_Handle_t;
 */
 HAL_WRAPPER_AppCommMsg_t global_DroneCommMsg_t = {0};
 
+/**
+ * @brief: actual place where the received data will be placed
+ */
+AppToDroneDataItem_t global_MsgToRec_t = {0};
 
 /******************************************************************************
  * Function Prototypes
@@ -210,8 +214,53 @@ HAL_WRAPPER_AppCommMsg_t global_DroneCommMsg_t = {0};
 /************************************************************************/
 void UARTReceivedISR(void)
 {
-    SERVICE_RTOS_Notify(task_DroneComm_Handle_t, LIB_CONSTANTS_ENABLED);
-    global_DroneCommMsg_t.dataIsToReceive = 1;
+    
+    static uint8_t local_u8MsgType = DATA_TYPE_INVALID;
+    static uint16_t local_u16CurrentItem = 0;
+
+    // disable interrupt
+    // HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_DISABLED);
+
+    if(0 == global_DroneCommMsg_t.dataIsToReceive)
+    {
+        // check if the received byte is of correct type
+        HAL_WRAPPER_GetCommMessage(&local_u8MsgType);
+        if(DATA_TYPE_INFO == local_u8MsgType)
+        {
+            local_u16CurrentItem = 1;
+            global_DroneCommMsg_t.dataIsToReceive = 1;
+            *global_DroneCommMsg_t.dataToReceive = local_u8MsgType;
+        }
+        else
+        {
+            // invalid header, discard
+        }
+
+    }
+    else
+    {
+        // stare data in the variable
+        HAL_WRAPPER_GetCommMessage(global_DroneCommMsg_t.dataToReceive + local_u16CurrentItem);
+        local_u16CurrentItem++;
+
+        // check if we reached the correct length of the message to receive
+        if(local_u16CurrentItem == global_DroneCommMsg_t.dataToReceiveLen)
+        {
+        	global_DroneCommMsg_t.dataIsToReceive = 0;
+
+            // TODO: append to a queue
+        }
+    }
+    
+    // enable the interrupt
+    // HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_ENABLED);
+
+    // global_AppCommMsg_t.dataIsToReceive = 1;
+    
+    // // disable interrupt
+    // HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_DISABLED);
+
+    // SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_ENABLED);
 }
 
 /************************************************************************/
@@ -223,6 +272,7 @@ void Task_RCComm(void)
     data_t local_RCData_t = {0};
 
     // TODO: remove the below code
+    local_RCData_t.type = DATA_TYPE_MOVE;
     local_RCData_t.data.move.roll = -63;
     local_RCData_t.data.move.pitch = -3;
     local_RCData_t.data.move.thrust = 10;
@@ -249,12 +299,12 @@ void Task_RCComm(void)
 
         // push the data into the queue for sending to drone communication task
         SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_RCData_t, queue_AppCommToDrone_Handle_t);
-
+        SERVICE_RTOS_Notify(task_DroneComm_Handle_t, LIB_CONSTANTS_DISABLED);
         // push the data into the queue for sending to actions task
         // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
 
         // sleep for 5 ms
-        SERVICE_RTOS_BlockFor(5);
+        SERVICE_RTOS_BlockFor(10000);
     }
 }
 
@@ -264,11 +314,47 @@ void Task_RCComm(void)
 */
 void Task_TakeAction(void)
 {
+    //                      SOME INITIALIZATION 
+    // INITIALIZATION CAN'T BE DONE IN MAIN AS SCHEDULAR HAS TO START FIRST BEFORE DOING 
+    // ANYTHING (RECEIVING INTERRUPTS HAS TO WAIT BEFORE INITIALIZING)
+    /************************************************************************/
+    // assign pointers and lengths of data to be always received
+    global_DroneCommMsg_t.dataToReceive = (uint8_t*) &global_MsgToRec_t.data;
+    global_DroneCommMsg_t.dataToReceiveLen = sizeof(global_MsgToRec_t.data);
+    global_DroneCommMsg_t.dataIsToReceive = 0;
+    /************************************************************************/
+
+    // Configure/enable Clock and all needed peripherals 
+    SystemInit();
+    SystemCoreClockUpdate();
+
+    // configure NVIC
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+
+    // delay init for initial configuration (DON'T USE IT INSIDE TASKS BECAUSE FREERTOS IS USING SAME COUNTER REGISTER)
+    Delay_Init();
+
+    // set call back for board receive
+    HAL_WRAPPER_SetAppCommRecCallBack(UARTReceivedISR);
+
+    // configure all pins and peripherals 
+    MCAL_Config_ConfigAllPins();
+
+    // configure the external hardware as sensors, motors, etc... 
+    HAL_Config_ConfigAllHW();
+
+
+    // TODO: comment the below line
+//     USART_Printf_Init(115200);
+
     SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
     uint8_t local_u8LenOfRemaining = 0;
 
     while (1)
     {
+        // wait for notification
+        SERVICE_RTOS_WaitForNotification(10000);  
+
         // read item from raw actions
         // local_ErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(1000, (void *) &local_in_t, queue_RawSensorData_Handle_t, &local_u8LenOfRemaining);
 
@@ -289,16 +375,15 @@ void Task_DroneComm(void)
 {
     
     SERVICE_RTOS_ErrStat_t local_RTOSErrStatus = SERVICE_RTOS_STAT_OK;
-    AppToDroneDataItem_t local_MsgToRec_t = {0};
     DroneToAppDataItem_t local_MsgToSend_t = {0};
     uint8_t local_u8LenOfRemaining = 0;
 
-    // assign pointers and lengths of data to be always received
-    global_DroneCommMsg_t.dataToReceive = (uint8_t*) &local_MsgToRec_t.data;
-    global_DroneCommMsg_t.dataToReceiveLen = sizeof(local_MsgToRec_t.data);
+    // assign pointers and lengths of data to be always sent
     global_DroneCommMsg_t.dataToSend = (uint8_t*)&local_MsgToSend_t.data;
     global_DroneCommMsg_t.dataToSendLen = sizeof(local_MsgToSend_t.data);
 
+    // // enable the interrupt
+    // HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_ENABLED);
 
     while (1)
     {
@@ -312,21 +397,24 @@ void Task_DroneComm(void)
         while (local_u8LenOfRemaining && SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
         {
             // set needed variables
-            global_DroneCommMsg_t.dataIsToSend = 1;
+            // global_DroneCommMsg_t.dataIsToSend = 1;
 
             // send the message
-            HAL_WRAPPER_ReceiveSendAppCommMessage(&global_DroneCommMsg_t);
+            for (size_t i = 0; i < global_DroneCommMsg_t.dataToSendLen; i++)
+            {
+                HAL_WRAPPER_SendCommMessage(*(global_DroneCommMsg_t.dataToSend + i));
+            }
 
             // read next message
             local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_MsgToSend_t, queue_AppCommToDrone_Handle_t, &local_u8LenOfRemaining);
         }
         
-        // check if there anything Drone board is sending
-        if(global_DroneCommMsg_t.dataIsToReceive)
-        {   
-            // receive the message
-            HAL_WRAPPER_ReceiveSendAppCommMessage(&global_DroneCommMsg_t);
-        }
+        // // check if there anything Drone board is sending
+        // if(global_DroneCommMsg_t.dataIsToReceive)
+        // {   
+        //     // receive the message
+        //     HAL_WRAPPER_ReceiveSendAppCommMessage(&global_DroneCommMsg_t);
+        // }
 
         // append the new received message to the queue
 
@@ -340,25 +428,6 @@ void Task_DroneComm(void)
 */
 int main(void)
 {
-    // Configure/enable Clock and all needed peripherals 
-    SystemInit();
-    SystemCoreClockUpdate();
-
-    // configure NVIC
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-
-    // delay init for initial configuration (DON'T USE IT INSIDE TASKS BECAUSE FREERTOS IS USING SAME COUNTER REGISTER)
-    Delay_Init();
-
-    // configure all pins and peripherals 
-    MCAL_Config_ConfigAllPins();
-
-    // configure the external hardware as sensors, motors, etc... 
-    HAL_Config_ConfigAllHW();
-
-    // TODO: comment the below line
-//     USART_Printf_Init(115200);
-
     // create the Queue for sensor collection data task to put its data into it
     SERVICE_RTOS_CreateBlockingQueue(QUEUE_RAW_RC_DATA_LEN,
                                     sizeof(RawRCDataItem_t),
@@ -387,12 +456,12 @@ int main(void)
                 TASK_RC_COMM_PRIO,
                 &task_RCComm_Handle_t);
 
-    // // create a task for fusing sensor data
-    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_TakeAction,
-    //             "Take Action",
-    //             TASK_TACK_ACTION_STACK_SIZE,
-    //             TASK_TAKE_ACTIONS_PRIO,
-    //             &task_TakeAction_Handle_t);
+    // create a task for taking actions
+    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_TakeAction,
+                "Take Action",
+                TASK_TACK_ACTION_STACK_SIZE,
+                TASK_TAKE_ACTIONS_PRIO,
+                &task_TakeAction_Handle_t);
 
     // create a task for communication with app board 
     SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_DroneComm,
@@ -400,6 +469,7 @@ int main(void)
                 TASK_DRONE_COMM_STACK_SIZE,
                 TASK_DRONE_COMM_PRIO,
                 &task_DroneComm_Handle_t);
+    
 
     // start the schedular
     SERVICE_RTOS_StartSchedular();

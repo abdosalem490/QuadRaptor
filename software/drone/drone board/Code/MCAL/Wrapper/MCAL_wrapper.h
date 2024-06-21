@@ -46,6 +46,7 @@
  * |    17/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_SetUART4RecCallBack'.                     |
  * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_SendDataThroughUART4'.                    |
  * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_ReceiveDataThroughUART4'.                 |
+ * |    20/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_UART4RecITConfig'.                        |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -73,6 +74,11 @@
  */
 #include "common.h"
 
+/**
+ * @reason: contains some constant definitions
+ */
+#include "constants.h"
+
 /******************************************************************************
  * Preprocessor Constants
  *******************************************************************************/
@@ -95,6 +101,7 @@
 typedef enum {
   MCAL_WRAPPER_STAT_OK,
   MCAL_WRAPPER_STAT_INVALID_PARAMS,
+  MCAL_WRAPPER_STAT_REC_BUFF_FULL,
 } MCAL_WRAPPER_ErrStat_t;
 
 /**
@@ -343,6 +350,48 @@ uint8_t I2C_read();
  * <hr>
  */
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_channel_t, uint8_t arg_u8DutyPercent);
+
+/**
+ *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_UART4RecITConfig(LIB_CONSTANTS_DriverStates_t arg_Enable_Disable_t);
+ *  \b Description                              :       this functions is used as a wrapper function to enable/disable uart4 byte received interrupt.
+ *  @param arg_Enable_Disable_t [IN]            :       to enable or disable the interrupt, refer to @LIB_CONSTANTS_DriverStates_t in "constants.h".
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       UART receive interrupt is enabled/disabled.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "MCAL_wrapper.h"
+ * 
+ * void func(void)
+ * {
+ *  // callback code
+ * }
+ * 
+ * int main() {
+ *  MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
+ *  if(MCAL_Config_STAT_OK == local_errState)
+ *  {
+ *    local_errState = MCAL_WRAPPER_UART4RecITConfig(LIB_CONSTANTS_ENABLED);
+ *    if(MCAL_WRAPPER_STAT_OK == local_errState)
+ *    {
+ *      // interrupt is enabled
+ *    }
+ *  }
+ * }
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 20/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_UART4RecITConfig(LIB_CONSTANTS_DriverStates_t arg_Enable_Disable_t);
 
 /**
  *  \b function                                 :       MCAL_WRAPPER_SetUART4RecCallBack HAL_WRAPPER_SetUART4CallBack(functionCallBack_t *arg_pUARTCallBack);

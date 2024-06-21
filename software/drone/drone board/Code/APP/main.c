@@ -83,6 +83,11 @@
  */
 #include "SensorFusion.h"
 
+/**
+ * @reason: contains some common constants
+ */
+#include "constants.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -190,28 +195,34 @@ RTOS_QueueHandle_t queue_DroneCommToApp_Handle_t;
 /**
  * @brief: handler which act as identifier for the sensor data collection task through which we will deal with anything related to this task 
 */
-RTOS_TaskHandle_t task_CollectSensorData_Handle_t;
+RTOS_TaskHandle_t task_CollectSensorData_Handle_t = NULL;
 
 /**
  * @brief: handler which act as identifier for the sensor fusion task through which we will deal with anything related to this task 
 */
-RTOS_TaskHandle_t task_SensorFusion_Handle_t;
+RTOS_TaskHandle_t task_SensorFusion_Handle_t = NULL;
 
 /**
  * @brief: handler which act as identifier for the app board communication task through which we will deal with anything related to this task 
 */
-RTOS_TaskHandle_t task_AppComm_Handle_t;
+RTOS_TaskHandle_t task_AppComm_Handle_t = NULL;
 
 /**
  * @brief: handler which act as identifier for the master task through which we will deal with anything related to this task 
 */
-RTOS_TaskHandle_t task_Master_Handle_t;
+RTOS_TaskHandle_t task_Master_Handle_t = NULL;
 
 /************************************************************************/
+
 /**
  * @brief: strcut through which we will communicate with app board 
 */
 HAL_WRAPPER_AppCommMsg_t global_AppCommMsg_t = {0};
+
+/**
+ * @brief: actual place where the received data will be placed
+ */
+AppToDroneDataItem_t global_MsgToRec_t = {0};
 
 
 /******************************************************************************
@@ -225,8 +236,53 @@ HAL_WRAPPER_AppCommMsg_t global_AppCommMsg_t = {0};
 /************************************************************************/
 void UARTReceivedISR(void)
 {
-    SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_ENABLED);
-    global_AppCommMsg_t.dataIsToReceive = 1;
+    
+    static uint8_t local_u8MsgType = DATA_TYPE_INVALID;
+    static uint16_t local_u16CurrentItem = 0;
+
+    // disable interrupt
+    // HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_DISABLED);
+
+    if(0 == global_AppCommMsg_t.dataIsToReceive)
+    {
+        // check if the received byte is of correct type
+        HAL_WRAPPER_GetCommMessage(&local_u8MsgType);
+        if(DATA_TYPE_MOVE == local_u8MsgType)
+        {
+            local_u16CurrentItem = 1;
+            global_AppCommMsg_t.dataIsToReceive = 1;
+            *global_AppCommMsg_t.dataToReceive = local_u8MsgType;
+        }
+        else
+        {
+            // invalid header, discard
+        }
+
+    }
+    else
+    {
+        // stare data in the variable
+        HAL_WRAPPER_GetCommMessage(global_AppCommMsg_t.dataToReceive + local_u16CurrentItem);
+        local_u16CurrentItem++;
+
+        // check if we reached the correct length of the message to receive
+        if(local_u16CurrentItem == global_AppCommMsg_t.dataToReceiveLen)
+        {
+            global_AppCommMsg_t.dataIsToReceive = 0;
+            // TODO: append to a queue
+        }
+    }
+    
+
+    // enable the interrupt
+    // HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_ENABLED);
+
+
+    // global_AppCommMsg_t.dataIsToReceive = 1;
+    
+    // // disable interrupt
+
+    // SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_ENABLED);
 }
 
 /************************************************************************/
@@ -271,8 +327,8 @@ void Task_CollectSensorData(void)
         SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
 
         // sleep for 5 ms
-        // SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
-        SERVICE_RTOS_BlockFor(5);
+//        SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
+        SERVICE_RTOS_BlockFor(20);
     }
 }
 
@@ -305,6 +361,9 @@ void Task_SensorFusion(void)
             local_out_t.roll = local_temp_t.pitch;
             local_out_t.yaw = local_temp_t.yaw;
 
+            // set type of data to send
+            local_DataToSendtoApp_t.data.type = DATA_TYPE_INFO;
+
             // read temperature data
             local_DataToSendtoApp_t.data.data.info.temperature = 22.2;
 
@@ -319,14 +378,16 @@ void Task_SensorFusion(void)
 
 
             // FOR SERIAL PLOTTER
-            printf("%f,%f,%f\n\r", local_out_t.pitch, local_out_t.roll, local_out_t.yaw);
+//            printf("%f,%f,%f\n\r", local_out_t.pitch, local_out_t.roll, local_out_t.yaw);
 
             // append to the queue the the current state
         //    SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
 
+
+            // TODO: only add every 1 sec
             // push data into queue to be sent to the app board and notify the AppComm with new data
-            // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
-            // SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);
+            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
+            SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);
             
         }
 
@@ -341,16 +402,16 @@ void Task_AppComm(void)
 {
     
     SERVICE_RTOS_ErrStat_t local_RTOSErrStatus = SERVICE_RTOS_STAT_OK;
-    AppToDroneDataItem_t local_MsgToRec_t = {0};
+    
     DroneToAppDataItem_t local_MsgToSend_t = {0};
     uint8_t local_u8LenOfRemaining = 0;
 
-    // assign pointers and lengths of data to be always received
-    global_AppCommMsg_t.dataToReceive = (uint8_t*) &local_MsgToRec_t.data;
-    global_AppCommMsg_t.dataToReceiveLen = sizeof(local_MsgToRec_t.data);
+    // assign pointers and lengths of data to be always send
     global_AppCommMsg_t.dataToSend = (uint8_t*)&local_MsgToSend_t.data;
     global_AppCommMsg_t.dataToSendLen = sizeof(local_MsgToSend_t.data);
-
+    
+    // enable the interrupt
+    HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_ENABLED);
 
     while (1)
     {
@@ -364,25 +425,29 @@ void Task_AppComm(void)
         while (local_u8LenOfRemaining && SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
         {
             // set needed variables
-            global_AppCommMsg_t.dataIsToSend = 1;
+            // global_AppCommMsg_t.dataIsToSend = 1;
 
             // send the message
-            HAL_WRAPPER_ReceiveSendAppCommMessage(&global_AppCommMsg_t);
+            for (size_t i = 0; i < global_AppCommMsg_t.dataToSendLen; i++)
+            {
+                HAL_WRAPPER_SendCommMessage(*(global_AppCommMsg_t.dataToSend + i));
+            }
+            
+                        
+            // HAL_WRAPPER_ReceiveSendAppCommMessage(&global_AppCommMsg_t);
 
             // read next message
             local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_MsgToSend_t, queue_DroneCommToApp_Handle_t, &local_u8LenOfRemaining);
         }
         
-        // check if there anything app board is sending
-        if(global_AppCommMsg_t.dataIsToReceive)
-        {   
-            // receive the message
-            HAL_WRAPPER_ReceiveSendAppCommMessage(&global_AppCommMsg_t);
-        }
+        // // check if there anything app board is sending
+        // if(global_AppCommMsg_t.dataIsToReceive)
+        // {   
+        //     // receive the message
+        //     HAL_WRAPPER_ReceiveSendAppCommMessage(&global_AppCommMsg_t);
+        // }
 
         // append the new state received to the queue
-
-
     }
 }
 
@@ -392,6 +457,41 @@ void Task_AppComm(void)
 */
 void Task_Master(void)
 {
+    
+    //                      SOME INITIALIZATION 
+    // INITIALIZATION CAN'T BE DONE IN MAIN AS SCHEDULAR HAS TO START FIRST BEFORE DOING 
+    // ANYTHING (RECEIVING INTERRUPTS HAS TO WAIT BEFORE INITIALIZING)
+    /************************************************************************/
+    // assign pointers and lengths of data to be always received
+    global_AppCommMsg_t.dataToReceive = (uint8_t*) &global_MsgToRec_t.data;
+    global_AppCommMsg_t.dataToReceiveLen = sizeof(global_MsgToRec_t.data);
+    global_AppCommMsg_t.dataIsToReceive = 0;
+    /************************************************************************/
+    
+    // Configure/enable Clock and all needed peripherals 
+    SystemInit();
+    SystemCoreClockUpdate();
+
+    // configure NVIC
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+
+    // delay init for initial configuration (DON'T USE IT INSIDE TASKS BECAUSE FREERTOS IS USING SAME COUNTER REGISTER)
+    // Delay_Init();
+
+    // set call back for board receive
+    HAL_WRAPPER_SetAppCommRecCallBack(UARTReceivedISR);
+
+    // configure all pins and peripherals 
+    MCAL_Config_ConfigAllPins();
+
+    // configure the external hardware as sensors, motors, etc... 
+    HAL_Config_ConfigAllHW();
+
+    // TODO: wait 5 seconds for the ESCs
+
+
+    // TODO: comment the below line
+//    USART_Printf_Init(115200);
 
     HAL_WRAPPER_MotorSpeeds_t local_MotorSpeeds = {0};
     SERVICE_RTOS_ErrStat_t local_RTOSErrStatus = SERVICE_RTOS_STAT_OK;
@@ -400,7 +500,8 @@ void Task_Master(void)
 
     while (1)
     {
-
+       // wait for notification
+        SERVICE_RTOS_WaitForNotification(10000);  
         // read sensor fused readings
         // local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (const void *) &local_SensorFusedReadings_t, queue_FusedSensorData_Handle_t);
 
@@ -415,7 +516,7 @@ void Task_Master(void)
         // apply PID to compute error
 
         // apply actions on the motors
-        HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
+        // HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
     }
 }
 
@@ -425,24 +526,6 @@ void Task_Master(void)
 */
 int main(void)
 {
-    // Configure/enable Clock and all needed peripherals 
-    SystemInit();
-    SystemCoreClockUpdate();
-
-    // configure NVIC
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-
-    // delay init for initial configuration (DON'T USE IT INSIDE TASKS BECAUSE FREERTOS IS USING SAME COUNTER REGISTER)
-    Delay_Init();
-
-    // configure all pins and peripherals 
-    MCAL_Config_ConfigAllPins();
-
-    // configure the external hardware as sensors, motors, etc... 
-    HAL_Config_ConfigAllHW();
-
-    // TODO: comment the below line
-    USART_Printf_Init(115200);
 
     // create the Queue for sensor collection data task to put its data into it
     SERVICE_RTOS_CreateBlockingQueue(QUEUE_RAW_SENSOR_DATA_LEN,
@@ -479,22 +562,26 @@ int main(void)
                 TASK_SENSOR_FUSION_PRIO,
                 &task_SensorFusion_Handle_t);
 
-//    // create a task for communication with app board
-//    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
-//                "App Communication",
-//                TASK_APP_COMM_STACK_SIZE,
-//                TASK_APP_COMM_PRIO,
-//                &task_AppComm_Handle_t);
+   // create a task for communication with app board
+   SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
+               "App Communication",
+               TASK_APP_COMM_STACK_SIZE,
+               TASK_APP_COMM_PRIO,
+               &task_AppComm_Handle_t);
 
-    // // create a task for master
-    // SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_Master,
-    //             "Master",
-    //             TASK_MASTER_STACK_SIZE,
-    //             TASK_MASTER_PRIO,
-    //             &task_Master_Handle_t);
+    // create a task for master
+    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_Master,
+                "Master",
+                TASK_MASTER_STACK_SIZE,
+                TASK_MASTER_PRIO,
+                &task_Master_Handle_t);
+
+   	// wait for 5 seconds
+//   Delay_Ms(5000);
 
     // start the schedular
     SERVICE_RTOS_StartSchedular();
+
 
     while (1)
     {

@@ -91,6 +91,18 @@
 /**
  * 
  */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_DriverStates_t arg_Enable_Disable_t)
+{
+    // configure interrupt
+    MCAL_WRAPPER_UART4RecITConfig(arg_Enable_Disable_t);
+
+    return HAL_WRAPPER_STAT_OK;
+}
+
+
+/**
+ * 
+ */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SetAppCommRecCallBack(functionCallBack_t arg_pUARTCallBack)
 {
     MCAL_WRAPPER_SetUART4RecCallBack(arg_pUARTCallBack);
@@ -102,19 +114,74 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SetAppCommRecCallBack(functionCallBack_t arg_p
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReceiveSendAppCommMessage(HAL_WRAPPER_AppCommMsg_t* arg_AppCommMsg_t)
 {
-    // check if there anything to receive
-    if(arg_AppCommMsg_t->dataIsToReceive)
-    {
-        MCAL_WRAPPER_ReceiveDataThroughUART4(arg_AppCommMsg_t->dataToReceive, arg_AppCommMsg_t->dataToReceiveLen);
-        arg_AppCommMsg_t->dataIsToReceive = 0;
-    }
+    // temp variables to allow synchronous send and receive at the same time
+    uint16_t local_u16LenOfDataToSend = 0;
+    uint16_t local_u16LenOfDataToReceive = 0;
 
-    // check if there is anything to send
-    if(arg_AppCommMsg_t->dataIsToSend)
+    // to detect if there is anything in the receiver buffer (as by writing to UART data register clears the RXNE flag)
+    MCAL_WRAPPER_ErrStat_t local_writeSuccess_t = MCAL_WRAPPER_STAT_OK;
+
+    // loop until we send or received all messages
+    while (arg_AppCommMsg_t->dataIsToSend || arg_AppCommMsg_t->dataIsToReceive)
     {
-        MCAL_WRAPPER_SendDataThroughUART4(arg_AppCommMsg_t->dataToSend, arg_AppCommMsg_t->dataToSendLen);
-        arg_AppCommMsg_t->dataIsToSend = 0;
+        // check if to send
+        if(arg_AppCommMsg_t->dataIsToSend)
+        {
+            // send 1 byte
+            local_writeSuccess_t = MCAL_WRAPPER_SendDataThroughUART4(arg_AppCommMsg_t->dataToSend + local_u16LenOfDataToSend, 1);
+            
+            if(MCAL_WRAPPER_STAT_OK == local_writeSuccess_t)
+            {
+                local_u16LenOfDataToSend++;
+                
+                // check if sending is done
+                if(local_u16LenOfDataToSend == arg_AppCommMsg_t->dataToSendLen)
+                {
+                    
+                    arg_AppCommMsg_t->dataIsToSend = 0;
+                }  
+            }
+        }
+
+        // check if to receive
+        if(arg_AppCommMsg_t->dataIsToReceive)
+        {
+            // receive 1 byte
+            MCAL_WRAPPER_ReceiveDataThroughUART4(arg_AppCommMsg_t->dataToReceive + local_u16LenOfDataToReceive, 1);
+            local_u16LenOfDataToReceive++;
+
+            // check if receiving is done
+            if(local_u16LenOfDataToReceive == arg_AppCommMsg_t->dataToReceiveLen)
+            {
+                arg_AppCommMsg_t->dataIsToReceive = 0;
+
+               // enable receuve interrupt
+                HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_ENABLED);
+            }
+        }
     }
+    
+
+    return HAL_WRAPPER_STAT_OK;
+}
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_GetCommMessage(uint8_t* arg_pu8Msg)
+{
+    // receive 1 byte
+    MCAL_WRAPPER_ReceiveDataThroughUART4(arg_pu8Msg, 1);
+
+    return HAL_WRAPPER_STAT_OK;
+}
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SendCommMessage(uint8_t arg_pu8Msg)
+{
+    MCAL_WRAPPER_SendDataThroughUART4(&arg_pu8Msg, 1);
 
     return HAL_WRAPPER_STAT_OK;
 }

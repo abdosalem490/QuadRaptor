@@ -64,7 +64,7 @@
 /**
  * @reason: contains delay functionality
  */
-#include "debug.h"
+// #include "debug.h"
 
 
 /******************************************************************************
@@ -123,7 +123,7 @@ HAL_ESC_ErrStates_t HAL_ESC_init(void)
 //    MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH4, 0);
 
     // wait for some time
-    Delay_Ms(5000);
+    // Delay_Ms(5000);
 
     MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH1, 50);
     MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH2, 50);

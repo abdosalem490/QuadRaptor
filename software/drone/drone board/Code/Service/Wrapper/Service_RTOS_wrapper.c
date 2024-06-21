@@ -126,7 +126,7 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_TaskCreate(SERVICE_RTOS_TaskFunction_t arg_p
 {
     SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
 
-    if(NULL == arg_pFuncTaskFunction || NULL == arg_pu8TaskName  || 0 == arg_u16TaskStackDepth  || NULL == arg_pTaskHandle)
+    if(NULL == arg_pFuncTaskFunction || NULL == arg_pu8TaskName  || 0 == arg_u16TaskStackDepth)
     {
         local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
     }
@@ -137,7 +137,7 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_TaskCreate(SERVICE_RTOS_TaskFunction_t arg_p
                 (uint16_t)arg_u16TaskStackDepth,
                 (void *)NULL,
                 (UBaseType_t)arg_u32TaskPriority,
-                (TaskHandle_t *)&arg_pTaskHandle);
+                (TaskHandle_t *)arg_pTaskHandle);
     }
 
     return local_ErrStatus;
@@ -223,7 +223,7 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_ReadFromBlockingQueue(uint32_t arg_u32Timeou
         }
         else
         {
-            *lenOfRemainingItems = uxQueueMessagesWaiting((QueueHandle_t)arg_QueueHandle);
+            *lenOfRemainingItems = uxQueueMessagesWaiting((QueueHandle_t)arg_QueueHandle) + 1;
         }
     }
 

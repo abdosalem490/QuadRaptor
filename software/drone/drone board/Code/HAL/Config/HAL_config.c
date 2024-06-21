@@ -125,7 +125,7 @@ HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void)
     global_adxl345Config_t.int_pol = HAL_ADXL345_INT_POL_ACT_LOW;
     global_adxl345Config_t.int0_src = HAL_ADXL345_INT_SRC_DATA_READY;
     global_adxl345Config_t.int1_src = HAL_ADXL345_INT_SRC_FREE_FALL;
-    HAL_ADXL345_Init(&global_adxl345Config_t, &MCAL_CFG_adxlSPI);
+//    HAL_ADXL345_Init(&global_adxl345Config_t, &MCAL_CFG_adxlSPI);
 
 
     // configure MPU6050 accelerometer and gyroscope
@@ -136,7 +136,7 @@ HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void)
 
     // configure BMP280
 
-    // configure ESCs
+    // configure ESCs (TODO: un comment this line)
     // HAL_ESC_init();
 
     return HAL_Config_STAT_OK;
