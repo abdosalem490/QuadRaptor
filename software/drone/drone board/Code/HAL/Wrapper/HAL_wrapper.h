@@ -92,6 +92,8 @@
 typedef enum {
   HAL_WRAPPER_STAT_OK,
   HAL_WRAPPER_STAT_INVALID_PARAMS,
+  HAL_WRAPPER_STAT_APP_BOARD_BSY,
+  HAL_WRAPPER_STAT_APP_DIDNT_SND,
 } HAL_WRAPPER_ErrStat_t;
 
 /**
@@ -147,6 +149,7 @@ typedef struct
   uint16_t dataToReceiveLen;          /**< length of data to receive through app comm port */
   volatile uint8_t dataIsToReceive;   /**< boolean flag to indicate whether a data is to be received or not */
   uint8_t dataIsToSend;               /**< boolean flag to indicate whether a data is to be sent or not */
+  uint8_t  IsDataReceived;            /**< boolean flag to indicate whether a whole data packet is received or not */
 } HAL_WRAPPER_AppCommMsg_t;
 
 /******************************************************************************

@@ -239,39 +239,44 @@ void UARTReceivedISR(void)
     
     static uint8_t local_u8MsgType = DATA_TYPE_INVALID;
     static uint16_t local_u16CurrentItem = 0;
+    static HAL_WRAPPER_ErrStat_t local_errState = HAL_WRAPPER_STAT_OK;
+    static uint8_t local_u8Dummy = 0;
 
-    // disable interrupt
-    // HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_DISABLED);
+    // see if there is anything to receive
+    local_errState = HAL_WRAPPER_GetCommMessage(&local_u8Dummy);
 
-    if(0 == global_AppCommMsg_t.dataIsToReceive)
+    if(HAL_WRAPPER_STAT_OK == local_errState)
     {
-        // check if the received byte is of correct type
-        HAL_WRAPPER_GetCommMessage(&local_u8MsgType);
-        if(DATA_TYPE_MOVE == local_u8MsgType)
+        if(0 == global_AppCommMsg_t.dataIsToReceive)
         {
-            local_u16CurrentItem = 1;
-            global_AppCommMsg_t.dataIsToReceive = 1;
-            *global_AppCommMsg_t.dataToReceive = local_u8MsgType;
+            // check if the received byte is of correct type
+            local_u8MsgType = local_u8Dummy;
+            if(DATA_TYPE_MOVE == local_u8MsgType)
+            {
+                local_u16CurrentItem = 1;
+                global_AppCommMsg_t.dataIsToReceive = 1;
+                *global_AppCommMsg_t.dataToReceive = local_u8MsgType;
+            }
+            else
+            {
+                // invalid header, discard
+            }
+
         }
         else
         {
-            // invalid header, discard
-        }
+            // stare data in the variable
+            *(global_AppCommMsg_t.dataToReceive + local_u16CurrentItem) = local_u8Dummy;
+            local_u16CurrentItem++;
 
-    }
-    else
-    {
-        // stare data in the variable
-        HAL_WRAPPER_GetCommMessage(global_AppCommMsg_t.dataToReceive + local_u16CurrentItem);
-        local_u16CurrentItem++;
-
-        // check if we reached the correct length of the message to receive
-        if(local_u16CurrentItem == global_AppCommMsg_t.dataToReceiveLen)
-        {
-            global_AppCommMsg_t.dataIsToReceive = 0;
-            // TODO: append to a queue
+            // check if we reached the correct length of the message to receive
+            if(local_u16CurrentItem == global_AppCommMsg_t.dataToReceiveLen)
+            {
+                global_AppCommMsg_t.IsDataReceived = 1;
+            }
         }
     }
+
 }
 
 /************************************************************************/
@@ -385,6 +390,7 @@ void Task_SensorFusion(void)
 /************************************************************************/
 /**
  * @brief: this task is responsible for communication with the application board 
+ * @note: it has no delay so it will running instead of the idle task
 */
 void Task_AppComm(void)
 {
@@ -397,14 +403,11 @@ void Task_AppComm(void)
     // assign pointers and lengths of data to be always send
     global_AppCommMsg_t.dataToSend = (uint8_t*)&local_MsgToSend_t.data;
     global_AppCommMsg_t.dataToSendLen = sizeof(local_MsgToSend_t.data);
-    
-    // enable the interrupt
-    HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_ENABLED);
 
     while (1)
     {
-        // wait for notification
-        SERVICE_RTOS_WaitForNotification(1000);
+        // // wait for notification
+        // SERVICE_RTOS_WaitForNotification(1000);
 
         // check if there is anything in the queue to be sent
         local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_MsgToSend_t, queue_DroneCommToApp_Handle_t, &local_u8LenOfRemaining);
@@ -412,30 +415,51 @@ void Task_AppComm(void)
         // loop until all message are sent
         while (local_u8LenOfRemaining && SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
         {
-            // set needed variables
-            // global_AppCommMsg_t.dataIsToSend = 1;
+            // send the message
+            size_t i = 0;
+            while (i < global_AppCommMsg_t.dataToSendLen)
+            {
+                if(HAL_WRAPPER_SendCommMessage(*(global_AppCommMsg_t.dataToSend + i)) == HAL_WRAPPER_STAT_OK)
+                {
+                    i++;
+                }
+                else
+                {
+                    // check if there anything app board is sending as in case of failure of sending, it maybe due receive buffer not empty
+                    UARTReceivedISR();
+                    if(global_AppCommMsg_t.IsDataReceived)
+                    {   
+                        // append the new state received to the queue
 
-            // // send the message
-            // for (size_t i = 0; i < global_AppCommMsg_t.dataToSendLen; i++)
-            // {
-            //     HAL_WRAPPER_SendCommMessage(*(global_AppCommMsg_t.dataToSend + i));
-            // }
+                        global_AppCommMsg_t.dataIsToReceive = 0;
+                        global_AppCommMsg_t.IsDataReceived = 0;
+                    }
+                }
+
+            }
             
-                        
-            // HAL_WRAPPER_ReceiveSendAppCommMessage(&global_AppCommMsg_t);
-
             // read next message
             local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_MsgToSend_t, queue_DroneCommToApp_Handle_t, &local_u8LenOfRemaining);
         }
         
-        // // check if there anything app board is sending
-        // if(global_AppCommMsg_t.dataIsToReceive)
-        // {   
-        //     // receive the message
-        //     HAL_WRAPPER_ReceiveSendAppCommMessage(&global_AppCommMsg_t);
-        // }
+        // check if there anything app board is sending
+        UARTReceivedISR();
+        if(global_AppCommMsg_t.IsDataReceived)
+        {   
+            // append the new state received to the queue
 
-        // append the new state received to the queue
+
+            // TODO: remove the below line
+            printf("type = %d, roll = %d, pitch = %d, thrust = %d, yaw = %d, turnOnLeds = %d, playMusic = %d\r\n",
+            global_MsgToRec_t.data.type, global_MsgToRec_t.data.data.move.roll, global_MsgToRec_t.data.data.move.pitch,
+            global_MsgToRec_t.data.data.move.thrust, global_MsgToRec_t.data.data.move.yaw, global_MsgToRec_t.data.data.move.turnOnLeds,
+            global_MsgToRec_t.data.data.move.playMusic);
+
+            global_AppCommMsg_t.dataIsToReceive = 0;
+            global_AppCommMsg_t.IsDataReceived = 0;
+        }
+
+        
     }
 }
 
@@ -455,6 +479,7 @@ void Task_Master(void)
     global_AppCommMsg_t.dataToReceive = (uint8_t*) &global_MsgToRec_t.data;
     global_AppCommMsg_t.dataToReceiveLen = sizeof(global_MsgToRec_t.data);
     global_AppCommMsg_t.dataIsToReceive = 0;
+    global_AppCommMsg_t.IsDataReceived = 0;
     /************************************************************************/
     
     // Configure/enable Clock and all needed peripherals 
@@ -467,8 +492,8 @@ void Task_Master(void)
     // delay init for initial configuration (DON'T USE IT INSIDE TASKS BECAUSE FREERTOS IS USING SAME COUNTER REGISTER)
     // Delay_Init();
 
-    // set call back for board receive
-    HAL_WRAPPER_SetAppCommRecCallBack(UARTReceivedISR);
+    // // set call back for board receive
+    // HAL_WRAPPER_SetAppCommRecCallBack(UARTReceivedISR);
 
     // configure all pins and peripherals 
     MCAL_Config_ConfigAllPins();
@@ -480,7 +505,7 @@ void Task_Master(void)
 
 
     // TODO: comment the below line
-//    USART_Printf_Init(115200);
+   USART_Printf_Init(115200);
 
     HAL_WRAPPER_MotorSpeeds_t local_MotorSpeeds = {0};
     SERVICE_RTOS_ErrStat_t local_RTOSErrStatus = SERVICE_RTOS_STAT_OK;
@@ -564,9 +589,6 @@ int main(void)
                 TASK_MASTER_STACK_SIZE,
                 TASK_MASTER_PRIO,
                 &task_Master_Handle_t);
-
-   	// wait for 5 seconds
-//   Delay_Ms(5000);
 
     // start the schedular
     SERVICE_RTOS_StartSchedular();

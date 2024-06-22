@@ -171,9 +171,18 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReceiveSendAppCommMessage(HAL_WRAPPER_AppCommM
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_GetCommMessage(uint8_t* arg_pu8Msg)
 {
     // receive 1 byte
-    MCAL_WRAPPER_ReceiveDataThroughUART4(arg_pu8Msg, 1);
+    MCAL_WRAPPER_ErrStat_t local_errState_t = MCAL_WRAPPER_ReceiveDataThroughUART4(arg_pu8Msg, 1);
+    
+    if(MCAL_WRAPPER_STAT_OK != local_errState_t)
+    {
+        local_errState_t = HAL_WRAPPER_STAT_DRONE_DIDNT_SND;
+    }
+    else
+    {
+        local_errState_t = HAL_WRAPPER_STAT_OK;
+    }
 
-    return HAL_WRAPPER_STAT_OK;
+    return local_errState_t;
 }
 
 /**
@@ -181,9 +190,17 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_GetCommMessage(uint8_t* arg_pu8Msg)
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SendCommMessage(uint8_t arg_pu8Msg)
 {
-    MCAL_WRAPPER_SendDataThroughUART4(&arg_pu8Msg, 1);
+    MCAL_WRAPPER_ErrStat_t local_errState_t = MCAL_WRAPPER_SendDataThroughUART4(&arg_pu8Msg, 1);
+    if(MCAL_WRAPPER_STAT_OK != local_errState_t)
+    {
+        local_errState_t = HAL_WRAPPER_STAT_DRONE_BOARD_BSY;
+    }
+    else
+    {
+        local_errState_t = HAL_WRAPPER_STAT_OK;
+    }
 
-    return HAL_WRAPPER_STAT_OK;
+    return local_errState_t;
 }
 
 /*************** END OF FUNCTIONS ***************************************************************************/

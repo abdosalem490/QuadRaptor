@@ -262,10 +262,10 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_chann
  */
 void UART4_IRQHandler(void)
 {
-//    if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET && NULL != global_UART4RecCallback)
-//    {
-//		global_UART4RecCallback();
-//    }
+   if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET && NULL != global_UART4RecCallback)
+   {
+		global_UART4RecCallback();
+   }
 }
 
 /**
@@ -332,10 +332,19 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, u
 
     while (arg_u16DataLen > 0)
     {
-        while(USART_GetFlagStatus(UART4, USART_FLAG_TXE) == RESET); /* waiting for sending finish */
-        USART_SendData(UART4, (uint16_t) *arg_pu8Data);
-        arg_pu8Data++;
-        arg_u16DataLen--;
+        // check if we can send
+        if(USART_GetFlagStatus(UART4, USART_FLAG_TXE) == SET && USART_GetFlagStatus(UART4, USART_FLAG_RXNE) == RESET)
+        {
+            USART_SendData(UART4, (uint16_t) *arg_pu8Data);
+            arg_pu8Data++;
+            arg_u16DataLen--;
+        }
+        else
+        {
+            local_errState_t = MCAL_WRAPPER_STAT_UART_BUSY;
+            break;
+        }
+
     }
     
     return local_errState_t;
@@ -346,24 +355,34 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, u
  */
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen)
 {
+
+    MCAL_WRAPPER_ErrStat_t local_errState_t = MCAL_WRAPPER_STAT_OK;
+
     if(NULL == arg_pu8Data)
     {
         return MCAL_WRAPPER_STAT_INVALID_PARAMS;
     }
 
 
-
     while (arg_u16DataLen > 0)
     {
-        while(USART_GetFlagStatus(UART4, USART_FLAG_RXNE) == RESET);
-        *arg_pu8Data = USART_ReceiveData(UART4);
-        arg_pu8Data++;
-        arg_u16DataLen--;
-        // clear the interrupt by writing 0 
-        USART_ClearFlag(UART4, USART_IT_RXNE);
+        if(USART_GetFlagStatus(UART4, USART_FLAG_RXNE) == SET)
+        {
+            *arg_pu8Data = USART_ReceiveData(UART4);
+            arg_pu8Data++;
+            arg_u16DataLen--;
+            // clear the interrupt by writing 0 
+            USART_ClearFlag(UART4, USART_IT_RXNE);
+        }
+        else
+        {
+            local_errState_t = MCAL_WRAPPER_STAT_UART_EMPTY;
+            break;
+        }
+
     }
 
-    return MCAL_WRAPPER_STAT_OK;
+    return local_errState_t;
 }
 
 /**

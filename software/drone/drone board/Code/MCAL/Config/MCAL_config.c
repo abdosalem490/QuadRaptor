@@ -371,11 +371,11 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
 
     /******************************************/
 
-    USART_ClockInitTypeDef local_usart4_clock_t = {0};
-    local_usart4_clock_t.USART_Clock = USART_Clock_Enable;
-    local_usart4_clock_t.USART_CPHA = USART_CPOL_Low;
-    local_usart4_clock_t.USART_CPOL = USART_CPHA_1Edge;
-    local_usart4_clock_t.USART_LastBit = USART_LastBit_Enable;
+    // USART_ClockInitTypeDef local_usart4_clock_t = {0};
+    // local_usart4_clock_t.USART_Clock = USART_Clock_Enable;
+    // local_usart4_clock_t.USART_CPHA = USART_CPOL_Low;
+    // local_usart4_clock_t.USART_CPOL = USART_CPHA_1Edge;
+    // local_usart4_clock_t.USART_LastBit = USART_LastBit_Enable;
     // USART_ClockInit(UART4, &local_usart4_clock_t);
 
     USART_InitTypeDef local_usart4_t = {0};
@@ -387,15 +387,15 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_usart4_t.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
     USART_Init(UART4, &local_usart4_t);
 
-    USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
-
-    // configure NVIC for uart4 interrupt channel
-    NVIC_InitTypeDef  uart_nvic_t = {0};
-    uart_nvic_t.NVIC_IRQChannel = UART4_IRQn;
-    uart_nvic_t.NVIC_IRQChannelPreemptionPriority = 1;
-    uart_nvic_t.NVIC_IRQChannelSubPriority = 1;
-    uart_nvic_t.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&uart_nvic_t);
+    // USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
+    // interrupt is causing Systick timer interrupt to stop which is in return responsible for stopping freeRTOS kernal from work
+    // // configure NVIC for uart4 interrupt channel
+    // NVIC_InitTypeDef  uart_nvic_t = {0};
+    // uart_nvic_t.NVIC_IRQChannel = UART4_IRQn;
+    // uart_nvic_t.NVIC_IRQChannelPreemptionPriority = 1;
+    // uart_nvic_t.NVIC_IRQChannelSubPriority = 1;
+    // uart_nvic_t.NVIC_IRQChannelCmd = ENABLE;
+    // NVIC_Init(&uart_nvic_t);
 
     USART_Cmd(UART4, ENABLE);
 
