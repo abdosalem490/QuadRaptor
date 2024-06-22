@@ -321,8 +321,7 @@ void Task_CollectSensorData(void)
         SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
 
         // sleep for 5 ms
-//        SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
-        SERVICE_RTOS_BlockFor(20);
+       SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
     }
 }
 
@@ -450,10 +449,10 @@ void Task_AppComm(void)
 
 
             // TODO: remove the below line
-            printf("type = %d, roll = %d, pitch = %d, thrust = %d, yaw = %d, turnOnLeds = %d, playMusic = %d\r\n",
-            global_MsgToRec_t.data.type, global_MsgToRec_t.data.data.move.roll, global_MsgToRec_t.data.data.move.pitch,
-            global_MsgToRec_t.data.data.move.thrust, global_MsgToRec_t.data.data.move.yaw, global_MsgToRec_t.data.data.move.turnOnLeds,
-            global_MsgToRec_t.data.data.move.playMusic);
+            // printf("type = %d, roll = %d, pitch = %d, thrust = %d, yaw = %d, turnOnLeds = %d, playMusic = %d\r\n",
+            // global_MsgToRec_t.data.type, global_MsgToRec_t.data.data.move.roll, global_MsgToRec_t.data.data.move.pitch,
+            // global_MsgToRec_t.data.data.move.thrust, global_MsgToRec_t.data.data.move.yaw, global_MsgToRec_t.data.data.move.turnOnLeds,
+            // global_MsgToRec_t.data.data.move.playMusic);
 
             global_AppCommMsg_t.dataIsToReceive = 0;
             global_AppCommMsg_t.IsDataReceived = 0;
