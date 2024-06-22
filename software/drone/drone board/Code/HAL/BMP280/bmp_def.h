@@ -1,9 +1,9 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   Wrapper File for RTOS function                                                                              |
- * |    @file           :   Service_RTOS_wrapper.h                                                                                      |
- * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   18/05/2024                                                                                                  |
+ * |    @title          :   reg and bit position defs for BMP280                                                                        |
+ * |    @file           :   bmp_def.h                                                                                                   |
+ * |    @author         :   Ahmed Fawzy                                                                                                 |
+ * |    @origin_date    :   22/06/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
  * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
@@ -11,7 +11,7 @@
  * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this header file contains useful functions to easily change RTOS without changing much in code              |
+ * |    @brief          :   this header file contains bit position definition and register addresses for interface with BMP280          |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
@@ -38,121 +38,115 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    18/05/2023      1.0.0           Abdelrahman Mohamed Salem       Interface Created.                                              |
- * |    24/05/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'HAL_Config_ConfigAllHW'.                    |
+ * |    22/06/2023      1.0.0           Ahmed Fawzy                     Interface Created.                                              |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
- 
+
 
 /******************************************************************************
  * Includes
  *******************************************************************************/
 
-/**
- * @reason: contains the function declarations
-*/
-#include "HAL_config.h"
-
-/**
- * @reason: contains definitions for ENABLE and DISABLE
-*/
-#include "constants.h"
-
-/**
- * @reason: contains definitions for ADXL345 functions and structs
-*/
-#include "ADXL345_config.h"
-
-/**
- * @reason: contains initialization function for ADXL345
-*/
-#include "ADXL345_header.h"
-
-/**
- * @reason: contains initialization function for MPU6050
- */
-#include "MPU6050.h"
-
-/**
- * @reason: contains initialization function for HMC5883
- */
-#include "HMC5883.h"
-
-/**
- * @reason: contains initialization function for ESCs
- */
-#include "ESC.h"
-
-/**
- * @reason: contains initialization function for BMP280
- */
-#include "bmp.h"
 
 /******************************************************************************
- * Module Preprocessor Constants
+ * Preprocessor Constants
+ *******************************************************************************/
+
+
+#ifndef USER_BMP_DEFINITIONS_H_
+#define USER_BMP_DEFINITIONS_H_
+
+
+/*------------- REGISTERS --------------------------*/
+#define DIG_T1          0x88
+#define DIG_T2          0x8A
+#define DIG_T3          0x8C
+#define DIG_P1          0x8E
+#define DIG_P2          0x90
+#define DIG_P3          0x92
+#define DIG_P4          0x94
+#define DIG_P5          0x96
+#define DIG_P6          0x98
+#define DIG_P7          0x9A
+#define DIG_P8          0x9C
+#define DIG_P9          0x9E
+#define DIG_H1          0xA1
+#define DIG_H2          0xE1
+#define DIG_H3          0xE3
+#define DIG_H4          0xE4
+#define DIG_H5          0xE5
+#define DIG_H6          0xE7
+
+#define CHIP_ID         0xD0
+#define RESET_REG       0xE0
+#define STATUS          0xF3
+#define CTRL_HUM        0xF2
+#define CTRL_MEAS       0xF4
+#define CONFIG          0xF5
+#define PRESS_MSB       0xF7
+#define PRESS_LSB       0xF8
+#define PRESS_XLSB      0xF9
+#define TEMP_MSB        0xFA
+#define TEMP_LSB        0xFB
+#define TEMP_XLSB       0xFC
+#define HUM_MSB         0xFD
+#define HUM_LSB         0xFE
+
+/*------------- BIT MASKS --------------------------*/
+#define CHIP_ID_VAL         0x60
+
+#define RESET_CMD           0xB6
+
+#define STATUS_MEASURING    0x08
+#define STATUS_IM_UPDATE    0x01
+
+#define CTRL_HUM_MASK       0x07
+
+#define CTRL_MEAS_MODE_MASK 0x03
+#define CTRL_MEAS_OSRS_P_MASK 0x1C
+#define CTRL_MEAS_OSRS_T_MASK 0xE0
+
+#define CONFIG_STANDBY_MASK 0xE0
+#define CONFIG_FILTER_MASK  0x1C
+#define CONFIG_SPI3W_MASK   0x01
+
+
+/*
+ * These are the trimming values for my chip
+The value of t1 = 28459
+The value of t2 = 26496
+The value of t3 = 50
+The value of p1 = 37204
+The value of p2 = -10725
+The value of p3 = 3024
+The value of p4 = 7864
+The value of p5 = -90
+The value of p6 = -7
+The value of p7 = 9900
+The value of p8 = -10230
+The value of p9 = 4285
+*/
+
+
+/******************************************************************************
+ * Configuration Constants
  *******************************************************************************/
 
 /******************************************************************************
- * Module Preprocessor Macros
+ * Macros
  *******************************************************************************/
 
 /******************************************************************************
- * Module Typedefs
+ * Typedefs
  *******************************************************************************/
 
 /******************************************************************************
- * Module Variable Definitions
+ * Variables
  *******************************************************************************/
-
-/**
- * @brief: a variable through which we will deal with ADXL345
- */
-HAL_ADXL345_config_t global_adxl345Config_t;
 
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 
-/******************************************************************************
- * Function Definitions
- *******************************************************************************/
 
-
-/**
- * 
-*/
-HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void)
-{
-    // configure ADXL345
-    global_adxl345Config_t.bandwidth_rate = HAL_ADXL345_BW_RATE_800HZ;
-    global_adxl345Config_t.enableFullRange = LIB_CONSTANTS_ENABLED;
-    global_adxl345Config_t.g_range = HAL_ADXL345_G_RANGE_8;
-    global_adxl345Config_t.int_pol = HAL_ADXL345_INT_POL_ACT_LOW;
-    global_adxl345Config_t.int0_src = HAL_ADXL345_INT_SRC_DATA_READY;
-    global_adxl345Config_t.int1_src = HAL_ADXL345_INT_SRC_FREE_FALL;
-//    HAL_ADXL345_Init(&global_adxl345Config_t, &MCAL_CFG_adxlSPI);
-
-
-    // configure MPU6050 accelerometer and gyroscope
-    mpu6050_init();
-
-    // configure HMC5883L
-    hmc5883l_init();
-
-    // configure BMP280
-    BMP280_Init();
-    
-    // configure ESCs (TODO: un comment this line)
-    // HAL_ESC_init();
-
-    return HAL_Config_STAT_OK;
-}
-
-
-
-
-/*************** END OF FUNCTIONS ***************************************************************************/
-
-
-// to be the IdleTask (called when no other tasks are running)
-// void vApplicationIdleHook( void );
+#endif /* USER_BMP_DEFINITIONS_H_ */

@@ -25,6 +25,7 @@ RM := rm -rf
 -include Code/HAL/HMC5883L/subdir.mk
 -include Code/HAL/ESC/subdir.mk
 -include Code/HAL/Config/subdir.mk
+-include Code/HAL/BMP280/subdir.mk
 -include Code/HAL/ADXL345/subdir.mk
 -include Code/APP/subdir.mk
 -include subdir.mk

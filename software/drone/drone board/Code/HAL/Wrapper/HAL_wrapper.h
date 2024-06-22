@@ -43,6 +43,8 @@
  * |    17/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_ReceiveSendAppCommMessage'.                  |
  * |    20/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_DisableEnableAppCommRecCallBack'.            |
  * |    20/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_GetAppCommMessageType'.                      |
+ * |    22/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_ReadPressure'.                               |
+ * |    22/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_ReadTemperature'.                            |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -128,6 +130,22 @@ typedef struct
 } HAL_WRAPPER_Magnet_t;
 
 /**
+ * @brief: contains definitions to be used with reading pressure data
+ */
+typedef struct
+{
+  float pressure;  /**< barometric pressure */
+} HAL_WRAPPER_Pressure_t;
+
+/**
+ * @brief: contains definitions to be used with reading pressure data
+ */
+typedef struct
+{
+  float temperature;  /**< temperature in Degree Celsius */
+} HAL_WRAPPER_Temperature_t;
+
+/**
  * @brief: contains defintions to be used to set motor speeds associated with ESCs
  */
 typedef struct 
@@ -178,7 +196,7 @@ typedef struct
  * 
  * int main() {
  * 
- * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
  * if(HAL_Config_STAT_OK == local_errState)
  * {
  *  HAL_WRAPPER_Acc_t *temp = {0};
@@ -221,7 +239,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadAcc(HAL_WRAPPER_Acc_t *arg_pAcc);
  * 
  * int main() {
  * 
- * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
  * if(HAL_Config_STAT_OK == local_errState)
  * {
  *  HAL_WRAPPER_Gyro_t *temp = {0};
@@ -262,11 +280,11 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro);
  * 
  * int main() {
  * 
- * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
  * if(HAL_Config_STAT_OK == local_errState)
  * {
- *  HAL_WRAPPER_Magnet_t *temp = {0};
- *  local_errState = HAL_WRAPPER_ReadMagnet(temp);
+ *  HAL_WRAPPER_Magnet_t temp = {0};
+ *  local_errState = HAL_WRAPPER_ReadMagnet(&temp);
  *  if(HAL_WRAPPER_STAT_OK == local_errState)
  *  {
  *    
@@ -284,6 +302,85 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadGyro(HAL_WRAPPER_Gyro_t *arg_pGyro);
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet);
 
+/**
+ *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadPressure(HAL_WRAPPER_Pressure_t *arg_pMagnet);
+ *  \b Description                              :       this functions is used as a wrapper function to the function of reading pressure from different sensors on the board.
+ *  @param  arg_pPressure_t [OUT]               :       base address to store the received data from the I2C upon transfer.
+ *  @note                                       :       this is a polling function halting the process execution until the data is transferred.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "HAL_wrapper.h"
+ * 
+ * 
+ * int main() {
+ * 
+ * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
+ * if(MCAL_Config_STAT_OK == local_errState)
+ * {
+ *  HAL_WRAPPER_Pressure_t temp = {0};
+ *  HAL_WRAPPER_ErrStat_t local_errState = HAL_WRAPPER_ReadPressure(&temp);
+ *  if(HAL_WRAPPER_STAT_OK == local_errState)
+ *  {
+ *    // pressure is read
+ *  }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 22/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadPressure(HAL_WRAPPER_Pressure_t *arg_pPressure_t);
+
+/**
+ *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadTemperature(HAL_WRAPPER_Temperature_t *arg_pTemperature_t);
+ *  \b Description                              :       this functions is used as a wrapper function to the function of reading Temperature from different sensors on the board.
+ *  @param  arg_pTemperature_t [OUT]            :       base address to store the received temperature from the different sensor upon transfer.
+ *  @note                                       :       this is a polling function halting the process execution until the data is transferred.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "HAL_wrapper.h"
+ * 
+ * 
+ * int main() {
+ * 
+ * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
+ * if(MCAL_Config_STAT_OK == local_errState)
+ * {
+ *  HAL_WRAPPER_Temperature_t temp = {0};
+ *  HAL_WRAPPER_ErrStat_t local_errState = HAL_WRAPPER_ReadTemperature(&temp);
+ *  if(HAL_WRAPPER_STAT_OK == local_errState)
+ *  {
+ *    // pressure is read
+ *  }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 22/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadTemperature(HAL_WRAPPER_Temperature_t *arg_pTemperature_t);
 
 /**
  *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SetESCSeeds(HAL_WRAPPER_MotorSpeeds_t *arg_pMotorsSpeed);
@@ -308,7 +405,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadMagnet(HAL_WRAPPER_Magnet_t *arg_pMagnet);
  *  .bottomLeftSpeed = 30,
  *  .bottomRightSpeed = 40
  * };
- * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
  * if(HAL_Config_STAT_OK == local_errState)
  * {
  *  HAL_WRAPPER_Magnet_t *temp = {0};
@@ -351,7 +448,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SetESCSpeeds(HAL_WRAPPER_MotorSpeeds_t *arg_pM
  * }
  * 
  * int main() {
- *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
  *  if(HAL_Config_STAT_OK == local_errState)
  *  {
  *    local_errState = HAL_WRAPPER_SetAppCommRecCallBack(func);
@@ -394,7 +491,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SetAppCommRecCallBack(functionCallBack_t arg_p
  * }
  * 
  * int main() {
- *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
  *  if(HAL_Config_STAT_OK == local_errState)
  *  {
  *    local_errState = HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_ENABLED);
@@ -436,7 +533,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_
  * }
  * 
  * int main() {
- *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
  *  if(HAL_Config_STAT_OK == local_errState)
  *  {
  *    local_errState = HAL_WRAPPER_SetAppCommRecCallBack(func);
@@ -494,7 +591,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReceiveSendAppCommMessage(HAL_WRAPPER_AppCommM
  * }
  * 
  * int main() {
- *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
  *  if(HAL_Config_STAT_OK == local_errState)
  *  {
  *    local_errState = HAL_WRAPPER_SetAppCommRecCallBack(func);
@@ -542,7 +639,7 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_GetCommMessage(uint8_t* arg_pu8Msg);
  * }
  * 
  * int main() {
- *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllPins();
+ *  MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
  *  if(HAL_Config_STAT_OK == local_errState)
  *  {
  *    local_errState = HAL_WRAPPER_SetAppCommRecCallBack(func);

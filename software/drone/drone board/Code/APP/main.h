@@ -134,6 +134,8 @@ typedef struct {
     HAL_WRAPPER_Acc_t Acc;
     HAL_WRAPPER_Gyro_t Gyro;
     HAL_WRAPPER_Magnet_t Magnet;
+    HAL_WRAPPER_Pressure_t Pressure;
+    HAL_WRAPPER_Temperature_t Temperature;
 } RawSensorDataItem_t;
 
 /**

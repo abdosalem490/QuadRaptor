@@ -288,6 +288,8 @@ void Task_CollectSensorData(void)
     HAL_WRAPPER_Acc_t local_Acc_t = {0};
     HAL_WRAPPER_Gyro_t local_gyro_t = {0};
     HAL_WRAPPER_Magnet_t local_magnet_t = {0};
+    HAL_WRAPPER_Pressure_t local_pressure_t = {0};
+    HAL_WRAPPER_Temperature_t local_temperature_t = {0};
 
     RawSensorDataItem_t local_out_t = {0};
 
@@ -303,11 +305,16 @@ void Task_CollectSensorData(void)
         HAL_WRAPPER_ReadMagnet(&local_magnet_t);
 
         // read barometer data
+        HAL_WRAPPER_ReadPressure(&local_pressure_t);
+
+        // read temperature data
+        HAL_WRAPPER_ReadTemperature(&local_temperature_t);
 
 // FOR SERIAL MONITOR
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
 //        printf("MPU6050 Gyro: roll: %f,  pitch: %f,  yaw: %f\r\n", local_gyro_t.roll, local_gyro_t.pitch, local_gyro_t.yaw);
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
+// printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
 
 // FOR SERIAL PLOTTER
     //    printf("%d,%d,%d\r\n", local_magnet_t.x, local_magnet_t.y, local_magnet_t.z);
@@ -316,6 +323,8 @@ void Task_CollectSensorData(void)
         local_out_t.Acc = local_Acc_t;
         local_out_t.Gyro = local_gyro_t;
         local_out_t.Magnet = local_magnet_t;
+        local_out_t.Pressure = local_pressure_t;
+        local_out_t.Temperature = local_temperature_t;
 
         // push the data into the queue for fusion
         SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
@@ -379,8 +388,8 @@ void Task_SensorFusion(void)
 
             // TODO: only add every 1 sec
             // push data into queue to be sent to the app board and notify the AppComm with new data
-            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
-            SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);
+            // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
+            // SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);
             
         }
     }
@@ -575,12 +584,12 @@ int main(void)
                 TASK_SENSOR_FUSION_PRIO,
                 &task_SensorFusion_Handle_t);
 
-   // create a task for communication with app board
-   SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
-               "App Communication",
-               TASK_APP_COMM_STACK_SIZE,
-               TASK_APP_COMM_PRIO,
-               &task_AppComm_Handle_t);
+//    // create a task for communication with app board
+//    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
+//                "App Communication",
+//                TASK_APP_COMM_STACK_SIZE,
+//                TASK_APP_COMM_PRIO,
+//                &task_AppComm_Handle_t);
 
     // create a task for master
     SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_Master,

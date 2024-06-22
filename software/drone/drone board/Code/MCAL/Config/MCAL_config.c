@@ -102,6 +102,11 @@
 */
 MCAL_CONFIG_SPI_t MCAL_CFG_adxlSPI;
 
+/**
+ * @brief: the variable through which we will provide connection between BMP280 and SPI
+*/
+MCAL_CONFIG_SPI_t MCAL_CFG_BMPSPI;
+
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -315,9 +320,20 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     MCAL_CFG_adxlSPI.spiConfig.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256; //SPI_BaudRatePrescaler_32; 
     MCAL_CFG_adxlSPI.spiConfig.SPI_FirstBit = SPI_FirstBit_MSB;
     MCAL_CFG_adxlSPI.spiConfig.SPI_CRCPolynomial = 0b101;
+
+    // this is the same initialization for BMP280
+    MCAL_CFG_BMPSPI.SPI = SPI1;
+    MCAL_CFG_BMPSPI.GPIO = GPIOC;
+    MCAL_CFG_BMPSPI.SlavePin = GPIO_Pin_15;
+    MCAL_CFG_BMPSPI.spiConfig = MCAL_CFG_adxlSPI.spiConfig;
+
     SPI_Init(SPI1, &MCAL_CFG_adxlSPI.spiConfig);
-    SPI_Cmd(SPI1, ENABLE);
     GPIO_SetBits(MCAL_CFG_adxlSPI.GPIO, MCAL_CFG_adxlSPI.SlavePin);
+    GPIO_SetBits(MCAL_CFG_BMPSPI.GPIO, MCAL_CFG_BMPSPI.SlavePin);
+    SPI_Cmd(SPI1, ENABLE);
+
+    
+    
 
     /******************************************/
     I2C_InitTypeDef I2CConfig;

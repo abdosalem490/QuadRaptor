@@ -10,6 +10,10 @@
         "constants.h": "c",
         "freertos.h": "c",
         "task.h": "c",
-        "portmacro.h": "c"
+        "portmacro.h": "c",
+        "stdbool.h": "c",
+        "debug.h": "c",
+        "math.h": "c",
+        "esc.h": "c"
     }
 }

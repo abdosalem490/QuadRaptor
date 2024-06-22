@@ -82,6 +82,11 @@
  */
 #include "ESC.h" 
 
+/**
+ * @reason: contains BMP280 interface
+ */
+#include "bmp.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -330,6 +335,29 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SendCommMessage(uint8_t arg_pu8Msg)
     }
 
     return local_errState_t;
+}
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadPressure(HAL_WRAPPER_Pressure_t *arg_pPressure_t)
+{
+    // read pressure from BMP280
+    arg_pPressure_t->pressure = BMP280_get_pressure();
+
+    return HAL_WRAPPER_STAT_OK;
+}
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadTemperature(HAL_WRAPPER_Temperature_t *arg_pTemperature_t)
+{   
+
+    // read temperature from BMP280
+    arg_pTemperature_t->temperature = BMP280_get_temperature();
+
+    return HAL_WRAPPER_STAT_OK;
 }
 
 /*************** END OF FUNCTIONS ***************************************************************************/

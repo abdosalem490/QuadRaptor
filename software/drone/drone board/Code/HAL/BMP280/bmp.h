@@ -1,9 +1,9 @@
 /**
  * --------------------------------------------------------------------------------------------------------------------------------------
- * |    @title          :   configuration file for the Micro-controller                                                                 |
- * |    @file           :   MCAL_config.h                                                                                               |
- * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
- * |    @origin_date    :   20/05/2024                                                                                                  |
+ * |    @title          :   reg and bit position defs for BMP280                                                                        |
+ * |    @file           :   bmp.h                                                                                                       |
+ * |    @author         :   Ahmed Fawzy                                                                                                 |
+ * |    @origin_date    :   22/06/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
  * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
  * |    @compiler       :   GCC                                                                                                         |
@@ -11,7 +11,7 @@
  * |    @target         :   CH32V203C8T6                                                                                                |
  * |    @notes          :   None                                                                                                        |
  * |    @license        :   MIT License                                                                                                 |
- * |    @brief          :   this file is the main entry to our application code that will run                                           |
+ * |    @brief          :   this header file contains useful functions for interface with BMP280                                        |
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    MIT License                                                                                                                     |
  * |                                                                                                                                    |
@@ -38,32 +38,35 @@
  * |    @history_change_list                                                                                                            |
  * |    ====================                                                                                                            |
  * |    Date            Version         Author                          Description                                                     |
- * |    20/05/2023      1.0.0           Abdelrahman Mohamed Salem       file Created.                                                   |
- * |    24/05/2023      1.0.0           Abdelrahman Mohamed Salem       Added configurations for SPI of ADXL345.                        |
+ * |    22/06/2023      1.0.0           Ahmed Fawzy                     Interface Created.                                              |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
+#ifndef BMP280_H
+#define BMP280_H
 
-#ifndef MCAL_CONFIG_H_
-#define MCAL_CONFIG_H_  
 
 /******************************************************************************
  * Includes
  *******************************************************************************/
 
 /**
- * @reason: contains definitons for peripherals
-*/
-#include "ch32v20x.h"
+ * 
+ */
+#include "stdint.h"
 
 /**
- * @reason: contains definitions for SPI
-*/
-#include "ch32v20x_spi.h"
+ * 
+ */
+#include "BMP_def.h"
+
 
 /******************************************************************************
  * Preprocessor Constants
  *******************************************************************************/
+
+// BMP280 I2C address
+#define BMP280_I2C_ADDRESS 0x76
 
 /******************************************************************************
  * Configuration Constants
@@ -77,76 +80,162 @@
  * Typedefs
  *******************************************************************************/
 
-/**
- * @brief: contains error states for this module
-*/
-typedef enum {
-  MCAL_Config_STAT_OK,
-  MCAL_Config_STAT_INVALID_PARAMS,
-} MCAL_Config_ErrStat_t;
+// Trimming parameters structure
+typedef struct {
+    uint16_t dig_T1;
+    int16_t dig_T2;
+    int16_t dig_T3;
+    uint16_t dig_P1;
+    int16_t dig_P2;
+    int16_t dig_P3;
+    int16_t dig_P4;
+    int16_t dig_P5;
+    int16_t dig_P6;
+    int16_t dig_P7;
+    int16_t dig_P8;
+    int16_t dig_P9;
+} Trimming_TypeDef;
 
-/**
- * @brief: this is the struct that deals with spi
-*/
-typedef struct{
-    SPI_TypeDef* SPI;           /**< this is which SPI to use with ADXL345 */
-    GPIO_TypeDef* GPIO;         /**< this is which GPIO the CSS pin is connected to use with ADXL345 */
-    uint16_t SlavePin;          /**< this is which pin is for CSS for ADXL345 */
-    SPI_InitTypeDef spiConfig;  /**< this the configuration for the SPI*/
-} MCAL_CONFIG_SPI_t;
 
 /******************************************************************************
  * Variables
  *******************************************************************************/
 
 /**
- * @brief: to use the variable in HAL library
-*/
-extern MCAL_CONFIG_SPI_t MCAL_CFG_adxlSPI;
+ * 
+ */
+extern Trimming_TypeDef trimmingParameter;
 
 /**
- * @brief: to use the variable in HAL library
-*/
-extern MCAL_CONFIG_SPI_t MCAL_CFG_BMPSPI;
+ * 
+ */
+extern int32_t t_fine;
 
-
-// TODO: define pins configurations as a table here to be read by configuration function to configure all pins (MCAL Module task)
 
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
 
 /**
- *  \b function                                 :       MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void);
- *  \b Description                              :       this functions is used to configure all the pins of the MCU given the application and enable the clock of all the needed modules.
- *  @note                                       :       To be modified so that the configuration of the pins is given be a static array written inside configuration file.
- *  \b PRE-CONDITION                            :       make sure to call configure the clock of the MCU beforehand.
- *  \b POST-CONDITION                           :       enable all the clocks and peripheral needed of the MCU, modify the functionality of pins as per application.
- *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @MCAL_Config_ErrStat_t in "MCAL_config.h")
+ *  \b function                                 :       None
+ *  \b Description                              :       None
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_u16TaskStackDepth [IN]          :       None
+ *  @param  arg_u32TaskPriority [IN]            :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
  *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
  *  \b Example:
  * @code
  * 
- * #include "MCAL_config.h"
- * 
- * int main() {
- * SERVICE_RTOS_ErrStat_t local_TaskCreateState_t = MCAL_Config_ConfigAllPins();
- * if(SERVICE_RTOS_STAT_OK == local_TaskCreateState_t)
- * {
- *  // the pins are configured successfully
- * }
+ * None
  * 
  * @endcode
  *
  * <br><b> - HISTORY OF CHANGES - </b>
  * <table align="left" style="width:800px">
  * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 20/05/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * <tr><td> 22/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
  * </table><br><br>
  * <hr>
  */
-MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void);
+void BMP280_Init(void);
+
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       None
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_u16TaskStackDepth [IN]          :       None
+ *  @param  arg_u32TaskPriority [IN]            :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 22/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+float BMP280_get_temperature(void);
+
+
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       None
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_u16TaskStackDepth [IN]          :       None
+ *  @param  arg_u32TaskPriority [IN]            :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 22/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+float BMP280_get_pressure(void);
+
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       None
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_u16TaskStackDepth [IN]          :       None
+ *  @param  arg_u32TaskPriority [IN]            :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 22/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+float BMP280_get_altitude(float reference);
 
 /*** End of File **************************************************************/
-#endif /*MCAL_CONFIG_H_*/
+#endif // BMP280_H

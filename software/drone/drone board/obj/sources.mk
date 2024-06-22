@@ -20,6 +20,7 @@ C_DEPS :=
 SUBDIRS := \
 Code/APP \
 Code/HAL/ADXL345 \
+Code/HAL/BMP280 \
 Code/HAL/Config \
 Code/HAL/ESC \
 Code/HAL/HMC5883L \
