@@ -272,17 +272,6 @@ void UARTReceivedISR(void)
             // TODO: append to a queue
         }
     }
-    
-
-    // enable the interrupt
-    // HAL_WRAPPER_DisableEnableAppCommRecCallBack(LIB_CONSTANTS_ENABLED);
-
-
-    // global_AppCommMsg_t.dataIsToReceive = 1;
-    
-    // // disable interrupt
-
-    // SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_ENABLED);
 }
 
 /************************************************************************/
@@ -390,7 +379,6 @@ void Task_SensorFusion(void)
             SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);
             
         }
-
     }
 }
 
@@ -427,11 +415,11 @@ void Task_AppComm(void)
             // set needed variables
             // global_AppCommMsg_t.dataIsToSend = 1;
 
-            // send the message
-            for (size_t i = 0; i < global_AppCommMsg_t.dataToSendLen; i++)
-            {
-                HAL_WRAPPER_SendCommMessage(*(global_AppCommMsg_t.dataToSend + i));
-            }
+            // // send the message
+            // for (size_t i = 0; i < global_AppCommMsg_t.dataToSendLen; i++)
+            // {
+            //     HAL_WRAPPER_SendCommMessage(*(global_AppCommMsg_t.dataToSend + i));
+            // }
             
                         
             // HAL_WRAPPER_ReceiveSendAppCommMessage(&global_AppCommMsg_t);
@@ -502,7 +490,7 @@ void Task_Master(void)
     while (1)
     {
        // wait for notification
-        SERVICE_RTOS_WaitForNotification(10000);  
+        SERVICE_RTOS_WaitForNotification(1000);
         // read sensor fused readings
         // local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (const void *) &local_SensorFusedReadings_t, queue_FusedSensorData_Handle_t);
 

@@ -9,6 +9,7 @@
         "common.h": "c",
         "constants.h": "c",
         "freertos.h": "c",
-        "task.h": "c"
+        "task.h": "c",
+        "portmacro.h": "c"
     }
 }

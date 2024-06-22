@@ -262,10 +262,10 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_chann
  */
 void UART4_IRQHandler(void)
 {
-    if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET && NULL != global_UART4RecCallback)
-    {
-		global_UART4RecCallback();
-    }
+//    if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET && NULL != global_UART4RecCallback)
+//    {
+//		global_UART4RecCallback();
+//    }
 }
 
 /**
