@@ -52,6 +52,12 @@ uint8_t flyingMode = FLYING_MODE_SELECTION;
 uint8_t rightJoyStickSWState = HIGH;
 uint8_t leftJoyStickSWState = HIGH;
 uint8_t generalSWState = HIGH;
+uint8_t rightJoyStickSWStateRC = HIGH;
+uint8_t leftJoyStickSWStateRC = HIGH;
+
+uint8_t rightJoyStickPressed = 0;
+uint8_t leftJoyStickPressed = 0;
+uint8_t generalPressed = 0;
 
 
 unsigned long currentFlyingSessionInSeconds = 0;
@@ -151,6 +157,10 @@ typedef struct __attribute__((packed)){
 
 data_t data; // the variable through which we will send and recieve data
 
+/**
+* @brief: global counter to count how many sample reading we get from the buttons
+*/
+uint32_t global_u32Counter = 0;
 
 /**
 * @brief: repesents the current state of the flight
@@ -248,6 +258,21 @@ static void textDemo()
 }
 
 
+
+/**
+* @brief: used to get a god state of button
+*/
+uint8_t getAverageReadings(uint32_t numOfReadings, uint8_t PinNumber)
+{
+  float avg = 0;
+  for(uint32_t i = 0; i < numOfReadings; i++)
+  {
+    avg += digitalRead(PinNumber);
+  }
+  avg /= numOfReadings;
+  return avg >= 0.5;
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -286,14 +311,18 @@ void setup()
   commandTime = millis();
 }
 
+uint8_t readingsTaken = 0;
+uint8_t after_readings = 0;
+
+
+
 void loop()
 {
-
   if(millis() % 5 == 0)
   {
-    rightJoyStickSWState = digitalRead(RIGHT_JOYSTICK_SW_PIN);
-    leftJoyStickSWState = digitalRead(LEFT_JOYSTICK_SW_PIN);
-    generalSWState = digitalRead(GENERAL_SW_PIN);
+      rightJoyStickSWState = getAverageReadings(50, RIGHT_JOYSTICK_SW_PIN);
+      leftJoyStickSWState = getAverageReadings(50, LEFT_JOYSTICK_SW_PIN);
+      generalSWState = getAverageReadings(50, GENERAL_SW_PIN);
   }
 
   // check if 250ms passed (for change of selection of the menu)
@@ -395,25 +424,69 @@ void loop()
   }
 
   // send commands to the in case of stable mode fly every 50 ms
-  if(flyingMode == FLYING_MODE_STABLE && millis() - commandTime >= 50)
+  if(flyingMode == FLYING_MODE_STABLE)
   {
 
-    commandTime = millis();
-    data.type = DATA_TYPE_MOVE;
-    data.data.move.yaw = -((analogRead(LEFT_JOYSTICK_X_PIN) >> 3) - 64);
-    data.data.move.thurst = -((analogRead(LEFT_JOYSTICK_Y_PIN) >> 3) - 64);
-    data.data.move.roll = -((analogRead(RIGHT_JOYSTICK_X_PIN) >> 3) - 64);
-    data.data.move.pitch = -((analogRead(RIGHT_JOYSTICK_Y_PIN) >> 3) - 63);
-    data.data.move.turnOnLeds = rightJoyStickSWState == HIGH && digitalRead(RIGHT_JOYSTICK_SW_PIN) == LOW;
-    data.data.move.playMusic = leftJoyStickSWState == HIGH && digitalRead(LEFT_JOYSTICK_SW_PIN) == LOW;
+    if(millis() - commandTime >= 50)
+    {
 
-    // char buff[100];
-    // sprintf(buff, "yaw = %d, thurst= %d, roll= %d, pitch=%d, test=%d", data.data.move.yaw, data.data.move.thurst, data.data.move.roll, data.data.move.pitch, analogRead(RIGHT_JOYSTICK_Y_PIN));
-    // Serial.println(buff);
-    
-    myRadio.stopListening();
-    while(myRadio.write(&data, sizeof(data)));
-    myRadio.startListening();    
+      // get the current state of buttons being pressed
+      uint8_t curretRightReading = getAverageReadings(50, RIGHT_JOYSTICK_SW_PIN);
+      uint8_t curretLeftReading = getAverageReadings(50, LEFT_JOYSTICK_SW_PIN);
+      
+      if(rightJoyStickSWStateRC == HIGH && curretRightReading == LOW)
+      {
+        rightJoyStickPressed = 1;
+      }
+      else
+      {
+        rightJoyStickPressed = 0;
+      }
+
+      if(leftJoyStickSWStateRC == HIGH && curretLeftReading == LOW)
+      {
+        leftJoyStickPressed = 1;
+      }
+      else
+      {
+        leftJoyStickPressed = 0;
+      }
+
+      commandTime = millis();
+      data.type = DATA_TYPE_MOVE;
+      data.data.move.yaw = -((analogRead(LEFT_JOYSTICK_X_PIN) >> 3) - 64);
+      data.data.move.thurst = -((analogRead(LEFT_JOYSTICK_Y_PIN) >> 3) - 64);
+      data.data.move.roll = -((analogRead(RIGHT_JOYSTICK_X_PIN) >> 3) - 64);
+      data.data.move.pitch = -((analogRead(RIGHT_JOYSTICK_Y_PIN) >> 3) - 63);
+      // data.data.move.turnOnLeds = rightJoyStickSWState == HIGH && digitalRead(RIGHT_JOYSTICK_SW_PIN) == LOW;
+      // data.data.move.playMusic = leftJoyStickSWState == HIGH && digitalRead(LEFT_JOYSTICK_SW_PIN) == LOW;
+      data.data.move.turnOnLeds = rightJoyStickPressed;
+      data.data.move.playMusic = leftJoyStickPressed;
+
+      readingsTaken = 0;
+
+      char buff[100];
+      sprintf(buff, "left = %d, right= %d", leftJoyStickPressed, rightJoyStickPressed);
+      Serial.println(buff);
+
+      // char buff[100];
+      // sprintf(buff, "yaw = %d, thurst= %d, roll= %d, pitch=%d, test=%d", data.data.move.yaw, data.data.move.thurst, data.data.move.roll, data.data.move.pitch, analogRead(RIGHT_JOYSTICK_Y_PIN));
+      // Serial.println(buff);
+      
+      myRadio.stopListening();
+      while(myRadio.write(&data, sizeof(data)));
+      myRadio.startListening(); 
+    }
+    else if(millis() - commandTime >= 25 && !readingsTaken)
+    {
+      // always get the readings
+      rightJoyStickSWStateRC = getAverageReadings(50, RIGHT_JOYSTICK_SW_PIN);
+      leftJoyStickSWStateRC = getAverageReadings(50, LEFT_JOYSTICK_SW_PIN);
+      readingsTaken = 1;
+
+    }
+
+   
   }
 
   // read incoming traffic if any

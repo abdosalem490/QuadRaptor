@@ -1,155 +1,497 @@
+/**
+ * --------------------------------------------------------------------------------------------------------------------------------------
+ * |    @title          :   header file for NRF2401                                                                                     |
+ * |    @file           :   nrf_config.h                                                                                                |
+ * |    @author         :   Ahmed Fawzy                                                                                                 |
+ * |    @origin_date    :   18/06/2024                                                                                                  |
+ * |    @version        :   1.0.0                                                                                                       |
+ * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
+ * |    @compiler       :   GCC                                                                                                         |
+ * |    @C_standard     :   ISO C99 (-std=c99)                                                                                          |
+ * |    @target         :   CH32V203C8T6                                                                                                |
+ * |    @notes          :   None                                                                                                        |
+ * |    @license        :   MIT License                                                                                                 |
+ * |    @brief          :   this header file contains some interface function to be used with NRF2401                                   |
+ * --------------------------------------------------------------------------------------------------------------------------------------
+ * |    MIT License                                                                                                                     |
+ * |                                                                                                                                    |
+ * |    Copyright (c) - 2024 - Abdelrahman Mohamed Salem - All Rights Reserved                                                          |
+ * |                                                                                                                                    |
+ * |    Permission is hereby granted, free of charge, to any person obtaining a copy                                                    |
+ * |    of this software and associated documentation files (the "Software"), to deal                                                   |
+ * |    in the Software without restriction, including without limitation the rights                                                    |
+ * |    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell                                                       |
+ * |    copies of the Software, and to permit persons to whom the Software is                                                           |
+ * |    furnished to do so, subject to the following conditions:                                                                        |
+ * |                                                                                                                                    |
+ * |    The above copyright notice and this permission notice shall be included in all                                                  |
+ * |    copies or substantial portions of the Software.                                                                                 |
+ * |                                                                                                                                    |
+ * |    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR                                                      |
+ * |    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,                                                        |
+ * |    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE                                                     |
+ * |    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER                                                          |
+ * |    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,                                                   |
+ * |    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE                                                   |
+ * |    SOFTWARE.                                                                                                                       |
+ * --------------------------------------------------------------------------------------------------------------------------------------
+ * |    @history_change_list                                                                                                            |
+ * |    ====================                                                                                                            |
+ * |    Date            Version         Author                          Description                                                     |
+ * |    18/06/2023      1.0.0           Ahmed Fawzy                     Interface Created.                                              |
+ * --------------------------------------------------------------------------------------------------------------------------------------
+ */
+
+
 #ifndef USER_NRF_H_
 #define USER_NRF_H_
 
-/**
- * @brief Sets the CSN pin low.
- */
-void CSN_LOW();
+/******************************************************************************
+ * Includes
+ *******************************************************************************/
 
 /**
- * @brief Sets the CSN pin high.
+ * @reaosn: contains standard integer definitions
  */
-void CSN_HIGH();
+#include "stdint.h"
+
+/******************************************************************************
+ * Preprocessor Constants
+ *******************************************************************************/
+
+/******************************************************************************
+ * Configuration Constants
+ *******************************************************************************/
+
+/******************************************************************************
+ * Macros
+ *******************************************************************************/
+
+/******************************************************************************
+ * Typedefs
+ *******************************************************************************/
+
+/******************************************************************************
+ * Variables
+ *******************************************************************************/
+
+/******************************************************************************
+ * Function Prototypes
+ *******************************************************************************/
+
 
 /**
- * @brief Sets the CE pin low.
- */
-void CE_LOW();
-
-/**
- * @brief Sets the CE pin high.
- */
-void CE_HIGH();
-
-/**
- * @brief Initializes the SPI interface.
+ *  \b function                                 :       None
+ *  \b Description                              :       Gets the status of the NRF module.
+ *  @param  void [IN]                           :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       The status byte.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param GPIOx The GPIO port to use.
- * @param SPI_SCK_Pin The SCK pin.
- * @param SPI_MISO_Pin The MISO pin.
- * @param SPI_MOSI_Pin The MOSI pin.
- */
-void SPI_init(GPIO_TypeDef* GPIOx, uint16_t SPI_SCK_Pin, uint16_t SPI_MISO_Pin, uint16_t SPI_MOSI_Pin);
-
-/**
- * @brief Gets the status of the NRF module.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
  *
- * @return The status byte.
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 uint8_t get_status();
 
 /**
- * @brief Sends a command to the NRF module.
+ *  \b function                                 :       None
+ *  \b Description                              :       Sends a command to the NRF module.
+ *  @param  command [IN]                        :       The command byte to send.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       The status byte returned by the NRF module.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param command The command byte to send.
- * @return The status byte returned by the NRF module.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 uint8_t NRF_send_command(uint8_t command);
 
-/**
- * @brief Transfers a byte over SPI.
- *
- * @param data The byte to transfer.
- * @return The byte received from the SPI transfer.
- */
-uint8_t SPI_transfer(uint8_t data);
 
 /**
- * @brief Writes a value to an NRF register.
+ *  \b function                                 :       None
+ *  \b Description                              :       Writes a value to an NRF register.
+ *  @param  reg [IN]                            :       The register to write to.
+ *  @param  value [IN]                          :       The value to write.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       The status byte returned by the NRF module.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param reg The register to write to.
- * @param value The value to write.
- * @return The status byte returned by the NRF module.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 uint8_t NRF_write_register(uint8_t reg, uint8_t value);
 
 /**
- * @brief Writes a buffer to an NRF register.
+ *  \b function                                 :       None
+ *  \b Description                              :       Writes a buffer to an NRF register.
+ *  @param  reg [IN]                            :       The register to write to.
+ *  @param  buf [IN]                            :       The buffer containing the data to write.
+ *  @param  len [IN]                            :       The length of the buffer.
+ *  @param  arg_u32TaskPriority [IN]            :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param reg The register to write to.
- * @param buf The buffer containing the data to write.
- * @param len The length of the buffer.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 void NRF_write_data_register(uint8_t reg, const uint8_t *buf, uint8_t len);
 
 /**
- * @brief Reads a value from an NRF register.
+ *  \b function                                 :       None
+ *  \b Description                              :       Reads a value from an NRF register.
+ *  @param  reg [IN]                            :       The register to read from.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       The value read from the register.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param reg The register to read from.
- * @return The value read from the register.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 uint8_t NRF_read_register(uint8_t reg);
 
 /**
- * @brief Writes data to the NRF module.
+ *  \b function                                 :       None
+ *  \b Description                              :       Writes data to the NRF module.
+ *  @param  buf [IN]                            :       The buffer containing the data to write.
+ *  @param  data_len [IN]                       :       The length of the data.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       True if the write was successful, false otherwise.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param buf The buffer containing the data to write.
- * @param data_len The length of the data.
- * @return True if the write was successful, false otherwise.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 void NRF_write(const void* buf, uint8_t data_len);
 
 /**
- * @brief Initializes the NRF module.
+ *  \b function                                 :       None
+ *  \b Description                              :       Initializes the NRF module.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_u16TaskStackDepth [IN]          :       None
+ *  @param  arg_u32TaskPriority [IN]            :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 void NRF_init();
 
 /**
- * @brief Starts listening for incoming data.
+ *  \b function                                 :       None
+ *  \b Description                              :       Starts listening for incoming data.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_u16TaskStackDepth [IN]          :       None
+ *  @param  arg_u32TaskPriority [IN]            :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 void NRF_start_listening();
 
 /**
- * @brief Stops listening for incoming data.
+ *  \b function                                 :       None
+ *  \b Description                              :       Stops listening for incoming data.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_pu8TaskName [IN]                :       None
+ *  @param  arg_u16TaskStackDepth [IN]          :       None
+ *  @param  arg_u32TaskPriority [IN]            :       None
+ *  @param  arg_pTaskHandle [OUT]               :       None
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 void NRF_stop_listening();
 
 /**
- * @brief Reads data from an NRF register into a buffer.
+ *  \b function                                 :       None
+ *  \b Description                              :       Reads data from an NRF register into a buffer.
+ *  @param  reg [IN]                            :       The register to read from.
+ *  @param  buf [IN]                            :       The buffer to store the data.
+ *  @param  len [IN]                            :       The length of the buffer.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       The status byte returned by the NRF module.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param reg The register to read from.
- * @param buf The buffer to store the data.
- * @param len The length of the buffer.
- * @return The status byte returned by the NRF module.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 uint8_t NRF_read_data_register(uint8_t reg, uint8_t *buf, uint8_t len);
 
+
 /**
- * @brief Opens a writing pipe with a specific address.
+ *  \b function                                 :       None
+ *  \b Description                              :       Opens a writing pipe with a specific address.
+ *  @param  address [IN]                        :       The address of the writing pipe.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param address The address of the writing pipe.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 void NRF_openWritingPipe(const uint8_t *address);
 
 /**
- * @brief Opens a reading pipe with a specific address.
+ *  \b function                                 :       None
+ *  \b Description                              :       Opens a reading pipe with a specific address.
+ *  @param  child [IN]                          :       The child pipe number.
+ *  @param  address [IN]                        :       The address of the reading pipe.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param child The child pipe number.
- * @param address The address of the reading pipe.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 void NRF_openReadingPipe(uint8_t child, const uint8_t *address);
 
 /**
- * @brief Reads payload data from the NRF module.
+ *  \b function                                 :       None
+ *  \b Description                              :       Reads payload data from the NRF module.
+ *  @param  buf [IN]                            :       The buffer to store the data.
+ *  @param  len [IN]                            :       The length of the buffer.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       The status byte returned by the NRF module.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param buf The buffer to store the data.
- * @param len The length of the buffer.
- * @return The status byte returned by the NRF module.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 uint8_t NRF_read_payload(void *buf, uint8_t len);
 
 /**
- * @brief Reads data from the NRF module into a buffer.
+ *  \b function                                 :       None
+ *  \b Description                              :       Reads data from the NRF module into a buffer.
+ *  @param  buf [IN]                            :       The buffer to store the data.
+ *  @param  len [IN]                            :       The length of the buffer.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @param buf The buffer to store the data.
- * @param len The length of the buffer.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 void NRF_read(void *buf, uint8_t len);
 
 /**
- * @brief Checks if data is available in the NRF module.
+ *  \b function                                 :       None
+ *  \b Description                              :       Checks if data is available in the NRF module.
+ *  @param  void [IN]                           :       None.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       True if data is available, false otherwise.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
  *
- * @return True if data is available, false otherwise.
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
  */
 uint8_t NRF_data_available();
 

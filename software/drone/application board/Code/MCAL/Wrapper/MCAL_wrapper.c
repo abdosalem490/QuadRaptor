@@ -77,6 +77,12 @@
  */
 #include "ch32v20x_usart.h"
 
+
+/**
+ * @reason: contains some configuration constants for NRF2401
+ */
+#include "nrf_config.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -270,6 +276,74 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data
     }
 
     return local_errState_t;
+}
+
+/**
+ * @brief: Set CSN pin low
+ */
+void CSN_LOW() {
+    GPIO_ResetBits(NRF_PORT, NRF_CSN_PIN);
+}
+
+/**
+ * @brief: Set CSN pin high
+ */
+void CSN_HIGH() {
+    GPIO_SetBits(NRF_PORT, NRF_CSN_PIN);
+}
+
+/**
+ * @brief: Set CE pin high
+ */
+void CE_HIGH() {
+    GPIO_SetBits(NRF_PORT, NRF_CE_PIN);
+}
+
+/**
+ * @brief: Set CE pin low
+ */
+void CE_LOW() {
+    GPIO_ResetBits(NRF_PORT, NRF_CE_PIN);
+}
+
+/**
+ * @brief: Transfer a byte over SPI
+ */
+uint8_t SPI_transfer(uint8_t data) {
+    while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET);
+    SPI_I2S_SendData(SPI1, data);
+    while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE) == RESET);
+    return SPI_I2S_ReceiveData(SPI1);
+}
+
+/**
+ * 
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayUS(uint32_t arg_u16US)
+{   
+    
+    uint16_t local_u16Dummy = 0;
+
+    while (arg_u16US)
+    {
+        if(arg_u16US < 10000)
+        {
+            local_u16Dummy = arg_u16US % 10000;
+            arg_u16US = 0;
+        }
+        else
+        {
+            local_u16Dummy = 10000;
+            arg_u16US -= 10000;
+        }
+        TIM_ClearFlag(TIM2, TIM_FLAG_Update);
+        TIM_SetCounter(TIM2, local_u16Dummy);
+        TIM_Cmd( TIM2, ENABLE );
+        while (TIM_GetCounter(TIM2) < local_u16Dummy+1);
+        TIM_Cmd( TIM2, DISABLE );
+    }
+    
+    return MCAL_WRAPPER_STAT_OK;   
 }
 
 

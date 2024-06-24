@@ -123,7 +123,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, DISABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, DISABLE);
 
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, DISABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, DISABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, DISABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, DISABLE);
@@ -302,11 +302,11 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
     SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
     SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32; 
+    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256; 
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
     SPI_InitStructure.SPI_CRCPolynomial = 7;
     SPI_Init(SPI1, &SPI_InitStructure);
-    GPIO_SetBits(GPIOC, GPIO_Pin_14);
+    GPIO_ResetBits(GPIOC, GPIO_Pin_14);
     GPIO_SetBits(GPIOC, GPIO_Pin_13);
     SPI_Cmd(SPI1, ENABLE);
 
@@ -330,6 +330,18 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
 	// TIM_OC1PreloadConfig( TIM4, TIM_OCPreload_Disable );
 	// TIM_ARRPreloadConfig( TIM4, ENABLE );
 	// TIM_Cmd( TIM4, ENABLE );
+
+    /******************************************/
+    TIM_TimeBaseInitTypeDef local_tim2Init_t = {0};
+    local_tim2Init_t.TIM_CounterMode = TIM_CounterMode_Down;
+    local_tim2Init_t.TIM_ClockDivision = TIM_CKD_DIV4;
+    local_tim2Init_t.TIM_Prescaler = 36-1;
+    local_tim2Init_t.TIM_Period = 30000;
+    TIM_TimeBaseInit(TIM2, &local_tim2Init_t);
+	TIM_ARRPreloadConfig( TIM2, ENABLE );
+    TIM_UpdateRequestConfig(TIM2, TIM_UpdateSource_Regular);
+    TIM_UpdateDisableConfig(TIM2, ENABLE);
+	// TIM_Cmd( TIM2, ENABLE );
 
     /******************************************/
 

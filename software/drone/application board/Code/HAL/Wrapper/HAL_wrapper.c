@@ -63,6 +63,11 @@
 #include "common.h"
 
 
+/**
+ * @reason: contains NRF interface functions
+ */
+#include "nrf.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -200,6 +205,37 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SendCommMessage(uint8_t arg_pu8Msg)
         local_errState_t = HAL_WRAPPER_STAT_OK;
     }
 
+    return local_errState_t;
+}
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_RCSend(HAL_WRAPPER_RCMsg_t* arg_pMsg_t)
+{
+    HAL_WRAPPER_ErrStat_t local_errState_t = HAL_WRAPPER_STAT_OK;
+    NRF_write((void*)&arg_pMsg_t->MsgToSend, sizeof(arg_pMsg_t->MsgToSend));
+    return local_errState_t; 
+}
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_RCReceive(HAL_WRAPPER_RCMsg_t* arg_pMsg_t)
+{
+    HAL_WRAPPER_ErrStat_t local_errState_t = HAL_WRAPPER_STAT_OK;
+
+    NRF_start_listening();
+    if (NRF_data_available()) 
+    {
+        NRF_read((void*)&arg_pMsg_t->MsgToReceive, sizeof(arg_pMsg_t->MsgToReceive));
+    }
+    else
+    {
+        local_errState_t = HAL_WRAPPER_STAT_RC_DIDNT_SND;
+    }
+    NRF_stop_listening();
+    
     return local_errState_t;
 }
 

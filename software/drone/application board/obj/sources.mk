@@ -20,6 +20,7 @@ C_DEPS :=
 SUBDIRS := \
 Code/APP \
 Code/HAL/Config \
+Code/HAL/NRF2401 \
 Code/HAL/Wrapper \
 Code/MCAL/Config \
 Code/MCAL/Core \

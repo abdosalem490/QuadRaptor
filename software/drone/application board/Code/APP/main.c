@@ -261,23 +261,32 @@ void UARTReceivedISR(void)
 */
 void Task_RCComm(void)
 {   
-    data_t local_RCData_t = {0};
+    HAL_WRAPPER_RCMsg_t local_RCData_t = {0};
+    local_RCData_t.MsgToSend.data.info.distanceToOrigin = 12.2;
+    local_RCData_t.MsgToSend.data.info.altitude = 33;
+    local_RCData_t.MsgToSend.data.info.temperature = 25.5;
+    local_RCData_t.MsgToSend.data.info.batteryCharge = 32;
+    HAL_WRAPPER_ErrStat_t local_errState = HAL_WRAPPER_STAT_OK;
 
     // TODO: remove the below code
-    local_RCData_t.type = DATA_TYPE_MOVE;
-    local_RCData_t.data.move.roll = -63;
-    local_RCData_t.data.move.pitch = -3;
-    local_RCData_t.data.move.thrust = 10;
-    local_RCData_t.data.move.yaw = 52;
-    local_RCData_t.data.move.turnOnLeds = 0;
-    local_RCData_t.data.move.playMusic = 1;
+    // local_RCData_t.type = DATA_TYPE_MOVE;
+    // local_RCData_t.data.move.roll = -63;
+    // local_RCData_t.data.move.pitch = -3;
+    // local_RCData_t.data.move.thrust = 10;
+    // local_RCData_t.data.move.yaw = 52;
+    // local_RCData_t.data.move.turnOnLeds = 0;
+    // local_RCData_t.data.move.playMusic = 1;
 
     while (1)
     {
         // check if there is anything to receive from nrf module
-        if(1)
+        local_errState = HAL_WRAPPER_RCReceive(&local_RCData_t);
+        if(HAL_WRAPPER_STAT_OK == local_errState)
         {
-            // receive data
+            // TODO: comment the below line
+            printf("Roll: %d, Pitch: %d, Thrust: %d, Yaw: %d, LEDs: %d, Music: %d\r\n", 
+            local_RCData_t.MsgToReceive.data.move.roll, local_RCData_t.MsgToReceive.data.move.pitch, local_RCData_t.MsgToReceive.data.move.thrust,
+            local_RCData_t.MsgToReceive.data.move.yaw, local_RCData_t.MsgToReceive.data.move.turnOnLeds, local_RCData_t.MsgToReceive.data.move.playMusic);
 
             // append new states to the queue
 
@@ -287,76 +296,17 @@ void Task_RCComm(void)
         if(1)
         {
             // send data
+            HAL_WRAPPER_RCSend(&local_RCData_t);
         }
 
         // push the data into the queue for sending to drone communication task
-        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_RCData_t, queue_AppCommToDrone_Handle_t);
-        SERVICE_RTOS_Notify(task_DroneComm_Handle_t, LIB_CONSTANTS_DISABLED);
+        // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_RCData_t, queue_AppCommToDrone_Handle_t);
+        // SERVICE_RTOS_Notify(task_DroneComm_Handle_t, LIB_CONSTANTS_DISABLED);
         // push the data into the queue for sending to actions task
         // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
 
         // sleep for 5 ms
-        SERVICE_RTOS_BlockFor(5);
-    }
-}
-
-/************************************************************************/
-/**
- * @brief: this task is responsible for processing of sensor data
-*/
-void Task_TakeAction(void)
-{
-    //                      SOME INITIALIZATION 
-    // INITIALIZATION CAN'T BE DONE IN MAIN AS SCHEDULAR HAS TO START FIRST BEFORE DOING 
-    // ANYTHING (RECEIVING INTERRUPTS HAS TO WAIT BEFORE INITIALIZING)
-    /************************************************************************/
-    // assign pointers and lengths of data to be always received
-    global_DroneCommMsg_t.dataToReceive = (uint8_t*) &global_MsgToRec_t.data;
-    global_DroneCommMsg_t.dataToReceiveLen = sizeof(global_MsgToRec_t.data);
-    global_DroneCommMsg_t.dataIsToReceive = 0;
-    global_DroneCommMsg_t.IsDataReceived = 0;
-    /************************************************************************/
-
-    // Configure/enable Clock and all needed peripherals 
-    SystemInit();
-    SystemCoreClockUpdate();
-
-    // configure NVIC
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-
-    // delay init for initial configuration (DON'T USE IT INSIDE TASKS BECAUSE FREERTOS IS USING SAME COUNTER REGISTER)
-    Delay_Init();
-
-    // // set call back for board receive
-    // HAL_WRAPPER_SetAppCommRecCallBack(UARTReceivedISR);
-
-    // configure all pins and peripherals 
-    MCAL_Config_ConfigAllPins();
-
-    // configure the external hardware as sensors, motors, etc... 
-    HAL_Config_ConfigAllHW();
-
-    
-    // TODO: comment the below line
-//     USART_Printf_Init(115200);
-
-    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
-    uint8_t local_u8LenOfRemaining = 0;
-
-    while (1)
-    {
-        // wait for notification
-        SERVICE_RTOS_WaitForNotification(10000);  
-
-        // read item from raw actions
-        // local_ErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(1000, (void *) &local_in_t, queue_RawSensorData_Handle_t, &local_u8LenOfRemaining);
-
-        // check if we got back a reading
-        if(SERVICE_RTOS_STAT_OK == local_ErrStatus)
-        {
-            
-        }
-
+        SERVICE_RTOS_BlockFor(1);
     }
 }
 
@@ -425,6 +375,66 @@ void Task_DroneComm(void)
 
        
 
+
+    }
+}
+
+/************************************************************************/
+/**
+ * @brief: this task is responsible for processing of sensor data
+*/
+void Task_TakeAction(void)
+{
+    //                      SOME INITIALIZATION 
+    // INITIALIZATION CAN'T BE DONE IN MAIN AS SCHEDULAR HAS TO START FIRST BEFORE DOING 
+    // ANYTHING (RECEIVING INTERRUPTS HAS TO WAIT BEFORE INITIALIZING)
+    /************************************************************************/
+    // assign pointers and lengths of data to be always received
+    global_DroneCommMsg_t.dataToReceive = (uint8_t*) &global_MsgToRec_t.data;
+    global_DroneCommMsg_t.dataToReceiveLen = sizeof(global_MsgToRec_t.data);
+    global_DroneCommMsg_t.dataIsToReceive = 0;
+    global_DroneCommMsg_t.IsDataReceived = 0;
+    /************************************************************************/
+
+    // Configure/enable Clock and all needed peripherals 
+    SystemInit();
+    SystemCoreClockUpdate();
+
+    // configure NVIC
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+
+    // // set call back for board receive
+    // HAL_WRAPPER_SetAppCommRecCallBack(UARTReceivedISR);
+
+    // configure all pins and peripherals 
+    MCAL_Config_ConfigAllPins();
+
+    // configure the external hardware as sensors, motors, etc... 
+    HAL_Config_ConfigAllHW();
+
+    // TODO: comment the below line
+    USART_Printf_Init(115200);
+
+    
+    // TODO: comment the below line
+//     USART_Printf_Init(115200);
+
+    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+    uint8_t local_u8LenOfRemaining = 0;
+
+    while (1)
+    {
+        // wait for notification
+        SERVICE_RTOS_WaitForNotification(10000);  
+
+        // read item from raw actions
+        // local_ErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(1000, (void *) &local_in_t, queue_RawSensorData_Handle_t, &local_u8LenOfRemaining);
+
+        // check if we got back a reading
+        if(SERVICE_RTOS_STAT_OK == local_ErrStatus)
+        {
+            
+        }
 
     }
 }

@@ -14,6 +14,7 @@
         "stdbool.h": "c",
         "debug.h": "c",
         "math.h": "c",
-        "esc.h": "c"
+        "esc.h": "c",
+        "nrf_config.h": "c"
     }
 }

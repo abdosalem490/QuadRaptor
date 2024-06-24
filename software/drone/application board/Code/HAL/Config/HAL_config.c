@@ -57,6 +57,16 @@
 */
 #include "constants.h"
 
+/**
+ * @reason: contains initialization function for NRF2401
+ */
+#include "nrf.h"
+
+/**
+ * @reason: contains standard integer definitions
+ */
+#include "stdint.h"
+
 
 /******************************************************************************
  * Module Preprocessor Constants
@@ -74,6 +84,10 @@
  * Module Variable Definitions
  *******************************************************************************/
 
+/**
+ * @brief:
+ */
+uint8_t addresses[][6] = {"RtoD", "DtoR"};
 
 /******************************************************************************
  * Function Prototypes
@@ -90,7 +104,9 @@
 HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void)
 {
     // configure NRF24
-
+    NRF_init();
+	NRF_openWritingPipe(addresses[1]);
+	NRF_openReadingPipe(1, addresses[0]);
 
     return HAL_Config_STAT_OK;
 }

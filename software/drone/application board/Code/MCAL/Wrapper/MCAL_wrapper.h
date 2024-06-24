@@ -71,6 +71,7 @@
  */
 #include "constants.h"
 
+
 /******************************************************************************
  * Preprocessor Constants
  *******************************************************************************/
@@ -326,6 +327,181 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, u
  */
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen);
 
+
+/**
+ *  \b function                                 :       None.
+ *  \b Description                              :       Sets the CSN pin low..
+ *  @param  arg_pu8Data [IN]                    :       None.
+ *  @param  arg_u16DataLen [IN]                 :       None.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None.
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void CSN_LOW();
+
+
+
+/**
+ *  \b function                                 :       None.
+ *  \b Description                              :       Sets the CSN pin high.
+ *  @param  arg_pu8Data [IN]                    :       None.
+ *  @param  arg_u16DataLen [IN]                 :       None.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None.
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void CSN_HIGH();
+
+
+
+/**
+ *  \b function                                 :       None.
+ *  \b Description                              :       Sets the CE pin low.
+ *  @param  arg_pu8Data [IN]                    :       None.
+ *  @param  arg_u16DataLen [IN]                 :       None.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None.
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void CE_LOW();
+
+/**
+ *  \b function                                 :       None.
+ *  \b Description                              :       Sets the CE pin high.
+ *  @param  arg_pu8Data [IN]                    :       None.
+ *  @param  arg_u16DataLen [IN]                 :       None.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None.
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+void CE_HIGH();
+
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       Transfers a byte over SPI.
+ *  @param  data [IN]                           :       The byte to transfer.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       The byte received from the SPI transfer.
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 18/06/2024 </td><td> 1.0.0            </td><td> AF      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+uint8_t SPI_transfer(uint8_t data);
+
+/**
+ *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayUS(uint32_t arg_u16US);
+ *  \b Description                              :       this functions is used as a wrapper function to delay for a given micro seconds.
+ *  @param  arg_u16MS [IN]                      :       time to delay for in micro seconds.
+ *  @note                                       :       This is a blocking function until the delay is achieved and it uses Timer2.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @MCAL_WRAPPER_ErrStat_t in "MCAL_wrapper.h")
+ *  @see                                        :       MCAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "MCAL_wrapper.h"
+ * 
+ * int main() {
+ *  MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
+ *  if(MCAL_Config_STAT_OK == local_errState)
+ *  {
+ *    local_errState = MCAL_WRAPPER_DelayUS(15);
+ *    if(MCAL_WRAPPER_STAT_OK == local_errState)
+ *    {
+ *      // function delay success
+ *    }
+ *  }
+ * }
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 21/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayUS(uint32_t arg_u16US);
 
 /*** End of File **************************************************************/
 #endif /*MCAL_WRAPPER_HEADER_H_*/

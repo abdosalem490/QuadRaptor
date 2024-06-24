@@ -1,80 +1,88 @@
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include "debug.h"
+/**
+ * --------------------------------------------------------------------------------------------------------------------------------------
+ * |    @title          :   source code file for NRF2401                                                                                |
+ * |    @file           :   nrf_config.h                                                                                                |
+ * |    @author         :   Ahmed Fawzy                                                                                                 |
+ * |    @origin_date    :   18/06/2024                                                                                                  |
+ * |    @version        :   1.0.0                                                                                                       |
+ * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
+ * |    @compiler       :   GCC                                                                                                         |
+ * |    @C_standard     :   ISO C99 (-std=c99)                                                                                          |
+ * |    @target         :   CH32V203C8T6                                                                                                |
+ * |    @notes          :   None                                                                                                        |
+ * |    @license        :   MIT License                                                                                                 |
+ * |    @brief          :   this source file contains some function to deal with NRF2401                                                |
+ * --------------------------------------------------------------------------------------------------------------------------------------
+ * |    MIT License                                                                                                                     |
+ * |                                                                                                                                    |
+ * |    Copyright (c) - 2024 - Abdelrahman Mohamed Salem - All Rights Reserved                                                          |
+ * |                                                                                                                                    |
+ * |    Permission is hereby granted, free of charge, to any person obtaining a copy                                                    |
+ * |    of this software and associated documentation files (the "Software"), to deal                                                   |
+ * |    in the Software without restriction, including without limitation the rights                                                    |
+ * |    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell                                                       |
+ * |    copies of the Software, and to permit persons to whom the Software is                                                           |
+ * |    furnished to do so, subject to the following conditions:                                                                        |
+ * |                                                                                                                                    |
+ * |    The above copyright notice and this permission notice shall be included in all                                                  |
+ * |    copies or substantial portions of the Software.                                                                                 |
+ * |                                                                                                                                    |
+ * |    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR                                                      |
+ * |    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,                                                        |
+ * |    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE                                                     |
+ * |    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER                                                          |
+ * |    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,                                                   |
+ * |    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE                                                   |
+ * |    SOFTWARE.                                                                                                                       |
+ * --------------------------------------------------------------------------------------------------------------------------------------
+ * |    @history_change_list                                                                                                            |
+ * |    ====================                                                                                                            |
+ * |    Date            Version         Author                          Description                                                     |
+ * |    18/06/2023      1.0.0           Ahmed Fawzy                     Interface Created.                                              |
+ * --------------------------------------------------------------------------------------------------------------------------------------
+ */
+
+
+/******************************************************************************
+ * Includes
+ *******************************************************************************/
+
+/**
+ * 
+ */
+#include "stdint.h"
+
+/**
+ * 
+ */
 #include "nrf_config.h"
+
+
+/**
+ * 
+ */
 #include "nrf24L01.h"
+
+/**
+ * 
+ */
 #include "nrf.h"
 
-// Set CSN pin low
-void CSN_LOW() {
-    GPIO_ResetBits(NRF_PORT, NRF_CSN_PIN);
-}
+/**
+ * 
+ */
+#include "MCAL_wrapper.h"
 
-// Set CSN pin high
-void CSN_HIGH() {
-    GPIO_SetBits(NRF_PORT, NRF_CSN_PIN);
-}
 
-// Set CE pin high
-void CE_HIGH() {
-    GPIO_SetBits(NRF_PORT, NRF_CE_PIN);
-}
+/**
+ * 
+ */
+#include "Service_RTOS_wrapper.h"
 
-// Set CE pin low
-void CE_LOW() {
-    GPIO_ResetBits(NRF_PORT, NRF_CE_PIN);
-}
 
-// Initialize SPI interface
-void SPI_init(GPIO_TypeDef* GPIOx, uint16_t SPI_SCK_Pin, uint16_t SPI_MISO_Pin, uint16_t SPI_MOSI_Pin) {
-    GPIO_InitTypeDef GPIO_InitStructure;
-    SPI_InitTypeDef SPI_InitStructure;
-
-    // Enable GPIO and SPI clocks
-    if (SPIx == SPI1) {
-        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_SPI1, ENABLE);
-    } else if (SPIx == SPI2) {
-        RCC_APB1PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB1Periph_SPI2, ENABLE);
-    }
-
-    // Initialize SCK and MOSI as Alternate Function Push Pull
-    GPIO_InitStructure.GPIO_Pin = SPI_SCK_Pin | SPI_MOSI_Pin;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOx, &GPIO_InitStructure);
-
-    // Initialize MISO as Input Floating
-    GPIO_InitStructure.GPIO_Pin = SPI_MISO_Pin;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    GPIO_Init(GPIOx, &GPIO_InitStructure);
-
-    // SPI configuration
-    SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-    SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-    SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-    SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
-    SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
-    SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
-    SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-    SPI_InitStructure.SPI_CRCPolynomial = 7;
-    SPI_Init(SPIx, &SPI_InitStructure);
-
-    // Enable SPI
-    SPI_Cmd(SPIx, ENABLE);
-}
-
-// Transfer a byte over SPI
-uint8_t SPI_transfer(uint8_t data) {
-    while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET);
-    SPI_I2S_SendData(SPI1, data);
-    while (SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE) == RESET);
-    return SPI_I2S_ReceiveData(SPI1);
-}
-
-// Write a value to an NRF register
+/**
+ * @brief: Write a value to an NRF register
+ */
 uint8_t NRF_write_register(uint8_t reg, uint8_t value) {
     uint8_t status = 0;
     CSN_LOW();
@@ -84,7 +92,9 @@ uint8_t NRF_write_register(uint8_t reg, uint8_t value) {
     return status;
 }
 
-// Write a buffer to an NRF register
+/**
+ * @brief: Write a buffer to an NRF register
+ */
 void NRF_write_data_register(uint8_t reg, const uint8_t *buf, uint8_t len) {
     CSN_LOW();
     SPI_transfer(WRITE_REG | (reg & 0x1F));
@@ -94,7 +104,9 @@ void NRF_write_data_register(uint8_t reg, const uint8_t *buf, uint8_t len) {
     CSN_HIGH();
 }
 
-// Send a command to the NRF module
+/**
+ * @brief: Send a command to the NRF module
+ */
 uint8_t NRF_send_command(uint8_t command) {
     CSN_LOW();
     uint8_t status = SPI_transfer(WRITE_REG | command);
@@ -102,21 +114,27 @@ uint8_t NRF_send_command(uint8_t command) {
     return status;
 }
 
-// Get the status of the NRF module
+/**
+ * @brief: Get the status of the NRF module
+ */
 uint8_t get_status() {
     return NRF_send_command(0xFF);
 }
 
-// Read a value from an NRF register
+/**
+ * @brief: Read a value from an NRF register
+ */
 uint8_t NRF_read_register(uint8_t reg) {
-    CSN_LOW();
+	CSN_LOW();
     SPI_transfer(READ_REG | (reg & 0x1F));
     uint8_t value = SPI_transfer(NOP);
     CSN_HIGH();
     return value;
 }
 
-// Write data to the NRF module
+/**
+ * @brief: Write data to the NRF module
+ */
 void NRF_write(const void* buf, uint8_t data_len) {
     const uint8_t* current = (const uint8_t*)buf;
     uint8_t blank_len = 32 - data_len;
@@ -132,7 +150,7 @@ void NRF_write(const void* buf, uint8_t data_len) {
     CSN_HIGH();
 
     CE_HIGH();
-    Delay_Ms(5);
+    SERVICE_RTOS_BlockFor(5);
     CE_LOW();
 
     //uint8_t status = NRF_write_register(STATUS, SHIFT_LEFT(6) | SHIFT_LEFT(5) | SHIFT_LEFT(4));
@@ -143,39 +161,30 @@ void NRF_write(const void* buf, uint8_t data_len) {
     return ;
 }
 
-// Open a writing pipe with a specific address
+/**
+ * @brief: Open a writing pipe with a specific address
+ */
 void NRF_openWritingPipe(const uint8_t *address) {
     NRF_write_data_register(RX_ADDR_P0, address, 5);
     NRF_write_data_register(TX_ADDR, address, 5);
 }
 
-// Open a reading pipe with a specific address
+// 
+/**
+ * @brief: Open a reading pipe with a specific address
+ */
 void NRF_openReadingPipe(uint8_t child, const uint8_t *address) {
     NRF_write_data_register(PIPE_ADDRESS_1, address, 5);
     uint8_t en_rxaddr = NRF_read_register(EN_RXADDR);
     NRF_write_register(EN_RXADDR, en_rxaddr | SHIFT_LEFT(PIPE_ENABLE_1));
 }
 
-// Initialize the NRF module
+/**
+ * @brief: Initialize the NRF module
+ */
 void NRF_init() {
-    // Enable the clock for the GPIO port used by the NRF module
-    if (NRF_PORT == GPIOA) {
-        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-    } else if (NRF_PORT == GPIOB) {
-        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-    }
 
-    // Configure CE and CSN pins as output push-pull
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = NRF_CE_PIN | NRF_CSN_PIN;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(NRF_PORT, &GPIO_InitStructure);
-
-    // Reset CE and set CSN pins
-    GPIO_ResetBits(NRF_PORT, NRF_CE_PIN);
-    GPIO_SetBits(NRF_PORT, NRF_CSN_PIN);
-    Delay_Ms(110); // Delay to ensure the NRF module is properly reset
+    MCAL_WRAPPER_DelayUS(110000); // Delay to ensure the NRF module is properly reset
 
     // Set auto-retransmit delay to 1500us and up to 15 retransmit attempts
     NRF_write_register(SETUP_RETR, 0x5F);
@@ -214,10 +223,13 @@ void NRF_init() {
     NRF_write_register(CONFIG, 0x0E);
 
     // Wait for the NRF module to power up properly
-    Delay_Ms(5000);
+    MCAL_WRAPPER_DelayUS(5000000);
 }
 
-// Start listening for incoming data
+
+/**
+ * @brief: Start listening for incoming data
+ */
 void NRF_start_listening() {
     uint8_t config_value = NRF_read_register(CONFIG);
     config_value |= SHIFT_LEFT(0);
@@ -227,17 +239,24 @@ void NRF_start_listening() {
 
     CE_HIGH();
     NRF_write_register(EN_RXADDR, (NRF_read_register(EN_RXADDR) & ~SHIFT_LEFT(0)));
+
+    // delay for allowing NRF to detect if anything received
+    SERVICE_RTOS_BlockFor(5);
 }
 
-// Stop listening for incoming data
+/**
+ * @brief: Stop listening for incoming data
+ */
 void NRF_stop_listening() {
     CE_LOW();
-    Delay_Us(100);
+    MCAL_WRAPPER_DelayUS(100);
     NRF_write_register(CONFIG, (NRF_read_register(CONFIG) & ~(0x01)));
     NRF_write_register(EN_RXADDR, (NRF_read_register(EN_RXADDR) | SHIFT_LEFT(0)));
 }
 
-// Read data from an NRF register into a buffer
+/**
+ * @brief: Read data from an NRF register into a buffer
+ */
 uint8_t NRF_read_data_register(uint8_t reg, uint8_t *buf, uint8_t len) {
     uint8_t status = 0;
 
@@ -251,7 +270,10 @@ uint8_t NRF_read_data_register(uint8_t reg, uint8_t *buf, uint8_t len) {
     return status;
 }
 
-// Read payload data from the NRF module
+
+/**
+ * @brief: Read payload data from the NRF module
+ */
 uint8_t NRF_read_payload(void *buf, uint8_t len) {
     uint8_t status;
     uint8_t *current = (uint8_t *)buf;
@@ -271,16 +293,23 @@ uint8_t NRF_read_payload(void *buf, uint8_t len) {
     return status;
 }
 
-// Read data from the NRF module into a buffer
+/**
+ * @brief: Read data from the NRF module into a buffer
+ */
 void NRF_read(void *buf, uint8_t len) {
     NRF_read_payload(buf, len);
     NRF_write_register(STATUS, SHIFT_LEFT(6));
 }
 
-// Check if data is available in the NRF module
+/**
+ * @brief: Check if data is available in the NRF module
+ */
 uint8_t NRF_data_available() {
     if (NRF_read_register(FIFO_STATUS) & 1) {
         return 0;
     }
     return 1;
 }
+
+/*************** END OF FUNCTIONS ***************************************************************************/
+
