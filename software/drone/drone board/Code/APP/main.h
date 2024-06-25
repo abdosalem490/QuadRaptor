@@ -143,6 +143,9 @@ typedef struct {
 */
 typedef struct {
     
+    // height from the ground
+    float altitude;
+
     // fused kalman angles
     float roll;
     float yaw;

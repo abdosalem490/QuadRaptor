@@ -48,6 +48,7 @@
  * |                                                                    'SERVICE_RTOS_Notify'                                           |
  * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       added support for getting remaining messages in queue in the.   |
  * |                                                                    function 'SERVICE_RTOS_ReadFromBlockingQueue'.                  |
+ * |    24/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'SERVICE_RTOS_CurrentMSTime'.                             |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -539,6 +540,53 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_WaitForNotification(uint32_t arg_u32TimeoutM
 SERVICE_RTOS_ErrStat_t SERVICE_RTOS_Notify(RTOS_TaskHandle_t arg_TaskToNotify_t, uint8_t arg_u8IsFromISR);
 
 
+/**
+ *  \b function                                 :       SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CurrentMSTime(uint32_t* arg_pu32CurrentTime);
+ *  \b Description                              :       this functions is used as a wrapper function to get how many Milliseconds passed since the schedular start running.
+ *  @param  arg_pu32CurrentTime [OUT]           :       The amount of time in Millisecond the schedular has been running for.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @SERVICE_RTOS_ErrStat_t in "Service_RTOS_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "Service_RTOS_wrapper.h"
+ * 
+ * RTOS_TaskHandle_t Task1Task_Handler;
+ * 
+ * void task2_task(void *pvParameters)
+ * {
+ *   while (1)
+ *   {
+ *       uint32_t currentTime = 0;
+ *       SERVICE_RTOS_CurrentMSTime(&currentTime);
+ *      
+ *   }
+ * }
+ * 
+ * int main() {
+ * SERVICE_RTOS_ErrStat_t local_TaskCreateState_t = SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)task2_task, "task", 256, 3, &Task1Task_Handler);
+ * if(SERVICE_RTOS_STAT_OK == local_TaskCreateState_t)
+ * {
+ *  if(SERVICE_RTOS_STAT_OK ==  SERVICE_RTOS_StartSchedular())
+ *  {
+ *    // do what you want here
+ *  }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 24/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CurrentMSTime(uint32_t* arg_pu32CurrentTime);
 
 /*** End of File **************************************************************/
 #endif /*SERVICE_RTOS_WRAPPER_H_*/

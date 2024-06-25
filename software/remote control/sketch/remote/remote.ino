@@ -120,9 +120,10 @@ const char *flyMenuItems[] =
 */
 // defines the type of the data to be sent over the air
 typedef enum {
-  DATA_TYPE_MOVE,   // from remote to drone
-  DATA_TYPE_EXTRAS, // from remote to drone
-  DATA_TYPE_INFO,   // from drone to remote
+  DATA_TYPE_MOVE = 0b01010101,   // from remote to drone
+  DATA_TYPE_EXTRAS = 0b00110011, // from remote to drone
+  DATA_TYPE_INFO = 0b10101010,   // from drone to remote
+  DATA_TYPE_INVALID = 0b0,       // invalid message type received
 } DATA_TYPE_t;
 
 // struct defines data that holds: yaw, roll, pitch, thurst commands
@@ -465,8 +466,12 @@ void loop()
 
       readingsTaken = 0;
 
+      // char buff[100];
+      // sprintf(buff, "left = %d, right= %d", leftJoyStickPressed, rightJoyStickPressed);
+      // Serial.println(buff);
+
       char buff[100];
-      sprintf(buff, "left = %d, right= %d", leftJoyStickPressed, rightJoyStickPressed);
+      sprintf(buff, "type = %d", data.type);
       Serial.println(buff);
 
       // char buff[100];

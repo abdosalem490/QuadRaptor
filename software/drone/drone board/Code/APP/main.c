@@ -310,6 +310,9 @@ void Task_CollectSensorData(void)
         // read temperature data
         HAL_WRAPPER_ReadTemperature(&local_temperature_t);
 
+        // read battery charge
+
+
 // FOR SERIAL MONITOR
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
 //        printf("MPU6050 Gyro: roll: %f,  pitch: %f,  yaw: %f\r\n", local_gyro_t.roll, local_gyro_t.pitch, local_gyro_t.yaw);
@@ -330,7 +333,7 @@ void Task_CollectSensorData(void)
         SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
 
         // sleep for 5 ms
-       SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
+        SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
     }
 }
 
@@ -346,7 +349,9 @@ void Task_SensorFusion(void)
     SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
     DroneToAppDataItem_t local_DataToSendtoApp_t = {0};
     uint8_t local_u8LenOfRemaining = 0;
-
+    uint32_t CurrentTimeMS = 0;
+    uint32_t CurrentTimeCounterS = 0;
+    
     while (1)
     {
         // read item from raw sensor queue
@@ -363,34 +368,41 @@ void Task_SensorFusion(void)
             local_out_t.roll = local_temp_t.pitch;
             local_out_t.yaw = local_temp_t.yaw;
 
-            // set type of data to send
-            local_DataToSendtoApp_t.data.type = DATA_TYPE_INFO;
 
-            // read temperature data
-            local_DataToSendtoApp_t.data.data.info.temperature = 22.2;
+            // check if a second passed to send some info to the application board
+            SERVICE_RTOS_CurrentMSTime(&CurrentTimeMS);
+            if(1000 < CurrentTimeMS - CurrentTimeCounterS)
+            {
+            	// assign new time
+            	CurrentTimeCounterS += 1000;
 
-            // read battery charge
-            local_DataToSendtoApp_t.data.data.info.batteryCharge = 76;
+                // set type of data to send
+                local_DataToSendtoApp_t.data.type = DATA_TYPE_INFO;
 
-            // assign current altitude
-            local_DataToSendtoApp_t.data.data.info.altitude = 12.3;
+                // read temperature data
+                local_DataToSendtoApp_t.data.data.info.temperature = local_in_t.Temperature.temperature;
 
-            // assign distanceToOrigin (TODO)
-            local_DataToSendtoApp_t.data.data.info.distanceToOrigin = 1.5;
+                // read battery charge
+                local_DataToSendtoApp_t.data.data.info.batteryCharge = 76;
 
+                // assign current altitude
+                local_DataToSendtoApp_t.data.data.info.altitude = 12.3;
+
+                // assign distanceToOrigin (TODO)
+                local_DataToSendtoApp_t.data.data.info.distanceToOrigin = 1.5;       
+
+                // push data into queue to be sent to the app board and notify the AppComm with new data
+                SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
+                SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);       
+            }
 
             // FOR SERIAL PLOTTER
-//            printf("%f,%f,%f\n\r", local_out_t.pitch, local_out_t.roll, local_out_t.yaw);
+//           printf("%f,%f,%f\n\r", local_out_t.pitch, local_out_t.roll, local_out_t.yaw);
 
             // append to the queue the the current state
-        //    SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
+            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
+            SERVICE_RTOS_Notify(task_Master_Handle_t, LIB_CONSTANTS_DISABLED); 
 
-
-            // TODO: only add every 1 sec
-            // push data into queue to be sent to the app board and notify the AppComm with new data
-            // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
-            // SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);
-            
         }
     }
 }
@@ -414,7 +426,7 @@ void Task_AppComm(void)
 
     while (1)
     {
-        // // wait for notification
+        // // wait for notification (this task will run instead of idle task)
         // SERVICE_RTOS_WaitForNotification(1000);
 
         // check if there is anything in the queue to be sent
@@ -438,6 +450,8 @@ void Task_AppComm(void)
                     if(global_AppCommMsg_t.IsDataReceived)
                     {   
                         // append the new state received to the queue
+                        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &global_MsgToRec_t, queue_AppCommToDrone_Handle_t);
+                        SERVICE_RTOS_Notify(task_Master_Handle_t, LIB_CONSTANTS_DISABLED);  
 
                         global_AppCommMsg_t.dataIsToReceive = 0;
                         global_AppCommMsg_t.IsDataReceived = 0;
@@ -455,7 +469,8 @@ void Task_AppComm(void)
         if(global_AppCommMsg_t.IsDataReceived)
         {   
             // append the new state received to the queue
-
+            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &global_MsgToRec_t, queue_AppCommToDrone_Handle_t);
+            SERVICE_RTOS_Notify(task_Master_Handle_t, LIB_CONSTANTS_DISABLED);  
 
             // TODO: remove the below line
             // printf("type = %d, roll = %d, pitch = %d, thrust = %d, yaw = %d, turnOnLeds = %d, playMusic = %d\r\n",
@@ -478,6 +493,13 @@ void Task_AppComm(void)
 */
 void Task_Master(void)
 {
+    // needed variables
+    HAL_WRAPPER_MotorSpeeds_t local_MotorSpeeds = {0};
+    SERVICE_RTOS_ErrStat_t local_RTOSErrStatus = SERVICE_RTOS_STAT_OK;
+    SensorFusionDataItem_t local_SensorFusedReadings_t = {0};
+    uint8_t local_u8LenOfRemaining = 0;
+    AppToDroneDataItem_t local_RCRequiredVal = {0};
+
     
     //                      SOME INITIALIZATION 
     // INITIALIZATION CAN'T BE DONE IN MAIN AS SCHEDULAR HAS TO START FIRST BEFORE DOING 
@@ -497,9 +519,6 @@ void Task_Master(void)
     // configure NVIC
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
-    // delay init for initial configuration (DON'T USE IT INSIDE TASKS BECAUSE FREERTOS IS USING SAME COUNTER REGISTER)
-    // Delay_Init();
-
     // // set call back for board receive
     // HAL_WRAPPER_SetAppCommRecCallBack(UARTReceivedISR);
 
@@ -515,30 +534,43 @@ void Task_Master(void)
     // TODO: comment the below line
    USART_Printf_Init(115200);
 
-    HAL_WRAPPER_MotorSpeeds_t local_MotorSpeeds = {0};
-    SERVICE_RTOS_ErrStat_t local_RTOSErrStatus = SERVICE_RTOS_STAT_OK;
-    SensorFusionDataItem_t local_SensorFusedReadings_t = {0};
-//    uint8_t local_u8LenOfRemaining = 0;
 
     while (1)
     {
-       // wait for notification
+        // wait for notification
         SERVICE_RTOS_WaitForNotification(1000);
-        // read sensor fused readings
-        // local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (const void *) &local_SensorFusedReadings_t, queue_FusedSensorData_Handle_t);
 
-        // check for new State from AppComm
-        if(1)
+        // read sensor fused readings
+        local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_SensorFusedReadings_t, queue_FusedSensorData_Handle_t, &local_u8LenOfRemaining);
+
+        // get sensor fused readings with Kalman filter
+        if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
         {
-            // assign the required state
+            // assign the feedback
         }
 
-        // get sensor fused readings with kalman filter
-        
+        // read sensor fused readings
+        local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_RCRequiredVal, queue_AppCommToDrone_Handle_t, &local_u8LenOfRemaining);
+
+        // check for new State from AppComm
+        if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
+        {
+            // assign the required state
+
+            // TODO: remove the below line
+            // printf("type = %d, roll = %d, pitch = %d, thrust = %d, yaw = %d, turnOnLeds = %d, playMusic = %d\r\n",
+            // local_RCRequiredVal.data.type, local_RCRequiredVal.data.data.move.roll, local_RCRequiredVal.data.data.move.pitch,
+            // local_RCRequiredVal.data.data.move.thrust, local_RCRequiredVal.data.data.move.yaw, local_RCRequiredVal.data.data.move.turnOnLeds,
+            // local_RCRequiredVal.data.data.move.playMusic);
+        }
+
         // apply PID to compute error
 
         // apply actions on the motors
         // HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
+
+
+        
     }
 }
 
@@ -584,12 +616,12 @@ int main(void)
                 TASK_SENSOR_FUSION_PRIO,
                 &task_SensorFusion_Handle_t);
 
-//    // create a task for communication with app board
-//    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
-//                "App Communication",
-//                TASK_APP_COMM_STACK_SIZE,
-//                TASK_APP_COMM_PRIO,
-//                &task_AppComm_Handle_t);
+   // create a task for communication with app board
+   SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
+               "App Communication",
+               TASK_APP_COMM_STACK_SIZE,
+               TASK_APP_COMM_PRIO,
+               &task_AppComm_Handle_t);
 
     // create a task for master
     SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_Master,

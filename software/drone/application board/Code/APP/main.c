@@ -262,20 +262,8 @@ void UARTReceivedISR(void)
 void Task_RCComm(void)
 {   
     HAL_WRAPPER_RCMsg_t local_RCData_t = {0};
-    local_RCData_t.MsgToSend.data.info.distanceToOrigin = 12.2;
-    local_RCData_t.MsgToSend.data.info.altitude = 33;
-    local_RCData_t.MsgToSend.data.info.temperature = 25.5;
-    local_RCData_t.MsgToSend.data.info.batteryCharge = 32;
     HAL_WRAPPER_ErrStat_t local_errState = HAL_WRAPPER_STAT_OK;
-
-    // TODO: remove the below code
-    // local_RCData_t.type = DATA_TYPE_MOVE;
-    // local_RCData_t.data.move.roll = -63;
-    // local_RCData_t.data.move.pitch = -3;
-    // local_RCData_t.data.move.thrust = 10;
-    // local_RCData_t.data.move.yaw = 52;
-    // local_RCData_t.data.move.turnOnLeds = 0;
-    // local_RCData_t.data.move.playMusic = 1;
+    uint8_t local_u8LenOfRemaining = 0;
 
     while (1)
     {
@@ -284,26 +272,27 @@ void Task_RCComm(void)
         if(HAL_WRAPPER_STAT_OK == local_errState)
         {
             // TODO: comment the below line
-            printf("Roll: %d, Pitch: %d, Thrust: %d, Yaw: %d, LEDs: %d, Music: %d\r\n", 
-            local_RCData_t.MsgToReceive.data.move.roll, local_RCData_t.MsgToReceive.data.move.pitch, local_RCData_t.MsgToReceive.data.move.thrust,
-            local_RCData_t.MsgToReceive.data.move.yaw, local_RCData_t.MsgToReceive.data.move.turnOnLeds, local_RCData_t.MsgToReceive.data.move.playMusic);
+            // printf("Roll: %d, Pitch: %d, Thrust: %d, Yaw: %d, LEDs: %d, Music: %d\r\n", 
+            // local_RCData_t.MsgToReceive.data.move.roll, local_RCData_t.MsgToReceive.data.move.pitch, local_RCData_t.MsgToReceive.data.move.thrust,
+            // local_RCData_t.MsgToReceive.data.move.yaw, local_RCData_t.MsgToReceive.data.move.turnOnLeds, local_RCData_t.MsgToReceive.data.move.playMusic);
 
-            // append new states to the queue
+            // push the data into the queue for sending to drone communication task
+            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_RCData_t.MsgToReceive, queue_AppCommToDrone_Handle_t);
+            SERVICE_RTOS_Notify(task_DroneComm_Handle_t, LIB_CONSTANTS_DISABLED);
 
+            // push the data into the queue for sending to actions task (TODO)
+            // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
         }
 
         // check if there is anything to send to the remote control
-        if(1)
+        local_errState = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_RCData_t.MsgToSend, queue_DroneCommToApp_Handle_t, &local_u8LenOfRemaining);
+        if(HAL_WRAPPER_STAT_OK == local_errState)
         {
             // send data
             HAL_WRAPPER_RCSend(&local_RCData_t);
         }
 
-        // push the data into the queue for sending to drone communication task
-        // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_RCData_t, queue_AppCommToDrone_Handle_t);
-        // SERVICE_RTOS_Notify(task_DroneComm_Handle_t, LIB_CONSTANTS_DISABLED);
-        // push the data into the queue for sending to actions task
-        // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
+
 
         // sleep for 5 ms
         SERVICE_RTOS_BlockFor(1);
@@ -319,7 +308,7 @@ void Task_DroneComm(void)
 {
     
     SERVICE_RTOS_ErrStat_t local_RTOSErrStatus = SERVICE_RTOS_STAT_OK;
-    DroneToAppDataItem_t local_MsgToSend_t = {0};
+    AppToDroneDataItem_t local_MsgToSend_t = {0};
     uint8_t local_u8LenOfRemaining = 0;
 
     // assign pointers and lengths of data to be always sent
@@ -352,6 +341,8 @@ void Task_DroneComm(void)
                     if(global_DroneCommMsg_t.IsDataReceived)
                     {   
                         // append the new received message to the queue
+                        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &global_MsgToRec_t, queue_DroneCommToApp_Handle_t);
+                        SERVICE_RTOS_Notify(task_RCComm_Handle_t, LIB_CONSTANTS_DISABLED);  
 
                         global_DroneCommMsg_t.dataIsToReceive = 0;
                         global_DroneCommMsg_t.IsDataReceived = 0;
@@ -368,7 +359,9 @@ void Task_DroneComm(void)
         if(global_DroneCommMsg_t.IsDataReceived)
         {   
              // append the new received message to the queue
-
+            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &global_MsgToRec_t, queue_DroneCommToApp_Handle_t);
+            SERVICE_RTOS_Notify(task_RCComm_Handle_t, LIB_CONSTANTS_DISABLED);  
+            
              global_DroneCommMsg_t.dataIsToReceive = 0;
              global_DroneCommMsg_t.IsDataReceived = 0;
         }

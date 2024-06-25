@@ -45,6 +45,7 @@
  * |    14/06/2023      1.0.0           Abdelrahman Mohamed Salem       added the function 'SERVICE_RTOS_ReadFromBlockingQueue'.        |
  * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       added support for getting remaining messages in queue in the.   |
  * |                                                                    function 'SERVICE_RTOS_ReadFromBlockingQueue'.                  |
+ * |    24/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'SERVICE_RTOS_CurrentMSTime'.                             |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
  
@@ -286,6 +287,21 @@ SERVICE_RTOS_ErrStat_t SERVICE_RTOS_Notify(RTOS_TaskHandle_t arg_TaskToNotify_t,
 
 }
 
+SERVICE_RTOS_ErrStat_t SERVICE_RTOS_CurrentMSTime(uint32_t* arg_pu32CurrentTime)
+{
+    SERVICE_RTOS_ErrStat_t local_ErrStatus = SERVICE_RTOS_STAT_OK;
+
+    if(NULL != arg_pu32CurrentTime)
+    {
+        *arg_pu32CurrentTime = xTaskGetTickCount() * portTICK_RATE_MS;
+    }
+    else
+    {
+        local_ErrStatus = SERVICE_RTOS_STAT_INVALID_PARAMS;
+    }
+
+    return local_ErrStatus;
+}
 
 /*************** END OF FUNCTIONS ***************************************************************************/
  
