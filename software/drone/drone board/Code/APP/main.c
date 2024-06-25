@@ -540,16 +540,7 @@ void Task_Master(void)
         // wait for notification
         SERVICE_RTOS_WaitForNotification(1000);
 
-        // read sensor fused readings
-        local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_SensorFusedReadings_t, queue_FusedSensorData_Handle_t, &local_u8LenOfRemaining);
-
-        // get sensor fused readings with Kalman filter
-        if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
-        {
-            // assign the feedback
-        }
-
-        // read sensor fused readings
+        // read desired action from AppComm
         local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_RCRequiredVal, queue_AppCommToDrone_Handle_t, &local_u8LenOfRemaining);
 
         // check for new State from AppComm
@@ -564,11 +555,17 @@ void Task_Master(void)
             // local_RCRequiredVal.data.data.move.playMusic);
         }
 
-        // apply PID to compute error
+        // read sensor fused readings
+        local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_SensorFusedReadings_t, queue_FusedSensorData_Handle_t, &local_u8LenOfRemaining);
 
-        // apply actions on the motors
-        // HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
-
+        // get sensor fused readings with Kalman filter
+        if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
+        {
+            // apply PID to compute error
+            
+            // apply actions on the motors
+            // HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
+        }
 
         
     }
