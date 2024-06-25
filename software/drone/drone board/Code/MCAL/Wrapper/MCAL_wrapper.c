@@ -388,15 +388,45 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data
 /**
  * 
  */
-MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayMS(uint16_t arg_u16MS)
-{
-    TIM_ClearFlag(TIM2, TIM_FLAG_Update);
-    TIM_SetCounter(TIM2, arg_u16MS);
-    TIM_Cmd( TIM2, ENABLE );
-    while (TIM_GetCounter(TIM2) < arg_u16MS+1);
-    TIM_Cmd( TIM2, DISABLE );
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayUS(uint32_t arg_u16US)
+{   
+    
+    uint16_t local_u16Dummy = 0;
 
+    while (arg_u16US)
+    {
+        if(arg_u16US < 10000)
+        {
+            local_u16Dummy = arg_u16US % 10000;
+            arg_u16US = 0;
+        }
+        else
+        {
+            local_u16Dummy = 10000;
+            arg_u16US -= 10000;
+        }
+        TIM_ClearFlag(TIM2, TIM_FLAG_Update);
+        TIM_SetCounter(TIM2, local_u16Dummy);
+        TIM_Cmd( TIM2, ENABLE );
+        while (TIM_GetCounter(TIM2) < local_u16Dummy+1);
+        TIM_Cmd( TIM2, DISABLE );
+    }
+    
     return MCAL_WRAPPER_STAT_OK;   
 }
+
+// /**
+//  * 
+//  */
+// MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayMS(uint16_t arg_u16MS)
+// {
+//     TIM_ClearFlag(TIM2, TIM_FLAG_Update);
+//     TIM_SetCounter(TIM2, arg_u16MS);
+//     TIM_Cmd( TIM2, ENABLE );
+//     while (TIM_GetCounter(TIM2) < arg_u16MS+1);
+//     TIM_Cmd( TIM2, DISABLE );
+
+//     return MCAL_WRAPPER_STAT_OK;   
+// }
 
 /*************** END OF FUNCTIONS ***************************************************************************/

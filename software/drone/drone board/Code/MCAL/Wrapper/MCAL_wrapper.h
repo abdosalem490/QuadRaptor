@@ -48,6 +48,7 @@
  * |    18/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_ReceiveDataThroughUART4'.                 |
  * |    20/06/2023      1.0.0           Abdelrahman Mohamed Salem       created 'MCAL_WRAPPER_UART4RecITConfig'.                        |
  * |    21/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_DelayMS'.                                    |
+ * |    26/06/2023      1.0.0           Abdelrahman Mohamed Salem       changed 'HAL_WRAPPER_DelayMS' to be for US.                     |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -525,9 +526,9 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendDataThroughUART4(uint8_t* arg_pu8Data, u
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data, uint16_t arg_u16DataLen);
 
 /**
- *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_SendCommMessage(uint8_t arg_pu8Msg);
- *  \b Description                              :       this functions is used as a wrapper function to delay for a given MS.
- *  @param  arg_u16MS [IN]                      :       time to delay for in Milliseconds.
+ *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayUS(uint32_t arg_u16US);
+ *  \b Description                              :       this functions is used as a wrapper function to delay for a given micro seconds.
+ *  @param  arg_u16MS [IN]                      :       time to delay for in micro seconds.
  *  @note                                       :       This is a blocking function until the delay is achieved and it uses Timer2.
  *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
  *  \b POST-CONDITION                           :       None.
@@ -543,7 +544,7 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data
  *  MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
  *  if(MCAL_Config_STAT_OK == local_errState)
  *  {
- *    local_errState = MCAL_WRAPPER_DelayMS(15);
+ *    local_errState = MCAL_WRAPPER_DelayUS(15);
  *    if(MCAL_WRAPPER_STAT_OK == local_errState)
  *    {
  *      // function delay success
@@ -559,7 +560,7 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_ReceiveDataThroughUART4(uint8_t* arg_pu8Data
  * </table><br><br>
  * <hr>
  */
-MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayMS(uint16_t arg_u16MS);
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayUS(uint32_t arg_u16US);
 
 /*** End of File **************************************************************/
 #endif /*MCAL_WRAPPER_HEADER_H_*/

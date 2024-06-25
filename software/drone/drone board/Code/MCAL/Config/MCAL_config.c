@@ -130,7 +130,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, DISABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2, DISABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, DISABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM8, DISABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, DISABLE);
@@ -165,15 +165,15 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_dummy_t.GPIO_Pin = GPIO_Pin_0;
     GPIO_Init(GPIOA, &local_dummy_t);
 
-    local_dummy_t.GPIO_Mode = GPIO_Mode_AF_PP;
+    local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP;
     local_dummy_t.GPIO_Pin = GPIO_Pin_1;
     GPIO_Init(GPIOA, &local_dummy_t);
 
-    local_dummy_t.GPIO_Mode = GPIO_Mode_AF_PP;
+    local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP;
     local_dummy_t.GPIO_Pin = GPIO_Pin_2;
     GPIO_Init(GPIOA, &local_dummy_t);
 
-    local_dummy_t.GPIO_Mode = GPIO_Mode_AF_PP;
+    local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP;
     local_dummy_t.GPIO_Pin = GPIO_Pin_3;
     GPIO_Init(GPIOA, &local_dummy_t);
 
@@ -205,7 +205,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_dummy_t.GPIO_Pin = GPIO_Pin_10;
     GPIO_Init(GPIOA, &local_dummy_t);
 
-    local_dummy_t.GPIO_Mode = GPIO_Mode_AF_PP;
+    local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP;
     local_dummy_t.GPIO_Pin = GPIO_Pin_11;
     GPIO_Init(GPIOA, &local_dummy_t);
 
@@ -221,7 +221,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_dummy_t.GPIO_Pin = GPIO_Pin_14;
     GPIO_Init(GPIOA, &local_dummy_t);
 
-    local_dummy_t.GPIO_Mode = GPIO_Mode_AF_PP;
+    local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP;
     local_dummy_t.GPIO_Pin = GPIO_Pin_15;
     GPIO_Init(GPIOA, &local_dummy_t);
 
@@ -291,7 +291,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     GPIO_Init(GPIOB, &local_dummy_t);
     
     /******************************************/
-    local_dummy_t.GPIO_Mode = GPIO_Mode_Out_PP; 
+    local_dummy_t.GPIO_Mode = GPIO_Mode_IN_FLOATING; 
     local_dummy_t.GPIO_Pin = GPIO_Pin_13;
     GPIO_Init(GPIOC, &local_dummy_t);
 
@@ -377,13 +377,24 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     TIM_TimeBaseInitTypeDef local_tim2Init_t = {0};
     local_tim2Init_t.TIM_CounterMode = TIM_CounterMode_Down;
     local_tim2Init_t.TIM_ClockDivision = TIM_CKD_DIV4;
-    local_tim2Init_t.TIM_Prescaler = 36000-1;
+    local_tim2Init_t.TIM_Prescaler = 36-1;
     local_tim2Init_t.TIM_Period = 30000;
     TIM_TimeBaseInit(TIM2, &local_tim2Init_t);
 	TIM_ARRPreloadConfig( TIM2, ENABLE );
     TIM_UpdateRequestConfig(TIM2, TIM_UpdateSource_Regular);
     TIM_UpdateDisableConfig(TIM2, ENABLE);
 	// TIM_Cmd( TIM2, ENABLE );
+
+    /******************************************/
+    // TIM_TimeBaseInitTypeDef local_tim1Init_t = {0};
+    // local_tim1Init_t.TIM_CounterMode = TIM_CounterMode_Down;
+    // local_tim1Init_t.TIM_ClockDivision = TIM_CKD_DIV4;
+    // local_tim1Init_t.TIM_Prescaler = 36000-1;
+    // local_tim1Init_t.TIM_Period = 30000;
+    // TIM_TimeBaseInit(TIM1, &local_tim1Init_t);
+	// TIM_ARRPreloadConfig( TIM1, ENABLE );
+    // TIM_UpdateRequestConfig(TIM1, TIM_UpdateSource_Regular);
+    // TIM_UpdateDisableConfig(TIM1, ENABLE);
 
     /******************************************/
 
