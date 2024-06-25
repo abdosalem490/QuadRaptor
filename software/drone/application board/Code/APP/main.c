@@ -228,7 +228,7 @@ void UARTReceivedISR(void)
         {
             // check if the received byte is of correct type
             local_u8MsgType = local_u8Dummy;
-            if(DATA_TYPE_MOVE == local_u8MsgType)
+            if(DATA_TYPE_INFO == local_u8MsgType)
             {
                 local_u16CurrentItem = 1;
                 global_DroneCommMsg_t.dataIsToReceive = 1;

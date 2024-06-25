@@ -470,9 +470,9 @@ void loop()
       // sprintf(buff, "left = %d, right= %d", leftJoyStickPressed, rightJoyStickPressed);
       // Serial.println(buff);
 
-      char buff[100];
-      sprintf(buff, "type = %d", data.type);
-      Serial.println(buff);
+      // char buff[100];
+      // sprintf(buff, "type = %d", data.type);
+      // Serial.println(buff);
 
       // char buff[100];
       // sprintf(buff, "yaw = %d, thurst= %d, roll= %d, pitch=%d, test=%d", data.data.move.yaw, data.data.move.thurst, data.data.move.roll, data.data.move.pitch, analogRead(RIGHT_JOYSTICK_Y_PIN));
@@ -498,6 +498,10 @@ void loop()
   if(myRadio.available())
   {
     myRadio.read(&data, sizeof(data));
+
+    // char buff[100];
+    // sprintf(buff, "type = %d", data.type);
+    // Serial.println(buff);
 
     // update current state
     temperature = data.data.info.temperature;
