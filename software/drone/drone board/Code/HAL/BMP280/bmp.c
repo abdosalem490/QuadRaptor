@@ -253,7 +253,7 @@ void BMP280_Init() {
     BMP280_get_trimming_parameters();
     BMP280_WriteRegister(CONFIG, 0x00);
     BMP280_WriteRegister(CTRL_MEAS, 0xB7);
-    MCAL_WRAPPER_DelayMS(150);
+    MCAL_WRAPPER_DelayUS(150000);
 }
 
 /**

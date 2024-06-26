@@ -141,7 +141,7 @@ void mpu6050_gyro_setup()
         roll_local_calib += roll_rate;
         pitch_local_calib += pitch_rate;
         yaw_local_calib += yaw_rate;
-        MCAL_WRAPPER_DelayMS(1);
+        MCAL_WRAPPER_DelayUS(1000);
     }
     roll_calibration = roll_local_calib / CALIBRATION_ITERATIONS;
     pitch_calibration = pitch_local_calib / CALIBRATION_ITERATIONS;
