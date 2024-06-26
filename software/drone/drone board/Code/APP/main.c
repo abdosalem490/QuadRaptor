@@ -84,6 +84,11 @@
 #include "SensorFusion.h"
 
 /**
+ * @reason: contains pid ctrl block
+ */
+#include "pid.h"
+
+/**
  * @reason: contains some common constants
  */
 #include "constants.h"
@@ -156,6 +161,12 @@
  * @brief: Queue length for 'queue_DroneCommToApp_Handle_t'
 */
 #define QUEUE_DRONE_TO_APP_DATA_LEN   10
+
+/************************************************************************/
+/**
+ * @brief: maximum speed for motors to prevent damage
+*/
+#define MAX_MOTOR_SPEED   75
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -499,6 +510,10 @@ void Task_Master(void)
     SensorFusionDataItem_t local_SensorFusedReadings_t = {0};
     uint8_t local_u8LenOfRemaining = 0;
     AppToDroneDataItem_t local_RCRequiredVal = {0};
+    pid_obj_t roll_pid = {0};
+    pid_obj_t pitch_pid = {0};
+    pid_obj_t yaw_pid = {0};
+    pid_obj_t thrust_pid = {0};
 
     
     //                      SOME INITIALIZATION 
@@ -510,6 +525,12 @@ void Task_Master(void)
     global_AppCommMsg_t.dataToReceiveLen = sizeof(global_MsgToRec_t.data);
     global_AppCommMsg_t.dataIsToReceive = 0;
     global_AppCommMsg_t.IsDataReceived = 0;
+    /************************************************************************/
+    // initialize the pid controllers
+    roll_pid.kp = ROLL_KP;      roll_pid.ki = ROLL_KI;       roll_pid.kd = ROLL_KD;
+    pitch_pid.kp = PITCH_KP;    pitch_pid.ki = PITCH_KI;     pitch_pid.kd = PITCH_KD;
+    yaw_pid.kp = YAW_KP;        yaw_pid.ki = YAW_KI;         yaw_pid.kd = YAW_KD;
+    thrust_pid.kp = THRUST_KP;  thrust_pid.ki = THRUST_KI;   thrust_pid.kd = THRUST_KD;
     /************************************************************************/
     
     // Configure/enable Clock and all needed peripherals 
@@ -561,10 +582,32 @@ void Task_Master(void)
         // get sensor fused readings with Kalman filter
         if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
         {
-            // apply PID to compute error
+            // Compute error
+            roll_pid.error = local_RCRequiredVal.data.data.move.roll - local_SensorFusedReadings_t.roll;
+            pitch_pid.error = local_RCRequiredVal.data.data.move.pitch - local_SensorFusedReadings_t.pitch;
+            yaw_pid.error = local_RCRequiredVal.data.data.move.yaw - local_SensorFusedReadings_t.yaw;
+            thrust_pid.error = local_RCRequiredVal.data.data.move.thrust - local_SensorFusedReadings_t.thrust;
+            
+            // apply PID to compensate error
+            pid_ctrl(&roll_pid);
+            pid_ctrl(&pitch_pid);
+            pid_ctrl(&yaw_pid);
+            pid_ctrl(&thrust_pid);
+
+            // Motor mixing algorithm
+            local_MotorSpeeds.topLeftSpeed     = thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output;
+            local_MotorSpeeds.topRightSpeed    = thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output;
+            local_MotorSpeeds.bottomLeftSpeed  = thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output;
+            local_MotorSpeeds.bottomRightSpeed = thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output;
+
+            // apply limits to the motor speeds
+            if(local_MotorSpeeds.topLeftSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.topLeftSpeed = MAX_MOTOR_SPEED;
+            if(local_MotorSpeeds.topRightSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.topRightSpeed = MAX_MOTOR_SPEED;
+            if(local_MotorSpeeds.bottomLeftSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.bottomLeftSpeed = MAX_MOTOR_SPEED;
+            if(local_MotorSpeeds.bottomRightSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.bottomRightSpeed = MAX_MOTOR_SPEED;
             
             // apply actions on the motors
-            // HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
+            HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
         }
 
         
