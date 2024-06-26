@@ -353,9 +353,19 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadPressure(HAL_WRAPPER_Pressure_t *arg_pPres
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadTemperature(HAL_WRAPPER_Temperature_t *arg_pTemperature_t)
 {   
-
     // read temperature from BMP280
     arg_pTemperature_t->temperature = BMP280_get_temperature();
+
+    return HAL_WRAPPER_STAT_OK;
+}
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadAltitude(HAL_WRAPPER_Altitude_t *arg_pAltitude_t, HAL_WRAPPER_Pressure_t *ref)
+{   
+    // compute altitude from BMP280
+    arg_pAltitude_t->altitude = BMP280_get_altitude(ref->pressure);
 
     return HAL_WRAPPER_STAT_OK;
 }

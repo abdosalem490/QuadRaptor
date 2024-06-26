@@ -146,6 +146,14 @@ typedef struct
 } HAL_WRAPPER_Temperature_t;
 
 /**
+ * @brief: contains definitions to be used with reading pressure data
+ */
+typedef struct
+{
+  float altitude;  /**< Altitude in cm */
+} HAL_WRAPPER_Altitude_t;
+
+/**
  * @brief: contains defintions to be used to set motor speeds associated with ESCs
  */
 typedef struct 
@@ -381,6 +389,8 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadPressure(HAL_WRAPPER_Pressure_t *arg_pPres
  * <hr>
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadTemperature(HAL_WRAPPER_Temperature_t *arg_pTemperature_t);
+
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadAltitude(HAL_WRAPPER_Altitude_t *arg_pAltitude_t, HAL_WRAPPER_Pressure_t *arg_pPressure_t);
 
 /**
  *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SetESCSeeds(HAL_WRAPPER_MotorSpeeds_t *arg_pMotorsSpeed);
