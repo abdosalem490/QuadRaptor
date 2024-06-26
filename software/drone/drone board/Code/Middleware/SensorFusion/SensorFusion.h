@@ -111,7 +111,32 @@
  */
 void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusionDataItem_t* arg_pFusedReadings);
 
-
+/**
+ *  \b function                                 :       None
+ *  \b Description                              :       None.
+ *  @param  arg_pFuncTaskFunction [IN]          :       None
+ *  @param  arg_u32TaskPriority [IN]            :       None.
+ *  @param  arg_pTaskHandle [OUT]               :       None.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       None.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       None
+ *  @see                                        :       None
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 26/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
 void Altitude_Kalman_2D_init();
 
 /*** End of File **************************************************************/

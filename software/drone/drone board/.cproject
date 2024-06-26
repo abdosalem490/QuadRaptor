@@ -49,6 +49,7 @@
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.target.saverestore.1637459512" name="Small prologue/epilogue (-msave-restore)" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.target.saverestore" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.optimization.nocommon.1499303188" name="No common unitialized (-fno-common)" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.optimization.nocommon" useByScannerDiscovery="true" value="true" valueType="boolean"/>
 							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.target.rvGcc.536610708" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.target.rvGcc" value="ilg.gnumcueclipse.managedbuild.cross.riscv.option.target.rvGcc.8" valueType="enumerated"/>
+							<option id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.optimization.lto.2027488696" name="Link-time optimizer (-flto)" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.optimization.lto" value="false" valueType="boolean"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnumcueclipse.managedbuild.cross.riscv.targetPlatform.1944008784" isAbstract="false" osList="all" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.targetPlatform"/>
 							<builder buildPath="${workspace_loc:/${ProjName}}/obj" id="ilg.gnumcueclipse.managedbuild.cross.riscv.builder.1421508906" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.builder"/>
 							<tool id="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler.1244756189" name="GNU RISC-V Cross Assembler" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.tool.assembler">
@@ -70,6 +71,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/MCAL/Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/HAL/ADXL345}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/HAL/Battery}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/HAL/HC_SR04}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/HAL/BMP280}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/HAL/Config}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/HAL/HMC5883L}&quot;"/>
@@ -84,6 +86,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/APP}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/Middleware/Error_Log}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/Middleware/PID}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/Middleware/Matrix}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/Middleware/SensorFusion}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/MCAL/Peripheral/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Code/Service/FreeRTOS}&quot;"/>

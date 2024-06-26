@@ -50,6 +50,11 @@
  * Includes
  *******************************************************************************/
 
+/**
+ * @reason: contains standard integer definitions
+ */
+#include "stdint.h"
+
 /******************************************************************************
  * Preprocessor Constants
  *******************************************************************************/
@@ -67,8 +72,8 @@
 /******************************************************************************
  * Typedefs
  *******************************************************************************/
-typedef struct{
-    float * values = 0;
+typedef struct {
+    float* values;
     int rows;
     int cols;
 } matrix_2d_t;
@@ -85,11 +90,11 @@ void matrix_create(matrix_2d_t* matrix, int rows, int cols, float* values);
 
 void matrix_destroy(matrix_2d_t* matrix);
 
-bool matrix_add(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result);
+uint8_t matrix_add(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result);
 
-bool matrix_subtract(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result);
+uint8_t matrix_subtract(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result);
 
-bool matrix_multiply(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result);
+uint8_t matrix_multiply(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result);
 
 void matrix_transpose(matrix_2d_t* matrix, matrix_2d_t* result);
 

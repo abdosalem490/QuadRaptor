@@ -99,7 +99,7 @@ typedef struct{
     float kd;
     float error;
     float lastError;
-    float integral = 0;
+    float integral;
     float output;
 }pid_obj_t;
 

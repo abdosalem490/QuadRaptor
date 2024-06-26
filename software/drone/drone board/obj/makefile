@@ -14,6 +14,8 @@ RM := rm -rf
 -include Code/Service/FreeRTOS/portable/Common/subdir.mk
 -include Code/Service/FreeRTOS/subdir.mk
 -include Code/Middleware/SensorFusion/subdir.mk
+-include Code/Middleware/PID/subdir.mk
+-include Code/Middleware/Matrix/subdir.mk
 -include Code/MCAL/Wrapper/subdir.mk
 -include Code/MCAL/Startup/subdir.mk
 -include Code/MCAL/Peripheral/src/subdir.mk
@@ -23,8 +25,10 @@ RM := rm -rf
 -include Code/HAL/Wrapper/subdir.mk
 -include Code/HAL/MPU6050/subdir.mk
 -include Code/HAL/HMC5883L/subdir.mk
+-include Code/HAL/HC_SR04/subdir.mk
 -include Code/HAL/ESC/subdir.mk
 -include Code/HAL/Config/subdir.mk
+-include Code/HAL/Battery/subdir.mk
 -include Code/HAL/BMP280/subdir.mk
 -include Code/HAL/ADXL345/subdir.mk
 -include Code/APP/subdir.mk

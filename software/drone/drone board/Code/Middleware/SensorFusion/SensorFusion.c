@@ -69,6 +69,11 @@
 #include <math.h>
 
 /**
+ * @reason: for malloc and free call functions
+ */
+#include <stdlib.h>
+
+/**
  * 
  */
 #include "matrix.h"
@@ -97,7 +102,7 @@
 /******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
-matrix_2d_t S, F, G, U, H, Q, R, P, K, L, R, M, I;
+matrix_2d_t S = {0}, F = {0}, G = {0}, U = {0}, H = {0}, Q = {0}, P = {0}, K = {0}, L = {0}, R = {0}, M = {0}, I = {0};
 float  Ts = SENSOR_SAMPLE_PERIOD/1000.0;
 
 /******************************************************************************
@@ -108,7 +113,7 @@ float compute_azimuth(float mag_x, float mag_y);
 
 void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanInput, float KalmanMeasurement, float Ts, float process_noise, float measure_covar);
 
-void kalman_filter_2d();
+// void kalman_filter_2d();
 
 /******************************************************************************
  * Function Definitions
@@ -162,7 +167,7 @@ void kalman_filter_2d(float measurement)
     // Predict
     matrix_multiply(&F, &S, &temp_1);
     matrix_multiply(&G, &U, &temp_2);
-    matrix_add(&temp_1, &temp_2, S);
+    matrix_add(&temp_1, &temp_2, &S);
     free(temp_1.values);
     free(temp_2.values);
 
@@ -170,7 +175,7 @@ void kalman_filter_2d(float measurement)
     matrix_multiply(&F, &P, &temp_1);
     matrix_transpose(&F, &F_T);
     matrix_multiply(&temp_1, &F_T, &temp_2);
-    matrix_add(&temp_2, Q, &P);
+    matrix_add(&temp_2, &Q, &P);
     free(temp_1.values);
     free(temp_2.values);
 
@@ -193,7 +198,7 @@ void kalman_filter_2d(float measurement)
     matrix_subtract(&M, &temp_1, &temp_2);
     free(temp_1.values);
     matrix_multiply(&K, &temp_2, &temp_1);
-    free(temp2.values);
+    free(temp_2.values);
     matrix_add(&S, &temp_1, &temp_2);
     free(S.values);
     free(temp_1.values);

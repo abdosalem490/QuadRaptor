@@ -597,7 +597,7 @@ void Task_Master(void)
             roll_pid.error = local_RCRequiredVal.data.data.move.roll - local_SensorFusedReadings_t.roll;
             pitch_pid.error = local_RCRequiredVal.data.data.move.pitch - local_SensorFusedReadings_t.pitch;
             yaw_pid.error = local_RCRequiredVal.data.data.move.yaw - local_SensorFusedReadings_t.yaw;
-            thrust_pid.error = local_RCRequiredVal.data.data.move.thrust - local_SensorFusedReadings_t.thrust;
+            thrust_pid.error = local_RCRequiredVal.data.data.move.thrust - local_SensorFusedReadings_t.vertical_velocity;
             
             // apply PID to compensate error
             pid_ctrl(&roll_pid);

@@ -21,8 +21,10 @@ SUBDIRS := \
 Code/APP \
 Code/HAL/ADXL345 \
 Code/HAL/BMP280 \
+Code/HAL/Battery \
 Code/HAL/Config \
 Code/HAL/ESC \
+Code/HAL/HC_SR04 \
 Code/HAL/HMC5883L \
 Code/HAL/MPU6050 \
 Code/HAL/Wrapper \
@@ -32,6 +34,8 @@ Code/MCAL/Debug \
 Code/MCAL/Peripheral/src \
 Code/MCAL/Startup \
 Code/MCAL/Wrapper \
+Code/Middleware/Matrix \
+Code/Middleware/PID \
 Code/Middleware/SensorFusion \
 Code/Service/FreeRTOS \
 Code/Service/FreeRTOS/portable/Common \

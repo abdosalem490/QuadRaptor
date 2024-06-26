@@ -92,6 +92,11 @@
  */
 #include "ch32v20x_tim.h"
 
+/**
+ * @reason: contains freeRTOS blocking functionality
+ */
+#include "Service_RTOS_wrapper.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -107,7 +112,26 @@
 /******************************************************************************
  * Module Variable Definitions
  *******************************************************************************/
+
+/**
+ * @brief: the callback function that will be called when UART receive interrupt happenss
+ */
 functionCallBack_t global_UART4RecCallback = NULL;
+
+/**
+ * @brief: calculated number of ticks for a timer to compute width of a pulse
+ */
+volatile uint32_t global_u32TicksNum = 0;
+
+/**
+ * @brief: flag to indicate the capture of width of a pulse
+ */
+volatile uint8_t global_u8IsCaptured = 0;
+
+/**
+ * @brief: the current task executing the measure pulse width
+ */
+RTOS_TaskHandle_t global_CurrentPWTask_t = NULL;
 
 /******************************************************************************
  * Function Prototypes
@@ -117,6 +141,7 @@ functionCallBack_t global_UART4RecCallback = NULL;
  * @brief: USART4 IRQ handler
  */
  void UART4_IRQHandler(void); // __attribute__((interrupt("WCH-Interrupt-fast")));
+void TIM1_CC_IRQHandler(void); // __attribute__((interrupt("WCH-Interrupt-fast")));
 
 /******************************************************************************
  * Function Definitions
@@ -258,7 +283,7 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_chann
 }
 
 /**
- * 
+ *
  */
 void UART4_IRQHandler(void)
 {
@@ -266,6 +291,74 @@ void UART4_IRQHandler(void)
    {
 		global_UART4RecCallback();
    }
+}
+
+/**
+ * 
+ */
+void TIM1_CC_IRQHandler(void)
+{
+    volatile static uint16_t tempreg = 0;
+	if( TIM_GetITStatus( TIM1, TIM_IT_CC1 ) != RESET )
+	{
+        // store the value of the input capture register 
+        tempreg = TIM_GetCapture1(TIM1);
+
+        // interrupt happened due to rising or falling edge
+        if(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8) == SET)
+        {
+            // start of the pulse
+            global_u32TicksNum = 0;
+            global_u8IsCaptured = 0;
+        }
+        else
+        {
+            // end of the pulse
+            global_u32TicksNum += tempreg;
+            global_u8IsCaptured = 1;
+
+            // notify the task
+            SERVICE_RTOS_Notify(global_CurrentPWTask_t, LIB_CONSTANTS_ENABLED);
+        }
+	}
+
+	if( TIM_GetITStatus( TIM1, TIM_IT_Update ) != RESET )
+	{
+        // interrupt happened due to overflow of the counter
+        // add 10000 which is the period of the timer or the remaining time of timer overflow in case of first overflow
+        global_u32TicksNum = (global_u32TicksNum == 0) ? (10000 - tempreg)  : (global_u32TicksNum + 10000);
+        
+	}
+
+	TIM_ClearITPendingBit( TIM1, TIM_IT_CC1 | TIM_IT_Update );
+}
+
+/**
+ * 
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_TIM1GetWidthOfPulse(uint32_t* arg_u32TimeUS)
+{
+    if(arg_u32TimeUS == NULL)
+    {
+        return MCAL_WRAPPER_STAT_INVALID_PARAMS;
+    }
+
+    // enable the timer
+    TIM_Cmd(TIM1, ENABLE);
+
+    // get the current handle
+    SERVICE_RTOS_GetCurrentTaskHandle(&global_CurrentPWTask_t);
+
+    // block until we get a readings 
+    SERVICE_RTOS_WaitForNotification(1000);
+
+    // disable the timer
+    TIM_Cmd(TIM1, DISABLE);
+
+    // assign the current time
+    *arg_u32TimeUS = global_u32TicksNum;
+
+    return MCAL_WRAPPER_STAT_OK;
 }
 
 /**

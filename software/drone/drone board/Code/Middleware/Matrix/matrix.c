@@ -57,6 +57,16 @@
  */
 #include <math.h>
 
+/**
+ * @reason: for malloc and free functions
+ */
+#include <stdlib.h>
+
+/**
+ * @reaon: contains standard integer definitions
+ */
+#include "stdint.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -105,11 +115,11 @@ void matrix_destroy(matrix_2d_t* matrix)
 /**
  *
  */
-bool matrix_add(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result)
+uint8_t matrix_add(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result)
 {
     if(matrix1->rows != matrix2->rows || matrix1->cols != matrix2->cols)
     {
-        return false;
+        return 0;
     }
 
     result->rows = matrix1->rows;
@@ -124,17 +134,17 @@ bool matrix_add(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result)
         }
     }
 
-    return true;
+    return 1;
 }
 
 /**
  *
  */
-bool matrix_subtract(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result)
+uint8_t matrix_subtract(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result)
 {
     if(matrix1->rows != matrix2->rows || matrix1->cols != matrix2->cols)
     {
-        return false;
+        return 0;
     }
 
     result->rows = matrix1->rows;
@@ -149,17 +159,17 @@ bool matrix_subtract(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* re
         }
     }
 
-    return true;
+    return 1;
 }
 
 /**
  *
  */
-bool matrix_multiply(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result)
+uint8_t matrix_multiply(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result)
 {
     if(matrix1->cols != matrix2->rows)
     {
-        return false;
+        return 0;
     }
 
     result->rows = matrix1->rows;
@@ -178,7 +188,7 @@ bool matrix_multiply(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* re
         }
     }
 
-    return true;
+    return 1;
 }
 
 /**

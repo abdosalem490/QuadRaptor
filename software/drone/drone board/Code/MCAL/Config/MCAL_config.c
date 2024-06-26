@@ -386,15 +386,31 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
 	// TIM_Cmd( TIM2, ENABLE );
 
     /******************************************/
-    // TIM_TimeBaseInitTypeDef local_tim1Init_t = {0};
-    // local_tim1Init_t.TIM_CounterMode = TIM_CounterMode_Down;
-    // local_tim1Init_t.TIM_ClockDivision = TIM_CKD_DIV4;
-    // local_tim1Init_t.TIM_Prescaler = 36000-1;
-    // local_tim1Init_t.TIM_Period = 30000;
-    // TIM_TimeBaseInit(TIM1, &local_tim1Init_t);
-	// TIM_ARRPreloadConfig( TIM1, ENABLE );
-    // TIM_UpdateRequestConfig(TIM1, TIM_UpdateSource_Regular);
-    // TIM_UpdateDisableConfig(TIM1, ENABLE);
+    TIM_TimeBaseInitTypeDef local_tim1Init_t = {0};
+    local_tim1Init_t.TIM_CounterMode = TIM_CounterMode_Up;
+    local_tim1Init_t.TIM_ClockDivision = TIM_CKD_DIV4;
+    local_tim1Init_t.TIM_Prescaler = 36-1;
+    local_tim1Init_t.TIM_Period = 10000;
+    TIM_TimeBaseInit(TIM1, &local_tim1Init_t);
+
+    TIM_ICInitTypeDef local_tim1ICInit_t = {0};
+    local_tim1ICInit_t.TIM_Channel = TIM_Channel_1;
+    local_tim1ICInit_t.TIM_ICPrescaler = TIM_ICPSC_DIV1;
+    local_tim1ICInit_t.TIM_ICFilter = 0x00;
+    local_tim1ICInit_t.TIM_ICPolarity = TIM_ICPolarity_BothEdge;
+    local_tim1ICInit_t.TIM_ICSelection = TIM_ICSelection_DirectTI;
+    TIM_PWMIConfig(TIM1, &local_tim1ICInit_t);
+
+    NVIC_InitTypeDef local_tim1NVICInit_t = {0};
+    local_tim1NVICInit_t.NVIC_IRQChannel = TIM1_CC_IRQn;
+    local_tim1NVICInit_t.NVIC_IRQChannelPreemptionPriority = 1;
+    local_tim1NVICInit_t.NVIC_IRQChannelSubPriority = 0;
+    local_tim1NVICInit_t.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&local_tim1NVICInit_t);
+
+    TIM_ITConfig(TIM1, TIM_IT_CC1 | TIM_IT_Update, ENABLE);
+
+    // TIM_Cmd(TIM1, ENABLE);
 
     /******************************************/
 
