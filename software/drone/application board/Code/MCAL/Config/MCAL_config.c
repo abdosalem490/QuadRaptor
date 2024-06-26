@@ -335,7 +335,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     TIM_TimeBaseInitTypeDef local_tim2Init_t = {0};
     local_tim2Init_t.TIM_CounterMode = TIM_CounterMode_Down;
     local_tim2Init_t.TIM_ClockDivision = TIM_CKD_DIV4;
-    local_tim2Init_t.TIM_Prescaler = 36-1;
+    local_tim2Init_t.TIM_Prescaler = 144-1;
     local_tim2Init_t.TIM_Period = 30000;
     TIM_TimeBaseInit(TIM2, &local_tim2Init_t);
 	TIM_ARRPreloadConfig( TIM2, ENABLE );

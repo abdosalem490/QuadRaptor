@@ -151,6 +151,7 @@ typedef struct
 typedef struct
 {
   float altitude;  /**< Altitude in cm */
+  float ultrasonic_altitude;  /**< Altitude in cm from ultrasonic sensor */
 } HAL_WRAPPER_Altitude_t;
 
 /**
@@ -390,6 +391,32 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadPressure(HAL_WRAPPER_Pressure_t *arg_pPres
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadTemperature(HAL_WRAPPER_Temperature_t *arg_pTemperature_t);
 
+
+/**
+ *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadAltitude(HAL_WRAPPER_Altitude_t *arg_pAltitude_t, HAL_WRAPPER_Pressure_t *arg_pPressure_t);
+ *  \b Description                              :       this functions is used as a wrapper function to the function of reading Altitude from different sensors on the board.
+ *  @param  arg_pAltitude_t [OUT]               :       None.
+ *  @param  arg_pPressure_t [OUT]               :       None.
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * None
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 26/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadAltitude(HAL_WRAPPER_Altitude_t *arg_pAltitude_t, HAL_WRAPPER_Pressure_t *arg_pPressure_t);
 
 /**

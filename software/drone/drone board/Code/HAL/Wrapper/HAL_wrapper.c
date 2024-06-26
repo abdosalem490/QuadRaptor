@@ -87,6 +87,11 @@
  */
 #include "bmp.h"
 
+/**
+ * @reason: contains HC SR04 interface
+ */
+#include "HC_SR04.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -366,6 +371,9 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadAltitude(HAL_WRAPPER_Altitude_t *arg_pAlti
 {   
     // compute altitude from BMP280
     arg_pAltitude_t->altitude = BMP280_get_altitude(ref->pressure);
+
+    // compute altitude from ultrasonic
+    HAL_HCSR04_GetDistance(&arg_pAltitude_t->ultrasonic_altitude);
 
     return HAL_WRAPPER_STAT_OK;
 }

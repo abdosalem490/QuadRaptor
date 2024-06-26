@@ -304,9 +304,10 @@ void Task_CollectSensorData(void)
     HAL_WRAPPER_Temperature_t local_temperature_t = {0};
     HAL_WRAPPER_Altitude_t local_altitude_t = {0};
 
+    // the item to push into the queue
     RawSensorDataItem_t local_out_t = {0};
 
-
+    // read the start pressure
     HAL_WRAPPER_ReadPressure(&ref_pressure_t);
 
     while (1)
@@ -347,6 +348,7 @@ void Task_CollectSensorData(void)
         local_out_t.Magnet = local_magnet_t;
         local_out_t.Pressure = local_pressure_t;
         local_out_t.Temperature = local_temperature_t;
+        local_out_t.Altitude = local_altitude_t;
 
         // push the data into the queue for fusion
         SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);

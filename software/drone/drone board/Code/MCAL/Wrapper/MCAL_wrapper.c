@@ -105,6 +105,12 @@
  * Module Preprocessor Macros
  *******************************************************************************/
 
+#define portDISABLE_INTERRUPTS()	__asm volatile( "csrw mstatus,%0" ::"r"(0x1800) )
+#define portENABLE_INTERRUPTS()		__asm volatile( "csrw mstatus,%0" ::"r"(0x1888) )
+
+#define GET_INT_SP()   __asm volatile("csrrw sp,mscratch,sp")
+#define FREE_INT_SP()  __asm volatile("csrrw sp,mscratch,sp")
+
 /******************************************************************************
  * Module Typedefs
  *******************************************************************************/
@@ -133,6 +139,11 @@ volatile uint8_t global_u8IsCaptured = 0;
  */
 RTOS_TaskHandle_t global_CurrentPWTask_t = NULL;
 
+/**
+ * @brief: variable shared between 2 different types of interrupts
+ */
+volatile uint16_t tempreg = 0;
+
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -142,6 +153,7 @@ RTOS_TaskHandle_t global_CurrentPWTask_t = NULL;
  */
  void UART4_IRQHandler(void); // __attribute__((interrupt("WCH-Interrupt-fast")));
 void TIM1_CC_IRQHandler(void); // __attribute__((interrupt("WCH-Interrupt-fast")));
+void TIM1_UP_IRQHandler(void); // __attribute__((interrupt("WCH-Interrupt-fast")));
 
 /******************************************************************************
  * Function Definitions
@@ -296,9 +308,30 @@ void UART4_IRQHandler(void)
 /**
  * 
  */
+void TIM1_UP_IRQHandler(void)
+{   
+    GET_INT_SP();
+    portDISABLE_INTERRUPTS();
+	if( TIM_GetITStatus( TIM1, TIM_IT_Update ) != RESET )
+	{
+        // interrupt happened due to overflow of the counter
+        // add 10000 which is the period of the timer or the remaining time of timer overflow in case of first overflow
+        global_u32TicksNum = (global_u32TicksNum == 0) ? (10000 - tempreg)  : (global_u32TicksNum + 10000);
+        
+	}
+
+    TIM_ClearITPendingBit( TIM1, TIM_IT_Update );
+    portENABLE_INTERRUPTS();
+    FREE_INT_SP();
+}
+
+/**
+ * 
+ */
 void TIM1_CC_IRQHandler(void)
-{
-    volatile static uint16_t tempreg = 0;
+{   
+    GET_INT_SP();
+    portDISABLE_INTERRUPTS();
 	if( TIM_GetITStatus( TIM1, TIM_IT_CC1 ) != RESET )
 	{
         // store the value of the input capture register 
@@ -322,15 +355,9 @@ void TIM1_CC_IRQHandler(void)
         }
 	}
 
-	if( TIM_GetITStatus( TIM1, TIM_IT_Update ) != RESET )
-	{
-        // interrupt happened due to overflow of the counter
-        // add 10000 which is the period of the timer or the remaining time of timer overflow in case of first overflow
-        global_u32TicksNum = (global_u32TicksNum == 0) ? (10000 - tempreg)  : (global_u32TicksNum + 10000);
-        
-	}
-
-	TIM_ClearITPendingBit( TIM1, TIM_IT_CC1 | TIM_IT_Update );
+	TIM_ClearITPendingBit( TIM1, TIM_IT_CC1 );
+    portENABLE_INTERRUPTS();
+    FREE_INT_SP();
 }
 
 /**
@@ -338,27 +365,45 @@ void TIM1_CC_IRQHandler(void)
  */
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_TIM1GetWidthOfPulse(uint32_t* arg_u32TimeUS)
 {
+	MCAL_WRAPPER_ErrStat_t local_errState = MCAL_WRAPPER_STAT_OK;
     if(arg_u32TimeUS == NULL)
     {
         return MCAL_WRAPPER_STAT_INVALID_PARAMS;
     }
 
-    // enable the timer
-    TIM_Cmd(TIM1, ENABLE);
-
     // get the current handle
     SERVICE_RTOS_GetCurrentTaskHandle(&global_CurrentPWTask_t);
 
-    // block until we get a readings 
+    // enable the timer interrupt and clear flags if any
+    TIM_ClearFlag(TIM1, TIM_FLAG_Update | TIM_FLAG_CC1);
+    TIM_ITConfig(TIM1, TIM_IT_Update | TIM_IT_CC1, ENABLE);
+    TIM_SetCounter(TIM1, 0);
+    TIM_Cmd(TIM1, ENABLE);
+
+    // block until we get a readings
     SERVICE_RTOS_WaitForNotification(1000);
 
-    // disable the timer
+    // disable the timer interrupt
+    TIM_ITConfig(TIM1, TIM_IT_Update | TIM_IT_CC1, DISABLE);
+    TIM_ClearFlag(TIM1, TIM_FLAG_Update | TIM_FLAG_CC1);
     TIM_Cmd(TIM1, DISABLE);
+    TIM_SetCounter(TIM1, 0);
 
-    // assign the current time
-    *arg_u32TimeUS = global_u32TicksNum;
+    if(1 == global_u8IsCaptured)
+    {
+        // assign the current time
+        *arg_u32TimeUS = global_u32TicksNum;
+    }
+    else
+    {
+    	local_errState = MCAL_WRAPPER_STAT_ECHO_ERR;
+    }
 
-    return MCAL_WRAPPER_STAT_OK;
+    global_u8IsCaptured = 0;
+    global_u32TicksNum = 0;
+
+    return local_errState;
+
 }
 
 /**
@@ -521,5 +566,22 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_DelayUS(uint32_t arg_u16US)
 
 //     return MCAL_WRAPPER_STAT_OK;   
 // }
+
+/**
+ * 
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_HCSR04Trig(uint16_t arg_16PWuS)
+{
+    // set the bit
+    GPIO_SetBits(GPIOA, GPIO_Pin_15);
+
+    // wait for the delay given
+    MCAL_WRAPPER_DelayUS(arg_16PWuS);
+
+    // reset the bit
+    GPIO_ResetBits(GPIOA, GPIO_Pin_15);
+
+    return MCAL_WRAPPER_STAT_OK; 
+}
 
 /*************** END OF FUNCTIONS ***************************************************************************/
