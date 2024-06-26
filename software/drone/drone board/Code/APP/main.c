@@ -300,9 +300,14 @@ void Task_CollectSensorData(void)
     HAL_WRAPPER_Gyro_t local_gyro_t = {0};
     HAL_WRAPPER_Magnet_t local_magnet_t = {0};
     HAL_WRAPPER_Pressure_t local_pressure_t = {0};
+    HAL_WRAPPER_Pressure_t ref_pressure_t = {0};
     HAL_WRAPPER_Temperature_t local_temperature_t = {0};
+    HAL_WRAPPER_Altitude_t local_altitude_t = {0};
 
     RawSensorDataItem_t local_out_t = {0};
+
+
+    HAL_WRAPPER_ReadPressure(&ref_pressure_t);
 
     while (1)
     {
@@ -320,6 +325,9 @@ void Task_CollectSensorData(void)
 
         // read temperature data
         HAL_WRAPPER_ReadTemperature(&local_temperature_t);
+
+        // read altitude from barometer
+        HAL_WRAPPER_ReadAltitude(&local_altitude_t, &ref_pressure_t);
 
         // read battery charge
 
@@ -554,6 +562,9 @@ void Task_Master(void)
 
     // TODO: comment the below line
    USART_Printf_Init(115200);
+
+   // Initialize 2d-kalman filter matrices
+   Altitude_Kalman_2D_init();
 
 
     while (1)

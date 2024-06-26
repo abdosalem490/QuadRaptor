@@ -136,6 +136,7 @@ typedef struct {
     HAL_WRAPPER_Magnet_t Magnet;
     HAL_WRAPPER_Pressure_t Pressure;
     HAL_WRAPPER_Temperature_t Temperature;
+    HAL_WRAPPER_Altitude_t Altitude;
 } RawSensorDataItem_t;
 
 /**
@@ -145,6 +146,7 @@ typedef struct {
     
     // height from the ground
     float altitude;
+    float vertical_velocity;
 
     // fused kalman angles
     float roll;

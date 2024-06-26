@@ -111,5 +111,8 @@
  */
 void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusionDataItem_t* arg_pFusedReadings);
 
+
+void Altitude_Kalman_2D_init();
+
 /*** End of File **************************************************************/
 #endif /*SENSOR_FUSION_H_*/
