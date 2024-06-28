@@ -96,6 +96,16 @@
  * Module Preprocessor Constants
  *******************************************************************************/
 
+/**
+ *
+ */
+#define LIPO_3S_MIN_V	10
+
+/**
+ *
+ */
+#define LIPO_3S_MAX_V	12.6
+
 /******************************************************************************
  * Module Preprocessor Macros
  *******************************************************************************/
@@ -378,7 +388,6 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadAltitude(HAL_WRAPPER_Altitude_t *arg_pAlti
     return HAL_WRAPPER_STAT_OK;
 }
 
-
 /**
  * 
  */
@@ -386,7 +395,21 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_GetBatteryCharge(HAL_WRAPPER_Battery_t *arg_pB
 {
     uint16_t local_u16Charge = 0;
 
+    // get ADC readings
     MCAL_WRAPPER_GetADCBattery(&local_u16Charge);
+
+    // get the actual volt on the input pin
+    float local_f32Volt = 3.3 * (local_u16Charge / 4096.0);
+
+    // map that volt to the original 12v range
+    local_f32Volt = (local_f32Volt * 19.7) / 4.7;
+
+    // assume min value is 10V and max is 12.6V for 3S lipo battery
+    // actually min value is 9V but we don't want to reach that value so 10V is a safer value
+    local_f32Volt = (local_f32Volt - LIPO_3S_MIN_V) / (LIPO_3S_MAX_V - LIPO_3S_MIN_V);
+
+    // get it in percentage
+    arg_pBatteryCharge->batteryCharge = (uint8_t)(local_f32Volt * 100);
 
     return HAL_WRAPPER_STAT_OK;
 }

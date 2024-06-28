@@ -583,7 +583,7 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_HCSR04Trig(uint16_t arg_16PWuS)
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_GetADCBattery(uint16_t* arg_pu16ADCReadings)
 {
     // select the channel
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1, ADC_SampleTime_239Cycles5);
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1, ADC_SampleTime_71Cycles5);
 
     // start conversion
     ADC_SoftwareStartConvCmd(ADC1, ENABLE);

@@ -463,7 +463,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     ADC_InitStructure.ADC_NbrOfChannel = 1;
     ADC_Init(ADC1, &ADC_InitStructure);
 
-    // ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1, ADC_SampleTime_1Cycles5);
+    // ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1, ADC_SampleTime_71Cycles5);
     ADC_Cmd(ADC1, ENABLE);
 
     return MCAL_Config_STAT_OK;

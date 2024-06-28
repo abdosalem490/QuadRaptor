@@ -332,7 +332,7 @@ void Task_CollectSensorData(void)
         HAL_WRAPPER_ReadAltitude(&local_altitude_t, &ref_pressure_t);
 
         // read battery charge
-//        HAL_WRAPPER_GetBatteryCharge(&local_battery_t);
+        HAL_WRAPPER_GetBatteryCharge(&local_battery_t);
 
 // FOR SERIAL MONITOR
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
