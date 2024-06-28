@@ -142,8 +142,8 @@ HAL_Config_ErrStat_t HAL_Config_ConfigAllHW(void)
     // configure BMP280
     BMP280_Init();
     
-    // configure ESCs (TODO: un comment this line)
-    // HAL_ESC_init();
+    // configure ESCs
+    HAL_ESC_init();
 
     return HAL_Config_STAT_OK;
 }

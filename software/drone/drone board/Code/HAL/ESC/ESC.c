@@ -61,10 +61,6 @@
  */
 #include "MCAL_wrapper.h"
 
-/**
- * @reason: contains delay functionality
- */
-// #include "debug.h"
 
 
 /******************************************************************************
@@ -91,7 +87,6 @@
  * Function Definitions
  *******************************************************************************/
 
-#include "ch32v20x_gpio.h"
 /**
  * 
  */
@@ -104,9 +99,9 @@ HAL_ESC_ErrStates_t HAL_ESC_init(void)
     MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH3, 0);
     MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH4, 0);
 
-//    // wait for some time
-//    Delay_Ms(5000);
-//
+    // wait for some time
+   MCAL_WRAPPER_DelayUS(5000000);
+
 //    // set all the motors to high for a period of time then to low
 //    MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH1, 100);
 //    MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH2, 100);
@@ -125,10 +120,10 @@ HAL_ESC_ErrStates_t HAL_ESC_init(void)
     // wait for some time
     // Delay_Ms(5000);
 
-    MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH1, 50);
-    MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH2, 50);
-    MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH3, 50);
-    MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH4, 50);
+    // MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH1, 50);
+    // MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH2, 50);
+    // MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH3, 50);
+    // MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH4, 50);
 
     return HAL_ESC_OK;
 }

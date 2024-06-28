@@ -277,7 +277,7 @@ void Task_RCComm(void)
             // local_RCData_t.MsgToReceive.data.move.yaw, local_RCData_t.MsgToReceive.data.move.turnOnLeds, local_RCData_t.MsgToReceive.data.move.playMusic);
 
             // push the data into the queue for sending to drone communication task
-            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_RCData_t.MsgToReceive, queue_AppCommToDrone_Handle_t);
+            SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &local_RCData_t.MsgToReceive, queue_AppCommToDrone_Handle_t);
             SERVICE_RTOS_Notify(task_DroneComm_Handle_t, LIB_CONSTANTS_DISABLED);
 
             // push the data into the queue for sending to actions task (TODO)
