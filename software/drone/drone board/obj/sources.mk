@@ -21,7 +21,6 @@ SUBDIRS := \
 Code/APP \
 Code/HAL/ADXL345 \
 Code/HAL/BMP280 \
-Code/HAL/Battery \
 Code/HAL/Config \
 Code/HAL/ESC \
 Code/HAL/HC_SR04 \

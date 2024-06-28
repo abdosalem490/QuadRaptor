@@ -303,6 +303,7 @@ void Task_CollectSensorData(void)
     HAL_WRAPPER_Pressure_t ref_pressure_t = {0};
     HAL_WRAPPER_Temperature_t local_temperature_t = {0};
     HAL_WRAPPER_Altitude_t local_altitude_t = {0};
+    HAL_WRAPPER_Battery_t local_battery_t = {0};
 
     // the item to push into the queue
     RawSensorDataItem_t local_out_t = {0};
@@ -331,7 +332,7 @@ void Task_CollectSensorData(void)
         HAL_WRAPPER_ReadAltitude(&local_altitude_t, &ref_pressure_t);
 
         // read battery charge
-
+//        HAL_WRAPPER_GetBatteryCharge(&local_battery_t);
 
 // FOR SERIAL MONITOR
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
@@ -349,6 +350,7 @@ void Task_CollectSensorData(void)
         local_out_t.Pressure = local_pressure_t;
         local_out_t.Temperature = local_temperature_t;
         local_out_t.Altitude = local_altitude_t;
+        local_out_t.Battery = local_battery_t;
 
         // push the data into the queue for fusion
         SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);

@@ -378,4 +378,18 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadAltitude(HAL_WRAPPER_Altitude_t *arg_pAlti
     return HAL_WRAPPER_STAT_OK;
 }
 
+
+/**
+ * 
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_GetBatteryCharge(HAL_WRAPPER_Battery_t *arg_pBatteryCharge)
+{
+    uint16_t local_u16Charge = 0;
+
+    MCAL_WRAPPER_GetADCBattery(&local_u16Charge);
+
+    return HAL_WRAPPER_STAT_OK;
+}
+
+
 /*************** END OF FUNCTIONS ***************************************************************************/

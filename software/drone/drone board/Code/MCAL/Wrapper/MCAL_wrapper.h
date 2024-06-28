@@ -51,6 +51,7 @@
  * |    26/06/2023      1.0.0           Abdelrahman Mohamed Salem       changed 'HAL_WRAPPER_DelayMS' to be for US.                     |
  * |    26/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'MCAL_WRAPPER_TIM1GetWidthOfPulse'.                       |
  * |    26/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'MCAL_WRAPPER_HCSR04TrigTrig'.                            |
+ * |    27/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'MCAL_WRAPPER_GetADCBattery'.                             |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
 
@@ -643,6 +644,46 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_TIM1GetWidthOfPulse(uint32_t* arg_u32TimeUS)
  * <hr>
  */
 MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_HCSR04Trig(uint16_t arg_16PWuS);
+
+
+
+/**
+ *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_GetADCBattery(uint16_t* arg_pu16ADCReadings);
+ *  \b Description                              :       this functions is used as a wrapper function to get the adc reading of the battery.
+ *  @param  arg_pu16ADCReadings [OUT]           :       readings of the ADC of the battery.
+ *  @note                                       :       This is a polling function that will cause the task calling to wait until we get a reading.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       None.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @MCAL_WRAPPER_ErrStat_t in "MCAL_wrapper.h")
+ *  @see                                        :       MCAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "MCAL_wrapper.h"
+ * 
+ * int main() {
+ *  MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
+ *  if(MCAL_Config_STAT_OK == local_errState)
+ *  {
+ *    uint32_t adc_reading = 0;
+ *    local_errState = MCAL_WRAPPER_GetADCBattery(&adc_reading);
+ *    if(MCAL_WRAPPER_STAT_OK == local_errState)
+ *    {
+ *      // function delay success
+ *    }
+ *  }
+ * }
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 27/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_GetADCBattery(uint16_t* arg_pu16ADCReadings);
 
 /*** End of File **************************************************************/
 #endif /*MCAL_WRAPPER_HEADER_H_*/

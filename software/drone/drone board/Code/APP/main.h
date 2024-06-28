@@ -137,6 +137,7 @@ typedef struct {
     HAL_WRAPPER_Pressure_t Pressure;
     HAL_WRAPPER_Temperature_t Temperature;
     HAL_WRAPPER_Altitude_t Altitude;
+    HAL_WRAPPER_Battery_t Battery;
 } RawSensorDataItem_t;
 
 /**

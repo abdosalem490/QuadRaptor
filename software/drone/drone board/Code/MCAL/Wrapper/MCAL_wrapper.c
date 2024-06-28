@@ -152,8 +152,8 @@ volatile uint16_t tempreg = 0;
  * @brief: USART4 IRQ handler
  */
  void UART4_IRQHandler(void); // __attribute__((interrupt("WCH-Interrupt-fast")));
-void TIM1_CC_IRQHandler(void); // __attribute__((interrupt("WCH-Interrupt-fast")));
-void TIM1_UP_IRQHandler(void); // __attribute__((interrupt("WCH-Interrupt-fast")));
+void TIM1_CC_IRQHandler(void) __attribute__((interrupt()));
+void TIM1_UP_IRQHandler(void) __attribute__((interrupt()));
 
 /******************************************************************************
  * Function Definitions
@@ -305,13 +305,12 @@ void UART4_IRQHandler(void)
    }
 }
 
+
 /**
  * 
  */
 void TIM1_UP_IRQHandler(void)
 {   
-    GET_INT_SP();
-    portDISABLE_INTERRUPTS();
 	if( TIM_GetITStatus( TIM1, TIM_IT_Update ) != RESET )
 	{
         // interrupt happened due to overflow of the counter
@@ -321,43 +320,41 @@ void TIM1_UP_IRQHandler(void)
 	}
 
     TIM_ClearITPendingBit( TIM1, TIM_IT_Update );
-    portENABLE_INTERRUPTS();
-    FREE_INT_SP();
 }
+
+
 
 /**
  * 
  */
 void TIM1_CC_IRQHandler(void)
 {   
-    GET_INT_SP();
-    portDISABLE_INTERRUPTS();
+
+    // interrupt happened due to rising edge
 	if( TIM_GetITStatus( TIM1, TIM_IT_CC1 ) != RESET )
 	{
         // store the value of the input capture register 
         tempreg = TIM_GetCapture1(TIM1);
-
-        // interrupt happened due to rising or falling edge
-        if(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8) == SET)
-        {
-            // start of the pulse
-            global_u32TicksNum = 0;
-            global_u8IsCaptured = 0;
-        }
-        else
-        {
-            // end of the pulse
-            global_u32TicksNum += tempreg;
-            global_u8IsCaptured = 1;
-
-            // notify the task
-            SERVICE_RTOS_Notify(global_CurrentPWTask_t, LIB_CONSTANTS_ENABLED);
-        }
+        
+        // start of the pulse
+        global_u32TicksNum = 0;
+        global_u8IsCaptured = 0;
 	}
+    // interrupt happened due to falling edge
+    else if(TIM_GetITStatus( TIM1, TIM_IT_CC2 ) != RESET )
+    {
+        // store the value of the input capture register 
+        tempreg = TIM_GetCapture2(TIM1);
 
-	TIM_ClearITPendingBit( TIM1, TIM_IT_CC1 );
-    portENABLE_INTERRUPTS();
-    FREE_INT_SP();
+        // end of the pulse
+        global_u32TicksNum += tempreg;
+        global_u8IsCaptured = 1;
+
+        // notify the task
+        SERVICE_RTOS_Notify(global_CurrentPWTask_t, LIB_CONSTANTS_ENABLED);
+    }
+
+	TIM_ClearITPendingBit( TIM1, TIM_IT_CC1 | TIM_IT_CC2 );
 }
 
 /**
@@ -374,20 +371,18 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_TIM1GetWidthOfPulse(uint32_t* arg_u32TimeUS)
     // get the current handle
     SERVICE_RTOS_GetCurrentTaskHandle(&global_CurrentPWTask_t);
 
+    // do some initialization
+    global_u8IsCaptured = 0;
+    global_u32TicksNum = 0;
+
     // enable the timer interrupt and clear flags if any
-    TIM_ClearFlag(TIM1, TIM_FLAG_Update | TIM_FLAG_CC1);
-    TIM_ITConfig(TIM1, TIM_IT_Update | TIM_IT_CC1, ENABLE);
-    TIM_SetCounter(TIM1, 0);
     TIM_Cmd(TIM1, ENABLE);
 
     // block until we get a readings
     SERVICE_RTOS_WaitForNotification(1000);
 
     // disable the timer interrupt
-    TIM_ITConfig(TIM1, TIM_IT_Update | TIM_IT_CC1, DISABLE);
-    TIM_ClearFlag(TIM1, TIM_FLAG_Update | TIM_FLAG_CC1);
     TIM_Cmd(TIM1, DISABLE);
-    TIM_SetCounter(TIM1, 0);
 
     if(1 == global_u8IsCaptured)
     {
@@ -399,8 +394,6 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_TIM1GetWidthOfPulse(uint32_t* arg_u32TimeUS)
     	local_errState = MCAL_WRAPPER_STAT_ECHO_ERR;
     }
 
-    global_u8IsCaptured = 0;
-    global_u32TicksNum = 0;
 
     return local_errState;
 
@@ -580,6 +573,26 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_HCSR04Trig(uint16_t arg_16PWuS)
 
     // reset the bit
     GPIO_ResetBits(GPIOA, GPIO_Pin_15);
+
+    return MCAL_WRAPPER_STAT_OK; 
+}
+
+/**
+ * 
+ */
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_GetADCBattery(uint16_t* arg_pu16ADCReadings)
+{
+    // select the channel
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1, ADC_SampleTime_239Cycles5);
+
+    // start conversion
+    ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+
+    // wait till conversion end
+    while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
+    
+    // return value  
+    *arg_pu16ADCReadings = ADC_GetConversionValue(ADC1);
 
     return MCAL_WRAPPER_STAT_OK; 
 }

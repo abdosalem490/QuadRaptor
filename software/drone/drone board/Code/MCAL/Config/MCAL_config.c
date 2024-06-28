@@ -128,7 +128,7 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, DISABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2, DISABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
@@ -403,9 +403,9 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_tim1ICInit_t.TIM_Channel = TIM_Channel_1;
     local_tim1ICInit_t.TIM_ICPrescaler = TIM_ICPSC_DIV1;
     local_tim1ICInit_t.TIM_ICFilter = 0x00;
-    local_tim1ICInit_t.TIM_ICPolarity = TIM_ICPolarity_BothEdge;
+    local_tim1ICInit_t.TIM_ICPolarity = TIM_ICPolarity_Rising;
     local_tim1ICInit_t.TIM_ICSelection = TIM_ICSelection_DirectTI;
-    TIM_PWMIConfig(TIM1, &local_tim1ICInit_t);
+    TIM_PWMIConfig(TIM1, &local_tim1ICInit_t);  // CC1 will capture timer at rising edge on IC1 while falling edge on IC1 will capture timer value at CC2 
 
     NVIC_InitTypeDef local_tim1NVICInit_t = {0};
     local_tim1NVICInit_t.NVIC_IRQChannel = TIM1_CC_IRQn;
@@ -414,11 +414,13 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
     local_tim1NVICInit_t.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&local_tim1NVICInit_t);
     local_tim1NVICInit_t.NVIC_IRQChannel = TIM1_UP_IRQn;
-    NVIC_Init(&local_tim1NVICInit_t);
+    NVIC_Init(&local_tim1NVICInit_t);    
 
-//    TIM_ITConfig(TIM1, TIM_IT_CC1 | TIM_IT_Update, ENABLE);
-
-     TIM_Cmd(TIM1, DISABLE);
+    TIM_ITConfig(TIM1, TIM_IT_CC1 | TIM_IT_CC2 | TIM_IT_Update, ENABLE);
+    TIM_SelectInputTrigger(TIM1, TIM_TS_TI1FP1);    // synchronize timer with filtered input from channel1
+    TIM_SelectSlaveMode(TIM1, TIM_SlaveMode_Reset); // reset counter upon rising edge on TI1FP1
+    TIM_SelectMasterSlaveMode(TIM1, TIM_MasterSlaveMode_Enable);    // enable the above 3 lines actions
+    // TIM_Cmd(TIM1, ENABLE);
 
     /******************************************/
 
@@ -450,6 +452,19 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
 
     USART_Cmd(UART4, ENABLE);
 
+    /******************************************/
+    RCC_ADCCLKConfig(RCC_PCLK2_Div8);
+    ADC_InitTypeDef  ADC_InitStructure = {0};
+    ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
+    ADC_InitStructure.ADC_ScanConvMode = DISABLE;
+    ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
+    ADC_InitStructure.ADC_ExternalTrigConv  = ADC_ExternalTrigConv_None;
+    ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+    ADC_InitStructure.ADC_NbrOfChannel = 1;
+    ADC_Init(ADC1, &ADC_InitStructure);
+
+    // ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1, ADC_SampleTime_1Cycles5);
+    ADC_Cmd(ADC1, ENABLE);
 
     return MCAL_Config_STAT_OK;
 }

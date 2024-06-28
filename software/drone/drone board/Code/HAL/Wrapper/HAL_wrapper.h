@@ -45,9 +45,9 @@
  * |    20/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_GetAppCommMessageType'.                      |
  * |    22/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_ReadPressure'.                               |
  * |    22/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_ReadTemperature'.                            |
+ * |    22/06/2023      1.0.0           Abdelrahman Mohamed Salem       added 'HAL_WRAPPER_GetBatteryCharge'.                            |
  * --------------------------------------------------------------------------------------------------------------------------------------
  */
-
 
 #ifndef HAL_WRAPPER_HEADER_H_
 #define HAL_WRAPPER_HEADER_H_
@@ -153,6 +153,14 @@ typedef struct
   float altitude;  /**< Altitude in cm */
   float ultrasonic_altitude;  /**< Altitude in cm from ultrasonic sensor */
 } HAL_WRAPPER_Altitude_t;
+
+/**
+ * @brief: contains definitions to be used with reading battery charge data
+ */
+typedef struct
+{
+  uint8_t batteryCharge;  /**< Altitude in cm */
+} HAL_WRAPPER_Battery_t;
 
 /**
  * @brief: contains defintions to be used to set motor speeds associated with ESCs
@@ -463,6 +471,46 @@ HAL_WRAPPER_ErrStat_t HAL_WRAPPER_ReadAltitude(HAL_WRAPPER_Altitude_t *arg_pAlti
  * <hr>
  */
 HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SetESCSpeeds(HAL_WRAPPER_MotorSpeeds_t *arg_pMotorsSpeed);
+
+/**
+ *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPPER_GetBatteryCharge(HAL_WRAPPER_Battery_t *arg_pBatteryCharge);
+ *  \b Description                              :       this functions is used as a wrapper function to set get the charge of the battery.
+ *  @param  arg_pBatteryCharge [OUT]            :       base address of battery charge to insert. refer to @HAL_WRAPPER_Battery_t in "HAL_wrapper.h".
+ *  @note                                       :       None.
+ *  \b PRE-CONDITION                            :       make sure to call configure function the configuration file in the current directory.
+ *  \b POST-CONDITION                           :       Motors Speeds are changed.
+ *  @return                                     :       it return one of error states indicating whether a failure or success happened (refer to @HAL_WRAPPER_ErrStat_t in "HAL_wrapper.h")
+ *  @see                                        :       HAL_ADXL345_PinStateModify(uint16_t arg_u16ADXL345Name, uint16_t arg_u16PinNumber, const uint8_t argConst_u8Operation)
+ *
+ *  \b Example:
+ * @code
+ * 
+ * #include "HAL_wrapper.h"
+ * 
+ * 
+ * int main() {
+ * HAL_WRAPPER_Battery_t batteryCharge = {0};
+ * MCAL_Config_ErrStat_t local_errState = HAL_Config_ConfigAllHW();
+ * if(HAL_Config_STAT_OK == local_errState)
+ * {
+ *  local_errState = HAL_WRAPPER_GetBatteryCharge(&batteryCharge);
+ *  if(HAL_WRAPPER_STAT_OK == local_errState)
+ *  {
+ *    // motor speeds are set
+ *  }
+ * }
+ * 
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 27/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+HAL_WRAPPER_ErrStat_t HAL_WRAPPER_GetBatteryCharge(HAL_WRAPPER_Battery_t *arg_pBatteryCharge);
+
 
 /**
  *  \b function                                 :       HAL_WRAPPER_ErrStat_t HAL_WRAPPER_SetAppCommRecCallBack(functionCallBack_t *arg_pUARTCallBack);
