@@ -390,6 +390,8 @@ void Task_SensorFusion(void)
             local_out_t.pitch = -local_temp_t.roll;
             local_out_t.roll = local_temp_t.pitch;
             local_out_t.yaw = local_temp_t.yaw;
+            local_out_t.altitude = local_temp_t.altitude;
+            local_out_t.vertical_velocity = local_temp_t.vertical_velocity;
 
 
             // check if a second passed to send some info to the application board
@@ -406,10 +408,10 @@ void Task_SensorFusion(void)
                 local_DataToSendtoApp_t.data.data.info.temperature = local_in_t.Temperature.temperature;
 
                 // read battery charge
-                local_DataToSendtoApp_t.data.data.info.batteryCharge = 76;
+                local_DataToSendtoApp_t.data.data.info.batteryCharge = local_in_t.Battery.batteryCharge;
 
                 // assign current altitude
-                local_DataToSendtoApp_t.data.data.info.altitude = 12.3;
+                local_DataToSendtoApp_t.data.data.info.altitude = local_temp_t.altitude;
 
                 // assign distanceToOrigin (TODO)
                 local_DataToSendtoApp_t.data.data.info.distanceToOrigin = 1.5;       
