@@ -134,6 +134,7 @@ typedef struct __attribute__((packed)){
   int8_t yaw;
   bool turnOnLeds;
   bool playMusic;
+  bool startDrone;
 } move_command_t;
 
 
@@ -406,13 +407,30 @@ void loop()
   // check for return to main menu button
   if(generalSWState == HIGH && digitalRead(GENERAL_SW_PIN) == LOW)
   {
+    // exit to the main screen
     generalSWState = LOW;
-    delay(50);
+    delay(30);
     ssd1306_clearScreen();
     currentMenu = &mainMenu;
     currentFlyingSessionInSeconds = 0;
     flyingMode = FLYING_MODE_SELECTION;
     ssd1306_showMenu( &mainMenu );
+
+    // stop the drone
+    data.type = DATA_TYPE_MOVE;
+    data.data.move.startDrone = false;
+    data.data.move.yaw = 0;
+    data.data.move.thurst = 0;
+    data.data.move.roll = 0;
+    data.data.move.pitch = 0;
+    // data.data.move.turnOnLeds = rightJoyStickSWState == HIGH && digitalRead(RIGHT_JOYSTICK_SW_PIN) == LOW;
+    // data.data.move.playMusic = leftJoyStickSWState == HIGH && digitalRead(LEFT_JOYSTICK_SW_PIN) == LOW;
+    data.data.move.turnOnLeds = rightJoyStickPressed;
+    data.data.move.playMusic = leftJoyStickPressed;
+    
+    myRadio.stopListening();
+    while(myRadio.write(&data, sizeof(data)));
+    myRadio.startListening(); 
   }
 
   // update of the shown status every 1 second
@@ -455,6 +473,7 @@ void loop()
 
       commandTime = millis();
       data.type = DATA_TYPE_MOVE;
+      data.data.move.startDrone = true;
       data.data.move.yaw = -((analogRead(LEFT_JOYSTICK_X_PIN) >> 3) - 64);
       data.data.move.thurst = -((analogRead(LEFT_JOYSTICK_Y_PIN) >> 3) - 64);
       data.data.move.roll = -((analogRead(RIGHT_JOYSTICK_X_PIN) >> 3) - 64);

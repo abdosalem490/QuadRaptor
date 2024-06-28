@@ -94,6 +94,7 @@ typedef struct __attribute__((packed)) {
   int8_t yaw;
   uint8_t turnOnLeds;
   uint8_t playMusic;
+  uint8_t startDrone;
 } move_command_t;
 
 /**

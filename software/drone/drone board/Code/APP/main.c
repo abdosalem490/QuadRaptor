@@ -585,19 +585,33 @@ void Task_Master(void)
         if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
         {
             // assign the required state
-
+        
             // TODO: remove the below line
             // printf("type = %d, roll = %d, pitch = %d, thrust = %d, yaw = %d, turnOnLeds = %d, playMusic = %d\r\n",
             // local_RCRequiredVal.data.type, local_RCRequiredVal.data.data.move.roll, local_RCRequiredVal.data.data.move.pitch,
             // local_RCRequiredVal.data.data.move.thrust, local_RCRequiredVal.data.data.move.yaw, local_RCRequiredVal.data.data.move.turnOnLeds,
             // local_RCRequiredVal.data.data.move.playMusic);
+
+            // check if we wanted to stop the drone
+            if(!local_RCRequiredVal.data.data.move.startDrone)
+            {
+                // stop the motors
+                local_MotorSpeeds.topLeftSpeed = 0;
+                local_MotorSpeeds.topRightSpeed = 0;
+                local_MotorSpeeds.bottomLeftSpeed = 0;
+                local_MotorSpeeds.bottomRightSpeed = 0;
+                HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
+
+                // printf("STOPPED\r\n");   
+            }
+
         }
 
         // read sensor fused readings
         local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_SensorFusedReadings_t, queue_FusedSensorData_Handle_t, &local_u8LenOfRemaining);
 
-        // get sensor fused readings with Kalman filter
-        if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
+        // get sensor fused readings with Kalman filter as long as the drone is commanded to start
+        if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus && local_RCRequiredVal.data.data.move.startDrone)
         {
             // Compute error
             roll_pid.error = local_RCRequiredVal.data.data.move.roll - local_SensorFusedReadings_t.roll;
@@ -625,6 +639,8 @@ void Task_Master(void)
             
             // apply actions on the motors
             HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
+
+            // printf("STARTED\r\n");
         }
 
         

@@ -378,8 +378,8 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_TIM1GetWidthOfPulse(uint32_t* arg_u32TimeUS)
     // enable the timer interrupt and clear flags if any
     TIM_Cmd(TIM1, ENABLE);
 
-    // block until we get a readings
-    SERVICE_RTOS_WaitForNotification(1000);
+    // block until we get a readings (max expected time is 23.52 millisecond as the range for ultrasonic sensor is 400 centimeter)
+    SERVICE_RTOS_WaitForNotification(25);
 
     // disable the timer interrupt
     TIM_Cmd(TIM1, DISABLE);

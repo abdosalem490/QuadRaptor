@@ -112,6 +112,9 @@ HAL_HCSR04_ErrStates_t HAL_HCSR04_GetDistance(float* arg_pf32Distance)
     }
     else
     {
+        // assign high value for distance to indicate it's invalid
+        *arg_pf32Distance = 800; // 800 cm
+
         return HAL_HCSR04_ERR_ECHO;
     }
     
