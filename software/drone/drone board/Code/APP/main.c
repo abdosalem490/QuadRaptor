@@ -518,12 +518,25 @@ void Task_AppComm(void)
 */
 void Task_Master(void)
 {
-    // needed variables
-    HAL_WRAPPER_MotorSpeeds_t local_MotorSpeeds = {0};
+
+    // for indication if we received something from queue
     SERVICE_RTOS_ErrStat_t local_RTOSErrStatus = SERVICE_RTOS_STAT_OK;
+
+    // to control motor speeds
+    HAL_WRAPPER_MotorSpeeds_t local_MotorSpeeds = {0};
+
+    // sensor readings
     SensorFusionDataItem_t local_SensorFusedReadings_t = {0};
+    SensorFusionDataItem_t local_SensorFusedInitReadings_t = {0};
+    uint8_t local_u8FirstReading = 1;
+    
+    // unused variable but needed for Queue receive API
     uint8_t local_u8LenOfRemaining = 0;
+    
+    // for communication with app board.
     AppToDroneDataItem_t local_RCRequiredVal = {0};
+
+    // pid objects
     pid_obj_t roll_pid = {0};
     pid_obj_t pitch_pid = {0};
     pid_obj_t yaw_pid = {0};
@@ -535,8 +548,8 @@ void Task_Master(void)
     // ANYTHING (RECEIVING INTERRUPTS HAS TO WAIT BEFORE INITIALIZING)
     /************************************************************************/
     // assign pointers and lengths of data to be always received
-    global_AppCommMsg_t.dataToReceive = (uint8_t*) &global_MsgToRec_t.data;
-    global_AppCommMsg_t.dataToReceiveLen = sizeof(global_MsgToRec_t.data);
+    global_AppCommMsg_t.dataToReceive = (uint8_t*) &global_MsgToRec_t;
+    global_AppCommMsg_t.dataToReceiveLen = sizeof(global_MsgToRec_t);
     global_AppCommMsg_t.dataIsToReceive = 0;
     global_AppCommMsg_t.IsDataReceived = 0;
     /************************************************************************/
@@ -570,7 +583,8 @@ void Task_Master(void)
    Altitude_Kalman_2D_init();
 
     // temp counter (to be deleted)
-    uint32_t local_u32Counter = 0;
+    // uint32_t local_u32Counter = 0;
+    
 
     while (1)
     {
@@ -586,13 +600,12 @@ void Task_Master(void)
             // assign the required state
         
             // TODO: remove the below line
-            printf("type = %d, roll = %d, pitch = %d, thrust = %d, yaw = %d, turnOnLeds = %d, playMusic = %d\r\n",
-            local_RCRequiredVal.data.type, local_RCRequiredVal.data.data.move.roll, local_RCRequiredVal.data.data.move.pitch,
-            local_RCRequiredVal.data.data.move.thrust, local_RCRequiredVal.data.data.move.yaw, local_RCRequiredVal.data.data.move.turnOnLeds,
-            local_RCRequiredVal.data.data.move.playMusic);
+            printf("type = %d, roll = %f, pitch = %f, thrust = %f, yaw = %f,\r\n",
+            local_RCRequiredVal.type, local_RCRequiredVal.roll, local_RCRequiredVal.pitch,
+            local_RCRequiredVal.thrust, local_RCRequiredVal.yaw);
 
             // check if we wanted to stop the drone
-            if(!local_RCRequiredVal.data.data.move.startDrone)
+            if(!local_RCRequiredVal.startDrone)
             {
                 // stop the motors
                 local_MotorSpeeds.topLeftSpeed = 0;
@@ -601,32 +614,35 @@ void Task_Master(void)
                 local_MotorSpeeds.bottomRightSpeed = 0;
                 HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
 
+                // for the next run, we will need to get initial readings 
+                local_u8FirstReading = 1;
+
                 // printf("STOPPED\r\n");   
             }
 
             // TODO: (delete the below lines, it was for testing motors)
-            local_u32Counter++;
-            if(local_u32Counter >= 1)
-            {
-                local_u32Counter = 0;
+            // local_u32Counter++;
+            // if(local_u32Counter >= 1)
+            // {
+            //     local_u32Counter = 0;
 
-                if(local_RCRequiredVal.data.data.move.thrust > 0 && local_MotorSpeeds.topLeftSpeed < 100 && local_MotorSpeeds.topRightSpeed < 100 &&
-                    local_MotorSpeeds.bottomLeftSpeed < 100 && local_MotorSpeeds.bottomRightSpeed < 100)
-                {
-                    local_MotorSpeeds.topLeftSpeed++;
-                    local_MotorSpeeds.topRightSpeed++;
-                    local_MotorSpeeds.bottomLeftSpeed++;
-                    local_MotorSpeeds.bottomRightSpeed++;      
-                }
-                else if(local_RCRequiredVal.data.data.move.thrust < 0 && local_MotorSpeeds.topLeftSpeed > 0 && local_MotorSpeeds.topRightSpeed > 0 &&
-                    local_MotorSpeeds.bottomLeftSpeed > 0 && local_MotorSpeeds.bottomRightSpeed > 0)
-                {
-                    local_MotorSpeeds.topLeftSpeed--;
-                    local_MotorSpeeds.topRightSpeed--;
-                    local_MotorSpeeds.bottomLeftSpeed--;
-                    local_MotorSpeeds.bottomRightSpeed--;                          
-                }
-            }
+            //     if(local_RCRequiredVal.data.data.move.thrust > 0 && local_MotorSpeeds.topLeftSpeed < 100 && local_MotorSpeeds.topRightSpeed < 100 &&
+            //         local_MotorSpeeds.bottomLeftSpeed < 100 && local_MotorSpeeds.bottomRightSpeed < 100)
+            //     {
+            //         local_MotorSpeeds.topLeftSpeed++;
+            //         local_MotorSpeeds.topRightSpeed++;
+            //         local_MotorSpeeds.bottomLeftSpeed++;
+            //         local_MotorSpeeds.bottomRightSpeed++;      
+            //     }
+            //     else if(local_RCRequiredVal.data.data.move.thrust < 0 && local_MotorSpeeds.topLeftSpeed > 0 && local_MotorSpeeds.topRightSpeed > 0 &&
+            //         local_MotorSpeeds.bottomLeftSpeed > 0 && local_MotorSpeeds.bottomRightSpeed > 0)
+            //     {
+            //         local_MotorSpeeds.topLeftSpeed--;
+            //         local_MotorSpeeds.topRightSpeed--;
+            //         local_MotorSpeeds.bottomLeftSpeed--;
+            //         local_MotorSpeeds.bottomRightSpeed--;                          
+            //     }
+            // }
 
         }
 
@@ -634,33 +650,45 @@ void Task_Master(void)
         local_RTOSErrStatus = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_SensorFusedReadings_t, queue_FusedSensorData_Handle_t, &local_u8LenOfRemaining);
 
         // get sensor fused readings with Kalman filter as long as the drone is commanded to start
-        if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus && local_RCRequiredVal.data.data.move.startDrone)
+        if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus && local_RCRequiredVal.startDrone)
         {
-            // // Compute error
-            // roll_pid.error = local_RCRequiredVal.data.data.move.roll - local_SensorFusedReadings_t.roll;
-            // pitch_pid.error = local_RCRequiredVal.data.data.move.pitch - local_SensorFusedReadings_t.pitch;
-            // yaw_pid.error = local_RCRequiredVal.data.data.move.yaw - local_SensorFusedReadings_t.yaw;
-            // thrust_pid.error = local_RCRequiredVal.data.data.move.thrust - local_SensorFusedReadings_t.vertical_velocity;
-            
-            // // apply PID to compensate error
-            // pid_ctrl(&roll_pid);
-            // pid_ctrl(&pitch_pid);
-            // pid_ctrl(&yaw_pid);
-            // pid_ctrl(&thrust_pid);
+            // TODO: take initial data from sensor to act as start from which we will compute the change
+            if(local_u8FirstReading)
+            {
+                // store the initial readings
+                local_SensorFusedInitReadings_t = local_SensorFusedReadings_t;
 
-            // // Motor mixing algorithm
-            // local_MotorSpeeds.topLeftSpeed     = thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output;
-            // local_MotorSpeeds.topRightSpeed    = thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output;
-            // local_MotorSpeeds.bottomLeftSpeed  = thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output;
-            // local_MotorSpeeds.bottomRightSpeed = thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output;
+                // indicate we get the first readings
+                local_u8FirstReading = 0;
+            }
+            // TODO: handle the subtraction between initial readings and the current readings
 
-            // // apply limits to the motor speeds
-            // if(local_MotorSpeeds.topLeftSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.topLeftSpeed = MAX_MOTOR_SPEED;
-            // if(local_MotorSpeeds.topRightSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.topRightSpeed = MAX_MOTOR_SPEED;
-            // if(local_MotorSpeeds.bottomLeftSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.bottomLeftSpeed = MAX_MOTOR_SPEED;
-            // if(local_MotorSpeeds.bottomRightSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.bottomRightSpeed = MAX_MOTOR_SPEED;
+
+            // Compute error
+            roll_pid.error = local_RCRequiredVal.roll - local_SensorFusedReadings_t.roll;
+            pitch_pid.error = local_RCRequiredVal.pitch - local_SensorFusedReadings_t.pitch;
+            yaw_pid.error = local_RCRequiredVal.yaw - local_SensorFusedReadings_t.yaw;
+            thrust_pid.error = local_RCRequiredVal.thrust - local_SensorFusedReadings_t.vertical_velocity;
             
-            // apply actions on the motors
+            // apply PID to compensate error
+            pid_ctrl(&roll_pid);
+            pid_ctrl(&pitch_pid);
+            pid_ctrl(&yaw_pid);
+            pid_ctrl(&thrust_pid);
+
+            // Motor mixing algorithm
+            local_MotorSpeeds.topLeftSpeed     = thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output;
+            local_MotorSpeeds.topRightSpeed    = thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output;
+            local_MotorSpeeds.bottomLeftSpeed  = thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output;
+            local_MotorSpeeds.bottomRightSpeed = thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output;
+
+            // apply limits to the motor speeds
+            if(local_MotorSpeeds.topLeftSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.topLeftSpeed = MAX_MOTOR_SPEED;
+            if(local_MotorSpeeds.topRightSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.topRightSpeed = MAX_MOTOR_SPEED;
+            if(local_MotorSpeeds.bottomLeftSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.bottomLeftSpeed = MAX_MOTOR_SPEED;
+            if(local_MotorSpeeds.bottomRightSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.bottomRightSpeed = MAX_MOTOR_SPEED;
+            
+            // apply actions on the motorsw
             HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
 
             // printf("STARTED\r\n");

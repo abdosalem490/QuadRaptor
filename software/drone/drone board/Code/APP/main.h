@@ -166,8 +166,13 @@ typedef struct {
 /**
  * @brief: this is the struct definition of the items of the 'queue_AppCommToDrone_Handle_t' elements
 */
-typedef struct {
-    data_t data;  // the variable through which we will send and recieve data
+typedef struct __attribute__((packed)){
+  uint8_t type; /**< type of message to be received */
+  uint8_t startDrone; /**< values are either 0 or 1 */
+  float roll;   /**< values from -180 to 180 */
+  float pitch;  /**< values from -180 to 180 */
+  float thrust; /**< values from -180 to 180 */
+  float yaw;    /**< values from -180 to 180 */
 } AppToDroneDataItem_t;
 
 /**

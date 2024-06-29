@@ -81,6 +81,11 @@
  */
 #include "constants.h"
 
+/**
+ * @reason: contains map function
+ */
+#include "common.h"
+
 /******************************************************************************
  * Module Preprocessor Constants
  *******************************************************************************/
@@ -201,7 +206,7 @@ HAL_WRAPPER_AppCommMsg_t global_DroneCommMsg_t = {0};
 /**
  * @brief: actual place where the received data will be placed
  */
-AppToDroneDataItem_t global_MsgToRec_t = {0};
+DroneToAppDataItem_t global_MsgToRec_t = {0};
 
 /******************************************************************************
  * Function Prototypes
@@ -264,6 +269,8 @@ void Task_RCComm(void)
     HAL_WRAPPER_RCMsg_t local_RCData_t = {0};
     HAL_WRAPPER_ErrStat_t local_errState = HAL_WRAPPER_STAT_OK;
     uint8_t local_u8LenOfRemaining = 0;
+    AppToDroneDataItem_t local_itemToRec_t = {0};
+    DroneToAppDataItem_t local_itemToSend_t = {0};
 
     while (1)
     {
@@ -276,8 +283,35 @@ void Task_RCComm(void)
             // local_RCData_t.MsgToReceive.data.move.roll, local_RCData_t.MsgToReceive.data.move.pitch, local_RCData_t.MsgToReceive.data.move.thrust,
             // local_RCData_t.MsgToReceive.data.move.yaw, local_RCData_t.MsgToReceive.data.move.turnOnLeds, local_RCData_t.MsgToReceive.data.move.playMusic);
 
+            // map the values "from -63 to 64" coming from the remote control into values "from -180.0 to 180.0"
+            local_itemToRec_t.roll = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.roll, -64.0, 64.0, -90.0, 90.0);
+            local_itemToRec_t.pitch = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.pitch, -64.0, 64.0, -90.0, 90.0);
+            local_itemToRec_t.yaw = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.yaw, -64.0, 64.0, -180.0, 180.0);
+            local_itemToRec_t.thrust = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.thrust, -64.0, 64.0, -180.0, 180.0); // TODO: check possible values for thrust
+            local_itemToRec_t.startDrone = local_RCData_t.MsgToReceive.data.move.startDrone;
+            local_itemToRec_t.type = local_RCData_t.MsgToReceive.type;
+
+            // prevent the input pitch and yaw to have absolute values more than 20 degrees
+            if(local_itemToRec_t.roll > 20)
+            {
+                local_itemToRec_t.roll = 20.0;
+            }
+            else if(local_itemToRec_t.roll < -20)
+            {
+                local_itemToRec_t.roll = -20.0;
+            }
+
+            if(local_itemToRec_t.pitch > 20)
+            {
+                local_itemToRec_t.pitch = 20.0;
+            }          
+            else if(local_itemToRec_t.pitch < -20)
+            {
+                local_itemToRec_t.pitch = -20.0;
+            }
+
             // push the data into the queue for sending to drone communication task
-            SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &local_RCData_t.MsgToReceive, queue_AppCommToDrone_Handle_t);
+            SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &local_itemToRec_t, queue_AppCommToDrone_Handle_t);
             SERVICE_RTOS_Notify(task_DroneComm_Handle_t, LIB_CONSTANTS_DISABLED);
 
             // push the data into the queue for sending to actions task (TODO)
@@ -285,9 +319,12 @@ void Task_RCComm(void)
         }
 
         // check if there is anything to send to the remote control
-        local_errState = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_RCData_t.MsgToSend, queue_DroneCommToApp_Handle_t, &local_u8LenOfRemaining);
+        local_errState = SERVICE_RTOS_ReadFromBlockingQueue(0, (void *) &local_itemToSend_t, queue_DroneCommToApp_Handle_t, &local_u8LenOfRemaining);
         if(HAL_WRAPPER_STAT_OK == local_errState)
         {
+            // assign the variables
+            local_RCData_t.MsgToSend = local_itemToSend_t.data;
+
             // send data
             HAL_WRAPPER_RCSend(&local_RCData_t);
         }
@@ -312,8 +349,8 @@ void Task_DroneComm(void)
     uint8_t local_u8LenOfRemaining = 0;
 
     // assign pointers and lengths of data to be always sent
-    global_DroneCommMsg_t.dataToSend = (uint8_t*)&local_MsgToSend_t.data;
-    global_DroneCommMsg_t.dataToSendLen = sizeof(local_MsgToSend_t.data);
+    global_DroneCommMsg_t.dataToSend = (uint8_t*)&local_MsgToSend_t;
+    global_DroneCommMsg_t.dataToSendLen = sizeof(local_MsgToSend_t);
 
     while (1)
     {
@@ -326,6 +363,7 @@ void Task_DroneComm(void)
         // loop until all message are sent
         while (local_u8LenOfRemaining && SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
         {
+
             // send the message
             size_t i = 0;
             while (i < global_DroneCommMsg_t.dataToSendLen)
@@ -426,7 +464,8 @@ void Task_TakeAction(void)
         // check if we got back a reading
         if(SERVICE_RTOS_STAT_OK == local_ErrStatus)
         {
-            
+            // play some music with buzzer and flash leds
+
         }
 
     }

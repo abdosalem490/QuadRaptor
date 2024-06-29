@@ -78,6 +78,42 @@
  * Macros
  *******************************************************************************/
 
+/**
+ *  \b Macro                        :       LIB_MATH_BTT_ASSIGN_BITS(VAR, BTT_NO, VAL, NUM_OF_BITS)
+ *  \b Description                  :       this macro is used to map input value given its range into another new range.
+ *  @param    IN                    :       this is the required number to be map.
+ *  @param    IN_MIN_VAL            :       this is the input possible minimum value.
+ *  @param    IN_MAX_VAL            :       this is the input possible maximum value.
+ *  @param    OUT_MIN_VAL           :       this is the output possible minimum value.
+ *  @param    OUT_MAX_VAL           :       this is the output possible maximum value.
+ *  \b PRE-CONDITION                :       None.
+ *  \b POST-CONDITION               :       None.
+ *  @return                         :       new mapped value in the new range.
+ *  @see                            :       None.
+ *  @note                           :       None.
+ *
+ *  \b Example:
+ * @code
+ * #include "common.h"
+ * #include "stdint.h"
+ * int main() {
+ * uint32_t x = 2;
+ * float y = LIB_COMM_MAP(x, -64, 64, -180.0, 180.0);
+ * printf("%f\n", y);    // y = 5.625 
+ * return 0;
+ * }
+ * @endcode
+ *
+ * <br><b> - HISTORY OF CHANGES - </b>
+ * <table align="left" style="width:800px">
+ * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
+ * <tr><td> 29/06/2024 </td><td> 1.0.0            </td><td> AMS      </td><td> Interface Created </td></tr>
+ * </table><br><br>
+ * <hr>
+ */
+#define LIB_COMM_MAP(IN, IN_MIN_VAL, IN_MAX_VAL, OUT_MIN_VAL, OUT_MAX_VAL) \
+    (((((IN) - (IN_MAX_VAL)) * ((OUT_MAX_VAL) - (OUT_MIN_VAL))) / ((IN_MAX_VAL) - (IN_MIN_VAL))) + (OUT_MAX_VAL))
+
 /******************************************************************************
  * Typedefs
  *******************************************************************************/
