@@ -162,7 +162,7 @@ void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanI
  */
 void kalman_filter_2d(float measurement)
 {
-    matrix_2d_t temp_1, temp_2;
+    matrix_2d_t temp_1, temp_2, temp_3, temp_4;
     matrix_2d_t F_T, H_T;
 
     // Predict
@@ -197,21 +197,22 @@ void kalman_filter_2d(float measurement)
     M.values[0] = measurement;
     matrix_multiply(&H, &S, &temp_1);
     matrix_subtract(&M, &temp_1, &temp_2);
-    free(temp_1.values);
-    matrix_multiply(&K, &temp_2, &temp_1);
-    free(temp_2.values);
-    matrix_add(&S, &temp_1, &temp_2);
+    matrix_multiply(&K, &temp_2, &temp_3);
+    matrix_add(&S, &temp_3, &temp_4);
     free(S.values);
     free(temp_1.values);
-    S.values = temp_2.values;
+    free(temp_2.values);
+    free(temp_3.values);
+    S.values = temp_4.values;
 
     // Update Uncertainty
     matrix_multiply(&K, &F, &temp_1);
     matrix_subtract(&I, &temp_1, &temp_2);
-    free(temp_1.values);
-    matrix_multiply(&temp_2, &P, &temp_1);
+    matrix_multiply(&temp_2, &P, &temp_3);
     free(P.values);
-    P.values = temp_1.values;
+    free(temp_1.values);
+    free(temp_2.values);
+    P.values = temp_3.values;
 }
 
 /**
