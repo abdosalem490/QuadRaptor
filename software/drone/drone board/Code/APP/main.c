@@ -677,7 +677,6 @@ void Task_Master(void)
             local_SensorFusedReadings_t.yaw_rate  -= local_SensorFusedInitReadings_t.yaw_rate;
             local_SensorFusedReadings_t.vertical_velocity -= local_SensorFusedInitReadings_t.vertical_velocity;
 
-
             // Compute error
             roll_pid.error      = local_RCRequiredVal.roll   - local_SensorFusedReadings_t.roll;
             pitch_pid.error     = local_RCRequiredVal.pitch  - local_SensorFusedReadings_t.pitch;
@@ -708,14 +707,13 @@ void Task_Master(void)
             if(local_f32BottomLeftSpeed  < MIN_MOTOR_SPEED)  local_f32BottomLeftSpeed  = 0;
             if(local_f32BottomRightSpeed < MIN_MOTOR_SPEED)  local_f32BottomRightSpeed = 0;
             
-
             // assign values to motors
             local_MotorSpeeds.topLeftSpeed     = (uint8_t) local_f32TopLeftSpeed;
             local_MotorSpeeds.topRightSpeed    = (uint8_t) local_f32TopRightSpeed;
             local_MotorSpeeds.bottomLeftSpeed  = (uint8_t) local_f32BottomLeftSpeed;
             local_MotorSpeeds.bottomRightSpeed = (uint8_t) local_f32BottomRightSpeed;     
             
-            // apply actions on the motorsw
+            // apply actions on the motors
             HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
 
             // TODO: examine system response
@@ -725,7 +723,6 @@ void Task_Master(void)
             printf("speeds: TL: %d, TR: %d, BL: %d, BR: %d\r\n", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
         }
 
-        
     }
 }
 

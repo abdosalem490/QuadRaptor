@@ -58,21 +58,21 @@
 /******************************************************************************
  * Configuration Constants
  *******************************************************************************/
-#define ROLL_KP 0.5
-#define ROLL_KI 0.5
-#define ROLL_KD 0.5
+#define ROLL_KP 0.362564751251938
+#define ROLL_KI 0.595896845698488
+#define ROLL_KD 0.0521053403718134
 
-#define PITCH_KP 0.5
-#define PITCH_KI 0.5
-#define PITCH_KD 0.5
+#define PITCH_KP 0.362564751251938
+#define PITCH_KI 0.595896845698488
+#define PITCH_KD 0.0521053403718134
 
-#define YAW_KP 0.5
-#define YAW_KI 0.5
-#define YAW_KD 0.5
+#define YAW_KP 13.2289511764641
+#define YAW_KI 21.7364137548044
+#define YAW_KD 1.94783098136038
 
-#define THRUST_KP 0.5
-#define THRUST_KI 0.5
-#define THRUST_KD 0.5
+#define THRUST_KP 12.9517414342042
+#define THRUST_KI 21.2869614056378
+#define THRUST_KD 1.86133619858701
 
 
 /******************************************************************************
