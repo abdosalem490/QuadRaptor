@@ -206,7 +206,7 @@ void kalman_filter_2d(float measurement)
     S.values = temp_4.values;
 
     // Update Uncertainty
-    matrix_multiply(&K, &F, &temp_1);
+    matrix_multiply(&K, &H, &temp_1);
     matrix_subtract(&I, &temp_1, &temp_2);
     matrix_multiply(&temp_2, &P, &temp_3);
     free(P.values);
