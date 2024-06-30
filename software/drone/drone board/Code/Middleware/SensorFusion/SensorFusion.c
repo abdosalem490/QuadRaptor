@@ -113,7 +113,7 @@ float compute_azimuth(float mag_x, float mag_y);
 
 void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanInput, float KalmanMeasurement, float Ts, float process_noise, float measure_covar);
 
-// void kalman_filter_2d();
+float YawRate(float newYaw);
 
 /******************************************************************************
  * Function Definitions
@@ -214,6 +214,66 @@ void kalman_filter_2d(float measurement)
 }
 
 /**
+ * @brief: computes yaw rate
+ */
+float YawRate(float newYaw)
+{
+    static float oldVal = 0;
+    static int8_t direction = 1;
+    float rate = 0.0;
+
+    // check if both values have same sign
+    if(oldVal * newYaw >= 0)
+    {
+        rate = (newYaw - oldVal);
+        direction = (rate >= 0) - (rate < 0);
+    }
+    else
+    {
+        if(-1 == direction)
+        {
+            if(newYaw < 0)
+            {
+                rate = oldVal + (-newYaw);
+            }
+            else if(oldVal < 0) 
+            {
+                rate = (180 - newYaw) + (180 + oldVal);
+            }
+            else
+            {
+                // do nothing
+            }  
+        }
+        else if(1 == direction)
+        {
+            if(newYaw < 0)
+            {
+                rate = (180 - oldVal) + (180 + newYaw);
+            }
+            else if(oldVal < 0) 
+            {
+                rate = (-oldVal) + newYaw;
+            }
+            else
+            {
+                // do nothing
+            }  
+        }
+        else
+        {
+            // do nothing
+        }
+
+    }
+
+    rate /= Ts;
+    oldVal = newYaw;
+
+    return rate;
+}
+
+/**
  *
  */
 void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusionDataItem_t* arg_pFusedReadings)
@@ -260,6 +320,8 @@ void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusio
     arg_pFusedReadings->altitude = S.values[0];
     arg_pFusedReadings->vertical_velocity = S.values[1];
 
+    // compute yaw rate
+    arg_pFusedReadings->yaw_rate = YawRate(arg_pFusedReadings->yaw);
 }
 
 

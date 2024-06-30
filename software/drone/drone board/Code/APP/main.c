@@ -166,7 +166,7 @@
 /**
  * @brief: maximum speed for motors to prevent damage
 */
-#define MAX_MOTOR_SPEED   75
+#define MAX_MOTOR_SPEED   50
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -600,9 +600,9 @@ void Task_Master(void)
             // assign the required state
         
             // TODO: remove the below line
-            printf("type = %d, roll = %f, pitch = %f, thrust = %f, yaw = %f,\r\n",
-            local_RCRequiredVal.type, local_RCRequiredVal.roll, local_RCRequiredVal.pitch,
-            local_RCRequiredVal.thrust, local_RCRequiredVal.yaw);
+            // printf("type = %d, roll = %f, pitch = %f, thrust = %f, yaw = %f,\r\n",
+            // local_RCRequiredVal.type, local_RCRequiredVal.roll, local_RCRequiredVal.pitch,
+            // local_RCRequiredVal.thrust, local_RCRequiredVal.yaw);
 
             // check if we wanted to stop the drone
             if(!local_RCRequiredVal.startDrone)
@@ -661,14 +661,19 @@ void Task_Master(void)
                 // indicate we get the first readings
                 local_u8FirstReading = 0;
             }
-            // TODO: handle the subtraction between initial readings and the current readings
+
+            // handle the subtraction between initial readings and the current readings
+            local_SensorFusedReadings_t.roll  -= local_SensorFusedInitReadings_t.roll;
+            local_SensorFusedReadings_t.pitch -= local_SensorFusedInitReadings_t.pitch;
+            local_SensorFusedReadings_t.yaw_rate  -= local_SensorFusedInitReadings_t.yaw_rate;
+            local_SensorFusedReadings_t.vertical_velocity -= local_SensorFusedInitReadings_t.vertical_velocity;
 
 
             // Compute error
-            roll_pid.error = local_RCRequiredVal.roll - local_SensorFusedReadings_t.roll;
-            pitch_pid.error = local_RCRequiredVal.pitch - local_SensorFusedReadings_t.pitch;
-            yaw_pid.error = local_RCRequiredVal.yaw - local_SensorFusedReadings_t.yaw;
-            thrust_pid.error = local_RCRequiredVal.thrust - local_SensorFusedReadings_t.vertical_velocity;
+            roll_pid.error      = local_RCRequiredVal.roll   - local_SensorFusedReadings_t.roll;
+            pitch_pid.error     = local_RCRequiredVal.pitch  - local_SensorFusedReadings_t.pitch;
+            yaw_pid.error       = local_RCRequiredVal.yaw 	 - local_SensorFusedReadings_t.yaw_rate;
+            thrust_pid.error    = local_RCRequiredVal.thrust - local_SensorFusedReadings_t.vertical_velocity;
             
             // apply PID to compensate error
             pid_ctrl(&roll_pid);
@@ -690,6 +695,8 @@ void Task_Master(void)
             
             // apply actions on the motorsw
             HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
+
+            // TODO: examine system response
 
             // printf("STARTED\r\n");
 //            printf("Counter = %d\r\n", local_u32Counter);

@@ -145,6 +145,9 @@ typedef struct {
  * @brief: this is the struct definition of the items of the 'queue_FusedSensorData_Handle_t' elements
 */
 typedef struct {
+
+    // rate of rotation
+    float yaw_rate;
     
     // height from the ground
     float altitude;
