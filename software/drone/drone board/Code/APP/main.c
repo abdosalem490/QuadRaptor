@@ -168,6 +168,11 @@
 */
 #define MAX_MOTOR_SPEED   50
 
+/**
+ * @brief: minimum speed for motors to prevent damage
+*/
+#define MIN_MOTOR_SPEED   50
+
 /******************************************************************************
  * Module Preprocessor Macros
  *******************************************************************************/
@@ -524,6 +529,10 @@ void Task_Master(void)
 
     // to control motor speeds
     HAL_WRAPPER_MotorSpeeds_t local_MotorSpeeds = {0};
+    float local_f32TopLeftSpeed = 0;
+    float local_f32TopRightSpeed = 0;
+    float local_f32BottomLeftSpeed = 0;
+    float local_f32BottomRightSpeed = 0;
 
     // sensor readings
     SensorFusionDataItem_t local_SensorFusedReadings_t = {0};
@@ -682,16 +691,29 @@ void Task_Master(void)
             pid_ctrl(&thrust_pid);
 
             // Motor mixing algorithm
-            local_MotorSpeeds.topLeftSpeed     = thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output;
-            local_MotorSpeeds.topRightSpeed    = thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output;
-            local_MotorSpeeds.bottomLeftSpeed  = thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output;
-            local_MotorSpeeds.bottomRightSpeed = thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output;
+            local_f32TopLeftSpeed     = thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output;
+            local_f32TopRightSpeed    = thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output;
+            local_f32BottomLeftSpeed  = thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output;
+            local_f32BottomRightSpeed = thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output;
 
-            // apply limits to the motor speeds
-            if(local_MotorSpeeds.topLeftSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.topLeftSpeed = MAX_MOTOR_SPEED;
-            if(local_MotorSpeeds.topRightSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.topRightSpeed = MAX_MOTOR_SPEED;
-            if(local_MotorSpeeds.bottomLeftSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.bottomLeftSpeed = MAX_MOTOR_SPEED;
-            if(local_MotorSpeeds.bottomRightSpeed > MAX_MOTOR_SPEED) local_MotorSpeeds.bottomRightSpeed = MAX_MOTOR_SPEED;
+            // apply max limits to the motor speeds
+            if(local_f32TopLeftSpeed     > MAX_MOTOR_SPEED)  local_f32TopLeftSpeed     = MAX_MOTOR_SPEED;
+            if(local_f32TopRightSpeed    > MAX_MOTOR_SPEED)  local_f32TopRightSpeed    = MAX_MOTOR_SPEED;
+            if(local_f32BottomLeftSpeed  > MAX_MOTOR_SPEED)  local_f32BottomLeftSpeed  = MAX_MOTOR_SPEED;
+            if(local_f32BottomRightSpeed > MAX_MOTOR_SPEED)  local_f32BottomRightSpeed = MAX_MOTOR_SPEED;
+            
+            // apply min limits to the motor speeds
+            if(local_f32TopLeftSpeed     < MIN_MOTOR_SPEED)  local_f32TopLeftSpeed     = 0;
+            if(local_f32TopRightSpeed    < MIN_MOTOR_SPEED)  local_f32TopRightSpeed    = 0;
+            if(local_f32BottomLeftSpeed  < MIN_MOTOR_SPEED)  local_f32BottomLeftSpeed  = 0;
+            if(local_f32BottomRightSpeed < MIN_MOTOR_SPEED)  local_f32BottomRightSpeed = 0;
+            
+
+            // assign values to motors
+            local_MotorSpeeds.topLeftSpeed     = (uint8_t) local_f32TopLeftSpeed;
+            local_MotorSpeeds.topRightSpeed    = (uint8_t) local_f32TopRightSpeed;
+            local_MotorSpeeds.bottomLeftSpeed  = (uint8_t) local_f32BottomLeftSpeed;
+            local_MotorSpeeds.bottomRightSpeed = (uint8_t) local_f32BottomRightSpeed;     
             
             // apply actions on the motorsw
             HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
@@ -700,7 +722,7 @@ void Task_Master(void)
 
             // printf("STARTED\r\n");
 //            printf("Counter = %d\r\n", local_u32Counter);
-            // printf("speeds: TL: %d, TR: %d, BL: %d, BR: %d\r\n", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
+            printf("speeds: TL: %d, TR: %d, BL: %d, BR: %d\r\n", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
         }
 
         
