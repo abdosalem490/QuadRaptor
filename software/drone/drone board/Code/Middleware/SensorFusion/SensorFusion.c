@@ -87,7 +87,8 @@
 #define STD_DEV_ACC (3.0)   // Standard Deviation of the accelerometer
 #define STD_DEV_MAG (1.0)   // Standard Deviation of the magnetometer
 
-#define PI 3.14159265
+#define PI (3.14159265)
+#define EPSILON (1.4e-14)
 
 #define BAROMETER_MEASUREMENT_UNCERTAINTY (900)  // 30cm
 
@@ -186,7 +187,7 @@ void kalman_filter_2d(float measurement)
     matrix_add(&temp_2, &R, &L);
     free(temp_1.values);
     free(temp_2.values);
-    L.values[0] = 1/L.values[0];
+    L.values[0] = 1/(L.values[0]+EPSILON);
 
     matrix_multiply(&P, &H_T, &temp_1);
     matrix_multiply(&temp_1, &L, &K);
