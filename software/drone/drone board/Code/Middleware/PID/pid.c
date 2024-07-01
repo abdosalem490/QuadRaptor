@@ -89,10 +89,25 @@
  */
 void pid_ctrl(pid_obj_t *pid_obj)
 {
-    pid_obj->integral += pid_obj->ki * pid_obj->error;
-    pid_obj->output = pid_obj->kp * pid_obj->error + pid_obj->integral + pid_obj->kd * (pid_obj->error - pid_obj->lastError);
+    pid_obj->integral += pid_obj->error;
+
+    // check if we reached min or max possible values for error
+    if(pid_obj->integral > pid_obj->maxIntegralVal)
+    {
+        pid_obj->integral = pid_obj->maxIntegralVal;
+    }
+    else if(pid_obj->integral < pid_obj->minIntegralVal)
+    {
+        pid_obj->integral = pid_obj->minIntegralVal;
+    }
+    else
+    {
+        // do nothing
+    }
+
+    pid_obj->output = pid_obj->blockWeight * (pid_obj->kp * pid_obj->error + pid_obj->ki * pid_obj->integral + pid_obj->kd * (pid_obj->error - pid_obj->lastError));
     pid_obj->lastError = pid_obj->error;
 }
- 
+
 
 /*************** END OF FUNCTIONS ***************************************************************************/

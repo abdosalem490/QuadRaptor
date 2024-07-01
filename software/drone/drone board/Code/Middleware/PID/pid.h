@@ -58,21 +58,40 @@
 /******************************************************************************
  * Configuration Constants
  *******************************************************************************/
-#define ROLL_KP 0.362564751251938
-#define ROLL_KI 0.595896845698488
-#define ROLL_KD 0.0521053403718134
 
-#define PITCH_KP 0.362564751251938
-#define PITCH_KI 0.595896845698488
-#define PITCH_KD 0.0521053403718134
+// PID parameters
+#define ROLL_KP 0.0876327724816902
+#define ROLL_KI 0.0268134216559389
+#define ROLL_KD 0.0243843061996966
 
-#define YAW_KP 13.2289511764641
-#define YAW_KI 21.7364137548044
-#define YAW_KD 1.94783098136038
+#define PITCH_KP 0.0876327724816902
+#define PITCH_KI 0.0268134216559389
+#define PITCH_KD 0.0243843061996966
 
-#define THRUST_KP 12.9517414342042
-#define THRUST_KI 21.2869614056378
-#define THRUST_KD 1.86133619858701
+#define YAW_KP 4.06814166381037
+#define YAW_KI 4.34383619386772
+#define YAW_KD 0.805283734427154
+
+#define THRUST_KP 0.995894926271201
+#define THRUST_KI 0.304718769324561
+#define THRUST_KD 0.27711330062044
+
+// blocks extra parameters
+#define ROLL_INTEGRAL_MIN	-100000
+#define ROLL_INTEGRAL_MAX	100000
+#define ROLL_BLOCK_WEIGHT	1			/**< TODO: make the weight = 1 after the end of experiment for production*/
+
+#define PITCH_INTEGRAL_MIN	-100000
+#define PITCH_INTEGRAL_MAX	100000
+#define PITCH_BLOCK_WEIGHT	1			/**< TODO: make the weight = 1 after the end of experiment for production*/
+
+#define YAW_INTEGRAL_MIN	-100000
+#define YAW_INTEGRAL_MAX	100000
+#define YAW_BLOCK_WEIGHT	0.001		/**< TODO: make the weight = 1 after the end of experiment for production*/
+
+#define THRUST_INTEGRAL_MIN	-100000
+#define THRUST_INTEGRAL_MAX	100000
+#define THRUST_BLOCK_WEIGHT	0.01		/**< TODO: make the weight = 1 after the end of experiment for production*/
 
 
 /******************************************************************************
@@ -94,6 +113,8 @@
  * @param: output: output
  **************/
 typedef struct{
+
+	// main pid parameters
     float kp;
     float ki;
     float kd;
@@ -101,6 +122,12 @@ typedef struct{
     float lastError;
     float integral;
     float output;
+
+    // extra block infos
+    float maxIntegralVal;
+    float minIntegralVal;
+    float blockWeight;
+
 }pid_obj_t;
 
 /******************************************************************************

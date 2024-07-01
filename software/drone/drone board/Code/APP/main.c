@@ -171,7 +171,7 @@
 /**
  * @brief: minimum speed for motors to prevent damage
 */
-#define MIN_MOTOR_SPEED   50
+#define MIN_MOTOR_SPEED   0
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -416,7 +416,7 @@ void Task_SensorFusion(void)
                 local_DataToSendtoApp_t.data.data.info.batteryCharge = local_in_t.Battery.batteryCharge;
 
                 // assign current altitude
-                local_DataToSendtoApp_t.data.data.info.altitude = local_temp_t.altitude;
+                local_DataToSendtoApp_t.data.data.info.altitude = local_in_t.Altitude.ultrasonic_altitude / 100.0;
 
                 // assign distanceToOrigin (TODO)
                 local_DataToSendtoApp_t.data.data.info.distanceToOrigin = 1.5;       
@@ -563,10 +563,13 @@ void Task_Master(void)
     global_AppCommMsg_t.IsDataReceived = 0;
     /************************************************************************/
     // initialize the pid controllers
-    roll_pid.kp = ROLL_KP;      roll_pid.ki = ROLL_KI;       roll_pid.kd = ROLL_KD;
-    pitch_pid.kp = PITCH_KP;    pitch_pid.ki = PITCH_KI;     pitch_pid.kd = PITCH_KD;
-    yaw_pid.kp = YAW_KP;        yaw_pid.ki = YAW_KI;         yaw_pid.kd = YAW_KD;
-    thrust_pid.kp = THRUST_KP;  thrust_pid.ki = THRUST_KI;   thrust_pid.kd = THRUST_KD;
+    roll_pid.kp = ROLL_KP;		pitch_pid.kp = PITCH_KP;		yaw_pid.kp = YAW_KP;		thrust_pid.kp = THRUST_KP;
+    roll_pid.ki = ROLL_KI;		pitch_pid.ki = PITCH_KI;       	yaw_pid.ki = YAW_KI;		thrust_pid.ki = THRUST_KI;
+    roll_pid.kd = ROLL_KD;		pitch_pid.kd = PITCH_KD;		yaw_pid.kd = YAW_KD;		thrust_pid.kd = THRUST_KD;
+    // add extra info for blocks
+    roll_pid.minIntegralVal = ROLL_INTEGRAL_MIN;		pitch_pid.minIntegralVal = PITCH_INTEGRAL_MIN;		yaw_pid.minIntegralVal = YAW_INTEGRAL_MIN;		thrust_pid.minIntegralVal = THRUST_INTEGRAL_MIN;
+    roll_pid.maxIntegralVal = ROLL_INTEGRAL_MAX;		pitch_pid.maxIntegralVal = PITCH_INTEGRAL_MAX;		yaw_pid.maxIntegralVal = YAW_INTEGRAL_MAX;		thrust_pid.maxIntegralVal = THRUST_INTEGRAL_MAX;
+    roll_pid.blockWeight = ROLL_BLOCK_WEIGHT;			pitch_pid.blockWeight = PITCH_BLOCK_WEIGHT;			yaw_pid.blockWeight = YAW_BLOCK_WEIGHT;			thrust_pid.blockWeight = THRUST_BLOCK_WEIGHT;
     /************************************************************************/
     
     // Configure/enable Clock and all needed peripherals 
@@ -591,8 +594,6 @@ void Task_Master(void)
    // Initialize 2d-kalman filter matrices
    Altitude_Kalman_2D_init();
 
-    // temp counter (to be deleted)
-    // uint32_t local_u32Counter = 0;
     
 
     while (1)
@@ -626,32 +627,28 @@ void Task_Master(void)
                 // for the next run, we will need to get initial readings 
                 local_u8FirstReading = 1;
 
-                // printf("STOPPED\r\n");   
+                // zero out all PID blocks
+                roll_pid.integral = 0;
+                roll_pid.lastError = 0;
+                roll_pid.error = 0;
+                roll_pid.output = 0;
+
+                pitch_pid.integral = 0;
+                pitch_pid.lastError = 0;
+                pitch_pid.error = 0;
+                pitch_pid.output = 0;
+
+                yaw_pid.integral = 0;
+                yaw_pid.lastError = 0;
+                yaw_pid.error = 0;
+                yaw_pid.output = 0;
+
+                thrust_pid.integral = 0;
+                thrust_pid.lastError = 0;
+                thrust_pid.error = 0;
+                thrust_pid.output = 0;
             }
 
-            // TODO: (delete the below lines, it was for testing motors)
-            // local_u32Counter++;
-            // if(local_u32Counter >= 1)
-            // {
-            //     local_u32Counter = 0;
-
-            //     if(local_RCRequiredVal.data.data.move.thrust > 0 && local_MotorSpeeds.topLeftSpeed < 100 && local_MotorSpeeds.topRightSpeed < 100 &&
-            //         local_MotorSpeeds.bottomLeftSpeed < 100 && local_MotorSpeeds.bottomRightSpeed < 100)
-            //     {
-            //         local_MotorSpeeds.topLeftSpeed++;
-            //         local_MotorSpeeds.topRightSpeed++;
-            //         local_MotorSpeeds.bottomLeftSpeed++;
-            //         local_MotorSpeeds.bottomRightSpeed++;      
-            //     }
-            //     else if(local_RCRequiredVal.data.data.move.thrust < 0 && local_MotorSpeeds.topLeftSpeed > 0 && local_MotorSpeeds.topRightSpeed > 0 &&
-            //         local_MotorSpeeds.bottomLeftSpeed > 0 && local_MotorSpeeds.bottomRightSpeed > 0)
-            //     {
-            //         local_MotorSpeeds.topLeftSpeed--;
-            //         local_MotorSpeeds.topRightSpeed--;
-            //         local_MotorSpeeds.bottomLeftSpeed--;
-            //         local_MotorSpeeds.bottomRightSpeed--;                          
-            //     }
-            // }
 
         }
 
@@ -690,10 +687,10 @@ void Task_Master(void)
             pid_ctrl(&thrust_pid);
 
             // Motor mixing algorithm
-            local_f32TopLeftSpeed     = thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output;
-            local_f32TopRightSpeed    = thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output;
-            local_f32BottomLeftSpeed  = thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output;
-            local_f32BottomRightSpeed = thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output;
+            local_f32TopLeftSpeed     = (thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output);
+            local_f32TopRightSpeed    = (thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output);
+            local_f32BottomLeftSpeed  = (thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output);
+            local_f32BottomRightSpeed = (thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output);
 
             // apply max limits to the motor speeds
             if(local_f32TopLeftSpeed     > MAX_MOTOR_SPEED)  local_f32TopLeftSpeed     = MAX_MOTOR_SPEED;
@@ -717,9 +714,6 @@ void Task_Master(void)
             HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
 
             // TODO: examine system response
-
-            // printf("STARTED\r\n");
-//            printf("Counter = %d\r\n", local_u32Counter);
             printf("speeds: TL: %d, TR: %d, BL: %d, BR: %d\r\n", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
         }
 

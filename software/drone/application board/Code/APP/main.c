@@ -274,6 +274,8 @@ void Task_RCComm(void)
 
     while (1)
     {
+        // TODO: make a timer every 10 seconds to check if we received anything to switch to landing mode 
+
         // check if there is anything to receive from nrf module
         local_errState = HAL_WRAPPER_RCReceive(&local_RCData_t);
         if(HAL_WRAPPER_STAT_OK == local_errState)
@@ -286,8 +288,8 @@ void Task_RCComm(void)
             // map the values "from -63 to 64" coming from the remote control into values "from -180.0 to 180.0"
             local_itemToRec_t.roll = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.roll, -64.0, 64.0, -90.0, 90.0);
             local_itemToRec_t.pitch = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.pitch, -64.0, 64.0, -90.0, 90.0);
-            local_itemToRec_t.yaw = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.yaw, -64.0, 64.0, -180.0, 180.0);
-            local_itemToRec_t.thrust = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.thrust, -64.0, 64.0, -180.0, 180.0); // TODO: check possible values for thrust
+            local_itemToRec_t.yaw = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.yaw, -64.0, 64.0, -90.0, 90.0);
+            local_itemToRec_t.thrust = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.thrust, -64.0, 64.0, -90.0, 90.0); // TODO: check possible values for thrust
             local_itemToRec_t.startDrone = local_RCData_t.MsgToReceive.data.move.startDrone;
             local_itemToRec_t.type = local_RCData_t.MsgToReceive.type;
 
