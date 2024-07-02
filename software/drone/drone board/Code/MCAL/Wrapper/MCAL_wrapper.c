@@ -274,15 +274,15 @@ MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_chann
     {
         TIM_SetCompare1(TIM4, local_u16NewPulse);
     }
-    else if(MCAL_WRAPPER_TIM_CH1 == arg_channel_t)
+    else if(MCAL_WRAPPER_TIM_CH2 == arg_channel_t)
     {
         TIM_SetCompare2(TIM4, local_u16NewPulse);
     }
-    else if(MCAL_WRAPPER_TIM_CH1 == arg_channel_t)
+    else if(MCAL_WRAPPER_TIM_CH3 == arg_channel_t)
     {
         TIM_SetCompare3(TIM4, local_u16NewPulse);
     }
-    else if(MCAL_WRAPPER_TIM_CH1 == arg_channel_t)
+    else if(MCAL_WRAPPER_TIM_CH4 == arg_channel_t)
     {
         TIM_SetCompare4(TIM4, local_u16NewPulse);
     }
