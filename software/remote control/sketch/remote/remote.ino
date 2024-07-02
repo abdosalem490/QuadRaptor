@@ -59,6 +59,9 @@ uint8_t rightJoyStickPressed = 0;
 uint8_t leftJoyStickPressed = 0;
 uint8_t generalPressed = 0;
 
+uint8_t readingsTaken = 0;
+uint8_t after_readings = 0;
+
 
 unsigned long currentFlyingSessionInSeconds = 0;
 float distanceToOrigin = 0;
@@ -313,10 +316,6 @@ void setup()
   commandTime = millis();
 }
 
-uint8_t readingsTaken = 0;
-uint8_t after_readings = 0;
-
-
 
 void loop()
 {
@@ -416,6 +415,7 @@ void loop()
     flyingMode = FLYING_MODE_SELECTION;
     ssd1306_showMenu( &mainMenu );
 
+
     // stop the drone
     data.type = DATA_TYPE_MOVE;
     data.data.move.startDrone = false;
@@ -429,7 +429,10 @@ void loop()
     data.data.move.playMusic = leftJoyStickPressed;
     
     myRadio.stopListening();
-    while(myRadio.write(&data, sizeof(data)));
+    // send 10 packets to make sure at least one of them has been sent
+    for (size_t i = 0; i < 50; i++) {
+      myRadio.write(&data, sizeof(data));
+    }
     myRadio.startListening(); 
   }
 
@@ -498,7 +501,7 @@ void loop()
       // Serial.println(buff);
       
       myRadio.stopListening();
-      while(myRadio.write(&data, sizeof(data)));
+      myRadio.write(&data, sizeof(data));
       myRadio.startListening(); 
     }
     else if(millis() - commandTime >= 25 && !readingsTaken)
@@ -507,7 +510,6 @@ void loop()
       rightJoyStickSWStateRC = getAverageReadings(50, RIGHT_JOYSTICK_SW_PIN);
       leftJoyStickSWStateRC = getAverageReadings(50, LEFT_JOYSTICK_SW_PIN);
       readingsTaken = 1;
-
     }
 
    

@@ -380,6 +380,7 @@ void Task_SensorFusion(void)
     uint32_t CurrentTimeMS = 0;
     uint32_t CurrentTimeCounterS = 0;
     
+
     while (1)
     {
         // read item from raw sensor queue
@@ -426,12 +427,13 @@ void Task_SensorFusion(void)
                 SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);       
             }
 
-            // FOR SERIAL PLOTTER
-//           printf("%f,%f,%f\n\r", local_out_t.pitch, local_out_t.roll, local_out_t.yaw);
 
             // append to the queue the the current state
             SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
             SERVICE_RTOS_Notify(task_Master_Handle_t, LIB_CONSTANTS_DISABLED); 
+
+            // TODO: move the below line
+//            printf("%d,%d,%d,%d\n\r", (int)local_out_t.pitch, (int)local_out_t.roll, (int)local_out_t.yaw, (int)local_out_t.altitude);
 
         }
     }
@@ -538,6 +540,8 @@ void Task_Master(void)
     SensorFusionDataItem_t local_SensorFusedReadings_t = {0};
     SensorFusionDataItem_t local_SensorFusedInitReadings_t = {0};
     uint8_t local_u8FirstReading = 1;
+    uint32_t local_u32StartCommand = 0;
+    uint32_t local_u32EndCommand = 0;
     
     // unused variable but needed for Queue receive API
     uint8_t local_u8LenOfRemaining = 0;
@@ -589,10 +593,10 @@ void Task_Master(void)
     HAL_Config_ConfigAllHW();
 
     // TODO: comment the below line
-   USART_Printf_Init(115200);
+    USART_Printf_Init(115200);
 
-   // Initialize 2d-kalman filter matrices
-   Altitude_Kalman_2D_init();
+    // Initialize 2d-kalman filter matrices
+    Altitude_Kalman_2D_init();
 
     
 
@@ -647,6 +651,10 @@ void Task_Master(void)
                 thrust_pid.lastError = 0;
                 thrust_pid.error = 0;
                 thrust_pid.output = 0;
+
+                // zero the time
+                local_u32StartCommand = 0;
+                local_u32EndCommand = 0;
             }
 
 
@@ -658,8 +666,16 @@ void Task_Master(void)
         // get sensor fused readings with Kalman filter as long as the drone is commanded to start
         if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus && local_RCRequiredVal.startDrone)
         {
+            // get the initial time of start 
+            if(0 == local_u32StartCommand)
+            {
+                SERVICE_RTOS_CurrentMSTime(&local_u32StartCommand);
+            }
+            // get readings every time
+            SERVICE_RTOS_CurrentMSTime(&local_u32EndCommand);
+
             // TODO: take initial data from sensor to act as start from which we will compute the change
-            if(local_u8FirstReading)
+            if(local_u8FirstReading && (local_u32EndCommand - local_u32StartCommand) > 5000)
             {
                 // store the initial readings
                 local_SensorFusedInitReadings_t = local_SensorFusedReadings_t;
@@ -667,54 +683,68 @@ void Task_Master(void)
                 // indicate we get the first readings
                 local_u8FirstReading = 0;
             }
+            else if(!local_u8FirstReading)
+            {
+                // handle the subtraction between initial readings and the current readings
+                local_SensorFusedReadings_t.roll  -= local_SensorFusedInitReadings_t.roll;
+                local_SensorFusedReadings_t.pitch -= local_SensorFusedInitReadings_t.pitch;
+                local_SensorFusedReadings_t.yaw_rate  -= local_SensorFusedInitReadings_t.yaw_rate;
+                local_SensorFusedReadings_t.vertical_velocity -= local_SensorFusedInitReadings_t.vertical_velocity;
 
-            // handle the subtraction between initial readings and the current readings
-            local_SensorFusedReadings_t.roll  -= local_SensorFusedInitReadings_t.roll;
-            local_SensorFusedReadings_t.pitch -= local_SensorFusedInitReadings_t.pitch;
-            local_SensorFusedReadings_t.yaw_rate  -= local_SensorFusedInitReadings_t.yaw_rate;
-            local_SensorFusedReadings_t.vertical_velocity -= local_SensorFusedInitReadings_t.vertical_velocity;
+                // Compute error
+                roll_pid.error      = local_RCRequiredVal.roll   - local_SensorFusedReadings_t.roll;
+                pitch_pid.error     = local_RCRequiredVal.pitch  - local_SensorFusedReadings_t.pitch;
+                yaw_pid.error       = local_RCRequiredVal.yaw 	 - local_SensorFusedReadings_t.yaw_rate;
+                thrust_pid.error    = local_RCRequiredVal.thrust - local_SensorFusedReadings_t.vertical_velocity;
+                
+                // apply PID to compensate error
+                pid_ctrl(&roll_pid);
+                pid_ctrl(&pitch_pid);
+                pid_ctrl(&yaw_pid);
+                pid_ctrl(&thrust_pid);
 
-            // Compute error
-            roll_pid.error      = local_RCRequiredVal.roll   - local_SensorFusedReadings_t.roll;
-            pitch_pid.error     = local_RCRequiredVal.pitch  - local_SensorFusedReadings_t.pitch;
-            yaw_pid.error       = local_RCRequiredVal.yaw 	 - local_SensorFusedReadings_t.yaw_rate;
-            thrust_pid.error    = local_RCRequiredVal.thrust - local_SensorFusedReadings_t.vertical_velocity;
-            
-            // apply PID to compensate error
-            pid_ctrl(&roll_pid);
-            pid_ctrl(&pitch_pid);
-            pid_ctrl(&yaw_pid);
-            pid_ctrl(&thrust_pid);
+                // Motor mixing algorithm
+                local_f32TopLeftSpeed     = (thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output);
+                local_f32TopRightSpeed    = (thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output);
+                local_f32BottomLeftSpeed  = (thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output);
+                local_f32BottomRightSpeed = (thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output);
 
-            // Motor mixing algorithm
-            local_f32TopLeftSpeed     = (thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output);
-            local_f32TopRightSpeed    = (thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output);
-            local_f32BottomLeftSpeed  = (thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output);
-            local_f32BottomRightSpeed = (thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output);
+    //          local_f32TopLeftSpeed     = (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
+    //			local_f32TopRightSpeed    = (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
+    //			local_f32BottomLeftSpeed  = (thrust_pid.output - roll_pid.output + pitch_pid.output + yaw_pid.output);
+    //			local_f32BottomRightSpeed = (thrust_pid.output + roll_pid.output + pitch_pid.output - yaw_pid.output);
 
-            // apply max limits to the motor speeds
-            if(local_f32TopLeftSpeed     > MAX_MOTOR_SPEED)  local_f32TopLeftSpeed     = MAX_MOTOR_SPEED;
-            if(local_f32TopRightSpeed    > MAX_MOTOR_SPEED)  local_f32TopRightSpeed    = MAX_MOTOR_SPEED;
-            if(local_f32BottomLeftSpeed  > MAX_MOTOR_SPEED)  local_f32BottomLeftSpeed  = MAX_MOTOR_SPEED;
-            if(local_f32BottomRightSpeed > MAX_MOTOR_SPEED)  local_f32BottomRightSpeed = MAX_MOTOR_SPEED;
-            
-            // apply min limits to the motor speeds
-            if(local_f32TopLeftSpeed     < MIN_MOTOR_SPEED)  local_f32TopLeftSpeed     = 0;
-            if(local_f32TopRightSpeed    < MIN_MOTOR_SPEED)  local_f32TopRightSpeed    = 0;
-            if(local_f32BottomLeftSpeed  < MIN_MOTOR_SPEED)  local_f32BottomLeftSpeed  = 0;
-            if(local_f32BottomRightSpeed < MIN_MOTOR_SPEED)  local_f32BottomRightSpeed = 0;
-            
-            // assign values to motors
-            local_MotorSpeeds.topLeftSpeed     = (uint8_t) local_f32TopLeftSpeed;
-            local_MotorSpeeds.topRightSpeed    = (uint8_t) local_f32TopRightSpeed;
-            local_MotorSpeeds.bottomLeftSpeed  = (uint8_t) local_f32BottomLeftSpeed;
-            local_MotorSpeeds.bottomRightSpeed = (uint8_t) local_f32BottomRightSpeed;     
-            
-            // apply actions on the motors
-            HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
+                // apply max limits to the motor speeds
+                if(local_f32TopLeftSpeed     > MAX_MOTOR_SPEED)  local_f32TopLeftSpeed     = MAX_MOTOR_SPEED;
+                if(local_f32TopRightSpeed    > MAX_MOTOR_SPEED)  local_f32TopRightSpeed    = MAX_MOTOR_SPEED;
+                if(local_f32BottomLeftSpeed  > MAX_MOTOR_SPEED)  local_f32BottomLeftSpeed  = MAX_MOTOR_SPEED;
+                if(local_f32BottomRightSpeed > MAX_MOTOR_SPEED)  local_f32BottomRightSpeed = MAX_MOTOR_SPEED;
+                
+                // apply min limits to the motor speeds
+                if(local_f32TopLeftSpeed     < MIN_MOTOR_SPEED)  local_f32TopLeftSpeed     = 0;
+                if(local_f32TopRightSpeed    < MIN_MOTOR_SPEED)  local_f32TopRightSpeed    = 0;
+                if(local_f32BottomLeftSpeed  < MIN_MOTOR_SPEED)  local_f32BottomLeftSpeed  = 0;
+                if(local_f32BottomRightSpeed < MIN_MOTOR_SPEED)  local_f32BottomRightSpeed = 0;
+                
+                // assign values to motors
+                local_MotorSpeeds.topLeftSpeed     = (uint8_t) local_f32TopLeftSpeed;
+                local_MotorSpeeds.topRightSpeed    = (uint8_t) local_f32TopRightSpeed;
+                local_MotorSpeeds.bottomLeftSpeed  = (uint8_t) local_f32BottomLeftSpeed;
+                local_MotorSpeeds.bottomRightSpeed = (uint8_t) local_f32BottomRightSpeed;     
+                
+                // apply actions on the motors
+                HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
 
-            // TODO: examine system response
-            printf("speeds: TL: %d, TR: %d, BL: %d, BR: %d\r\n", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
+                // FOR SERIAL PLOTTER
+         //       printf("test\n\r");
+           //     printf("%d,%d,%d,%d\n\r", (int)local_SensorFusedReadings_t.pitch, (int)local_SensorFusedReadings_t.roll, (int)local_SensorFusedReadings_t.yaw, (int)local_SensorFusedReadings_t.vertical_velocity);
+                // printf("%d,%d,%d,%d\n\r", (int)roll_pid.error, (int)pitch_pid.error, (int)yaw_pid.error, (int)thrust_pid.error);
+
+                // TODO: examine system response
+//                 printf("speeds: TL: %d, TR: %d, BL: %d, BR: %d\n\r", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
+
+            }
+
         }
 
     }

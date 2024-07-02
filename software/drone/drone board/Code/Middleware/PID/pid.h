@@ -87,11 +87,11 @@
 
 #define YAW_INTEGRAL_MIN	-100000
 #define YAW_INTEGRAL_MAX	100000
-#define YAW_BLOCK_WEIGHT	0.001		/**< TODO: make the weight = 1 after the end of experiment for production*/
+#define YAW_BLOCK_WEIGHT	1 //0.001		/**< TODO: make the weight = 1 after the end of experiment for production*/
 
-#define THRUST_INTEGRAL_MIN	-100000
-#define THRUST_INTEGRAL_MAX	100000
-#define THRUST_BLOCK_WEIGHT	0.01		/**< TODO: make the weight = 1 after the end of experiment for production*/
+#define THRUST_INTEGRAL_MIN	-110
+#define THRUST_INTEGRAL_MAX	110
+#define THRUST_BLOCK_WEIGHT	1 //0.01		/**< TODO: make the weight = 1 after the end of experiment for production*/
 
 
 /******************************************************************************

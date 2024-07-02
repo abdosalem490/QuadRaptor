@@ -129,7 +129,7 @@
 /**
  * @brief: Queue length for 'queue_RawRCData_Handle_t'
 */
-#define QUEUE_RAW_RC_DATA_LEN   10
+#define QUEUE_RAW_RC_DATA_LEN   30
 
 /**
  * @brief: Queue length for 'queue_TakeAction_Handle_t'
@@ -281,15 +281,15 @@ void Task_RCComm(void)
         if(HAL_WRAPPER_STAT_OK == local_errState)
         {
             // TODO: comment the below line
-            // printf("Roll: %d, Pitch: %d, Thrust: %d, Yaw: %d, LEDs: %d, Music: %d\r\n", 
-            // local_RCData_t.MsgToReceive.data.move.roll, local_RCData_t.MsgToReceive.data.move.pitch, local_RCData_t.MsgToReceive.data.move.thrust,
-            // local_RCData_t.MsgToReceive.data.move.yaw, local_RCData_t.MsgToReceive.data.move.turnOnLeds, local_RCData_t.MsgToReceive.data.move.playMusic);
+             printf("Roll: %d, Pitch: %d, Thrust: %d, Yaw: %d, LEDs: %d, Music: %d\r\n",
+             local_RCData_t.MsgToReceive.data.move.roll, local_RCData_t.MsgToReceive.data.move.pitch, local_RCData_t.MsgToReceive.data.move.thrust,
+             local_RCData_t.MsgToReceive.data.move.yaw, local_RCData_t.MsgToReceive.data.move.turnOnLeds, local_RCData_t.MsgToReceive.data.move.playMusic);
 
             // map the values "from -63 to 64" coming from the remote control into values "from -180.0 to 180.0"
             local_itemToRec_t.roll = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.roll, -64.0, 64.0, -90.0, 90.0);
             local_itemToRec_t.pitch = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.pitch, -64.0, 64.0, -90.0, 90.0);
             local_itemToRec_t.yaw = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.yaw, -64.0, 64.0, -90.0, 90.0);
-            local_itemToRec_t.thrust = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.thrust, -64.0, 64.0, -90.0, 90.0); // TODO: check possible values for thrust
+            local_itemToRec_t.thrust = LIB_COMM_MAP(local_RCData_t.MsgToReceive.data.move.thrust, -64.0, 64.0, -10.0, 10.0); // TODO: check possible values for thrust
             local_itemToRec_t.startDrone = local_RCData_t.MsgToReceive.data.move.startDrone;
             local_itemToRec_t.type = local_RCData_t.MsgToReceive.type;
 
@@ -332,9 +332,8 @@ void Task_RCComm(void)
         }
 
 
-
         // sleep for 5 ms
-        SERVICE_RTOS_BlockFor(1);
+//        SERVICE_RTOS_BlockFor(1);
     }
 }
 

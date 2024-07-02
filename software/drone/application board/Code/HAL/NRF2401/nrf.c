@@ -241,7 +241,7 @@ void NRF_start_listening() {
     NRF_write_register(EN_RXADDR, (NRF_read_register(EN_RXADDR) & ~SHIFT_LEFT(0)));
 
     // delay for allowing NRF to detect if anything received
-    SERVICE_RTOS_BlockFor(10);
+    SERVICE_RTOS_BlockFor(20);
 }
 
 /**
