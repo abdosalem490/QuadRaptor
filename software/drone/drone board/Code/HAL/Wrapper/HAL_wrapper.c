@@ -104,7 +104,7 @@
 /**
  *
  */
-#define LIPO_3S_MAX_V	12.6
+#define LIPO_3S_MAX_V	11.3
 
 /******************************************************************************
  * Module Preprocessor Macros

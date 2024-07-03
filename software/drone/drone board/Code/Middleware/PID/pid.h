@@ -60,13 +60,22 @@
  *******************************************************************************/
 
 // PID parameters
-#define ROLL_KP 0.0876327724816902
-#define ROLL_KI 0.0268134216559389
-#define ROLL_KD 0.0243843061996966
+//#define ROLL_KP 0.00043714285 // 0.10 // 0.0876327724816902
+//#define ROLL_KI 0.00255 // 0.001  // 0.0268134216559389
+//#define ROLL_KD	0.00002571429 // 0.5 // 0.0243843061996966
+//
+//#define PITCH_KP 0.00043714285 //0.10 // 0.0876327724816902
+//#define PITCH_KI 0.00255 // 0.001 // 0.0268134216559389
+//#define PITCH_KD 0.00002571429 // 0.5 // 0.0243843061996966
 
-#define PITCH_KP 0.0876327724816902
-#define PITCH_KI 0.0268134216559389
-#define PITCH_KD 0.0243843061996966
+#define ROLL_KP 0.10 // 0.0876327724816902
+#define ROLL_KI 0.001  // 0.0268134216559389
+#define ROLL_KD	0.5 // 0.0243843061996966
+
+#define PITCH_KP 0.10 // 0.0876327724816902
+#define PITCH_KI 0.001 // 0.0268134216559389
+#define PITCH_KD 0.5 // 0.0243843061996966
+
 
 #define YAW_KP 4.06814166381037
 #define YAW_KI 4.34383619386772
@@ -87,11 +96,11 @@
 
 #define YAW_INTEGRAL_MIN	-100000
 #define YAW_INTEGRAL_MAX	100000
-#define YAW_BLOCK_WEIGHT	1 //0.001		/**< TODO: make the weight = 1 after the end of experiment for production*/
+#define YAW_BLOCK_WEIGHT	1 //0.001	/**< TODO: make the weight = 1 after the end of experiment for production*/
 
-#define THRUST_INTEGRAL_MIN	-110
-#define THRUST_INTEGRAL_MAX	110
-#define THRUST_BLOCK_WEIGHT	1 //0.01		/**< TODO: make the weight = 1 after the end of experiment for production*/
+#define THRUST_INTEGRAL_MIN	-11000
+#define THRUST_INTEGRAL_MAX	11000
+#define THRUST_BLOCK_WEIGHT	0.01		/**< TODO: make the weight = 1 after the end of experiment for production*/
 
 
 /******************************************************************************

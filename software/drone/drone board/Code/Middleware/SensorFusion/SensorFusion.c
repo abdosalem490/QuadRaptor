@@ -160,10 +160,12 @@ void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanI
  * @param P: Covariance matrix
  * @param K: Kalman gain matrix
  */
-void kalman_filter_2d(float measurement)
+void kalman_filter_2d(float measurement, float inertial_acc)
 {
     matrix_2d_t temp_1, temp_2, temp_3, temp_4;
     matrix_2d_t F_T, H_T;
+
+    U.values[0] = inertial_acc;
 
     // Predict
     matrix_multiply(&F, &S, &temp_1);
@@ -315,12 +317,24 @@ void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusio
     vertical_acc =  - arg_pSensorsReadings->Acc.x * sin(pitch_rad)
                     + arg_pSensorsReadings->Acc.y * sin(roll_rad) * cos(pitch_rad) 
                     + arg_pSensorsReadings->Acc.z * cos(roll_rad) * cos(pitch_rad);
-    arg_pFusedReadings->vertical_velocity += vertical_acc * Ts;
+    // arg_pFusedReadings->vertical_velocity += vertical_acc * Ts;
 
     // 2D kalman filter for altitude estimation
-    kalman_filter_2d(arg_pSensorsReadings->Altitude.altitude);
-    arg_pFusedReadings->altitude = S.values[0];
-    arg_pFusedReadings->vertical_velocity = S.values[1];
+//     kalman_filter_2d(arg_pSensorsReadings->Altitude.altitude*100, vertical_acc*100);
+//     arg_pFusedReadings->altitude = S.values[0];
+//     arg_pFusedReadings->vertical_velocity = S.values[1];
+
+    // TEMP (to be deleted)
+    if(arg_pSensorsReadings->Altitude.ultrasonic_altitude < 400)
+    {
+        static float previous_readings = 0;
+        arg_pFusedReadings->vertical_velocity = arg_pSensorsReadings->Altitude.ultrasonic_altitude - previous_readings;
+        previous_readings = arg_pSensorsReadings->Altitude.ultrasonic_altitude;
+    }
+    else
+    {
+    	arg_pFusedReadings->vertical_velocity = 0;
+    }
 
     // compute yaw rate
     arg_pFusedReadings->yaw_rate = YawRate(arg_pFusedReadings->yaw);
