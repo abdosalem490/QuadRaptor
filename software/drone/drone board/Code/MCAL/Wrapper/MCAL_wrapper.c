@@ -263,13 +263,13 @@ uint8_t I2C_requestFrom(uint8_t address, uint8_t quantity){
 /**
  * 
  */
-MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_channel_t, uint8_t arg_u8DutyPercent)
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_channel_t, uint16_t arg_u8DutyPercent)
 {
-    if(arg_channel_t > MCAL_WRAPPER_TIM_CH4  || arg_u8DutyPercent > 100 )
+    if(arg_channel_t > MCAL_WRAPPER_TIM_CH4  || arg_u8DutyPercent > 1000 )
         return MCAL_WRAPPER_STAT_INVALID_PARAMS;
 
     // 500 -> 1ms pulse
-    uint16_t local_u16NewPulse = 500 + 5 * arg_u8DutyPercent;
+    uint16_t local_u16NewPulse = 1000 + arg_u8DutyPercent;
     if(MCAL_WRAPPER_TIM_CH1 == arg_channel_t)
     {
         TIM_SetCompare1(TIM4, local_u16NewPulse);

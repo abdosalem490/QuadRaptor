@@ -167,10 +167,10 @@ typedef struct
  */
 typedef struct 
 {
-  uint8_t topLeftSpeed; /**< speed of top left motor in range 0 to 100 */
-  uint8_t topRightSpeed; /**< speed of top Right motor in range 0 to 100 */
-  uint8_t bottomLeftSpeed; /**< speed of bottom left motor in range 0 to 100 */
-  uint8_t bottomRightSpeed; /**< speed of bottom right motor in range 0 to 100 */
+  float topLeftSpeed; /**< speed of top left motor in range 0 to 100 */
+  float topRightSpeed; /**< speed of top Right motor in range 0 to 100 */
+  float bottomLeftSpeed; /**< speed of bottom left motor in range 0 to 100 */
+  float bottomRightSpeed; /**< speed of bottom right motor in range 0 to 100 */
 } HAL_WRAPPER_MotorSpeeds_t;
 
 /**

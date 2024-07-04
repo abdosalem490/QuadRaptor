@@ -319,7 +319,7 @@ uint8_t I2C_read();
 
 
 /**
- *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_channel_t, uint8_t arg_u8DutyPercent);
+ *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_channel_t,  uint16_t arg_u8DutyPercent);
  *  \b Description                              :       this functions is used as a wrapper function to the function of changing pwm signal of TIM4.
  *  @param  arg_channel_t [IN]                  :       which channel of TIM4 PWM channels to change its duty cycle, refer to @MCAL_WRAPPER_TIM_CH_t in "MCAL_wrapper.h".
  *  @param  arg_u8DutyPercent [IN]              :       percent of period to make signal high, possible values are from 1 to 100.
@@ -340,7 +340,7 @@ uint8_t I2C_read();
  * MCAL_Config_ErrStat_t local_errState = MCAL_Config_ConfigAllPins();
  * if(MCAL_Config_STAT_OK == local_errState)
  * {
- *  uint8_t temp = 0;
+ *   uint16_t temp = 0;
  *  local_errState = MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH2, 1);
  *  if(MCAL_WRAPPER_STAT_OK == local_errState)
  *  {
@@ -357,7 +357,7 @@ uint8_t I2C_read();
  * </table><br><br>
  * <hr>
  */
-MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_channel_t, uint8_t arg_u8DutyPercent);
+MCAL_WRAPPER_ErrStat_t MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH_t arg_channel_t,  uint16_t arg_u8DutyPercent);
 
 /**
  *  \b function                                 :       MCAL_WRAPPER_ErrStat_t MCAL_WRAPPER_UART4RecITConfig(LIB_CONSTANTS_DriverStates_t arg_Enable_Disable_t);

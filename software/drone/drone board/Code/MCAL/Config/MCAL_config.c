@@ -352,10 +352,10 @@ MCAL_Config_ErrStat_t MCAL_Config_ConfigAllPins(void)
 
     /******************************************/
     TIM_TimeBaseInitTypeDef local_tim4Init_t = {0};
-    local_tim4Init_t.TIM_CounterMode = TIM_CounterMode_CenterAligned1;
+    local_tim4Init_t.TIM_CounterMode = TIM_CounterMode_Up;
     local_tim4Init_t.TIM_ClockDivision = TIM_CKD_DIV4;
     local_tim4Init_t.TIM_Prescaler = 144-1;
-    local_tim4Init_t.TIM_Period = 10000;
+    local_tim4Init_t.TIM_Period = 20000;
     TIM_TimeBaseInit(TIM4, &local_tim4Init_t);
 
     TIM_OCInitTypeDef local_pwm_t = {0};

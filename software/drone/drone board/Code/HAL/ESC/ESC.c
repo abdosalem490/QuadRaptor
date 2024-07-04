@@ -131,26 +131,28 @@ HAL_ESC_ErrStates_t HAL_ESC_init(void)
 /**
  * 
  */
-HAL_ESC_ErrStates_t HAL_ESC_setSpeed(HAL_ESC_MotorNum_t arg_MotorNum_t, uint8_t motorSpeed)
+HAL_ESC_ErrStates_t HAL_ESC_setSpeed(HAL_ESC_MotorNum_t arg_MotorNum_t, float motorSpeed)
 {
     if(arg_MotorNum_t > HAL_ESC_MOTOR_BOTTOM_RIGHT || motorSpeed > 100)
     {
         return HAL_ESC_ERR_INVALID_PARAMS;
     }
 
+    motorSpeed *= 10;
+
     switch (arg_MotorNum_t)
     {
     case HAL_ESC_MOTOR_TOP_LEFT:
-        MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH1, motorSpeed);
+        MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH1, (uint16_t)motorSpeed);
         break;
     case HAL_ESC_MOTOR_TOP_RIGHT:
-        MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH2, motorSpeed);
+        MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH2, (uint16_t)motorSpeed);
         break;
     case HAL_ESC_MOTOR_BOTTOM_LEFT:
-        MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH3, motorSpeed);
+        MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH3, (uint16_t)motorSpeed);
         break;
     case HAL_ESC_MOTOR_BOTTOM_RIGHT:
-        MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH4, motorSpeed);
+        MCAL_WRAPEPR_TIM4_PWM_OUT(MCAL_WRAPPER_TIM_CH4, (uint16_t)motorSpeed);
         break;    
     default:
         break;

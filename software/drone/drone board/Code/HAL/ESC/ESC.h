@@ -134,10 +134,10 @@ HAL_ESC_ErrStates_t HAL_ESC_init(void);
 
 
 /**
- *  \b function                                 :       HAL_ESC_ErrStates_t HAL_ESC_setSpeed(HAL_ESC_MotorNum_t arg_MotorNum_t, uint8 motorSpeed);
+ *  \b function                                 :       HAL_ESC_ErrStates_t HAL_ESC_setSpeed(HAL_ESC_MotorNum_t arg_MotorNum_t, float motorSpeed);
  *  \b Description                              :       this functions is used change speed of motor connected to ESC.
  *  @param  arg_MotorNum_t [IN]                 :       which motor to change its speed.
- *  @param  motorSpeed [IN]                     :       percent of speed of the motor, possible values are from 1 to 100.
+ *  @param  motorSpeed [IN]                     :       percent of speed of the motor, possible values are from 0.0 to 100.0.
  *  @note                                       :       None.
  *  \b PRE-CONDITION                            :       make sure to call configure the configuration file in the current directory and initialized the motor.
  *  \b POST-CONDITION                           :       motor speed is changed.
@@ -171,7 +171,7 @@ HAL_ESC_ErrStates_t HAL_ESC_init(void);
  * </table><br><br>
  * <hr>
  */
-HAL_ESC_ErrStates_t HAL_ESC_setSpeed(HAL_ESC_MotorNum_t arg_MotorNum_t, uint8_t motorSpeed);
+HAL_ESC_ErrStates_t HAL_ESC_setSpeed(HAL_ESC_MotorNum_t arg_MotorNum_t, float motorSpeed);
 
 
 /*** End of File **************************************************************/

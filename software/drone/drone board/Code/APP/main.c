@@ -145,33 +145,33 @@
 /**
  * @brief: Queue length for 'queue_RawSensorData_Handle_t'
 */
-#define QUEUE_RAW_SENSOR_DATA_LEN   10
+#define QUEUE_RAW_SENSOR_DATA_LEN   30
 
 /**
  * @brief: Queue length for 'queue_FusedSensorData_Handle_t'
 */
-#define QUEUE_SENSOR_FUSION_DATA_LEN   10
+#define QUEUE_SENSOR_FUSION_DATA_LEN   30
 
 /**
  * @brief: Queue length for 'queue_AppCommToDrone_Handle_t'
 */
-#define QUEUE_APP_TO_DRONE_DATA_LEN   10
+#define QUEUE_APP_TO_DRONE_DATA_LEN   30
 
 /**
  * @brief: Queue length for 'queue_DroneCommToApp_Handle_t'
 */
-#define QUEUE_DRONE_TO_APP_DATA_LEN   10
+#define QUEUE_DRONE_TO_APP_DATA_LEN   30
 
 /************************************************************************/
 /**
  * @brief: maximum speed for motors to prevent damage
 */
-#define MAX_MOTOR_SPEED   40
+#define MAX_MOTOR_SPEED   70
 
 /**
  * @brief: minimum speed for motors to prevent damage
 */
-#define MIN_MOTOR_SPEED   18
+#define MIN_MOTOR_SPEED   15
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -358,7 +358,7 @@ void Task_CollectSensorData(void)
         local_out_t.Battery = local_battery_t;
 
         // push the data into the queue for fusion
-        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
+        SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
 
         // sleep for 5 ms
         SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
@@ -423,13 +423,13 @@ void Task_SensorFusion(void)
                 local_DataToSendtoApp_t.data.data.info.distanceToOrigin = 1.5;       
 
                 // push data into queue to be sent to the app board and notify the AppComm with new data
-                SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
+                SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &local_DataToSendtoApp_t, queue_DroneCommToApp_Handle_t);
                 SERVICE_RTOS_Notify(task_AppComm_Handle_t, LIB_CONSTANTS_DISABLED);       
             }
 
 
             // append to the queue the the current state
-            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
+            SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &local_out_t, queue_FusedSensorData_Handle_t);
             SERVICE_RTOS_Notify(task_Master_Handle_t, LIB_CONSTANTS_DISABLED); 
 
             // TODO: move the below line
@@ -483,7 +483,7 @@ void Task_AppComm(void)
                     if(global_AppCommMsg_t.IsDataReceived)
                     {   
                         // append the new state received to the queue
-                        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &global_MsgToRec_t, queue_AppCommToDrone_Handle_t);
+                        SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &global_MsgToRec_t, queue_AppCommToDrone_Handle_t);
                         SERVICE_RTOS_Notify(task_Master_Handle_t, LIB_CONSTANTS_DISABLED);  
 
                         global_AppCommMsg_t.dataIsToReceive = 0;
@@ -502,7 +502,7 @@ void Task_AppComm(void)
         if(global_AppCommMsg_t.IsDataReceived)
         {   
             // append the new state received to the queue
-            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &global_MsgToRec_t, queue_AppCommToDrone_Handle_t);
+            SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &global_MsgToRec_t, queue_AppCommToDrone_Handle_t);
             SERVICE_RTOS_Notify(task_Master_Handle_t, LIB_CONSTANTS_DISABLED);  
 
             // TODO: remove the below line
@@ -671,6 +671,15 @@ void Task_Master(void)
             if(0 == local_u32StartCommand)
             {
                 SERVICE_RTOS_CurrentMSTime(&local_u32StartCommand);
+
+                // assign minimum base velocity to the motors
+//                local_MotorSpeeds.topLeftSpeed     = MIN_MOTOR_SPEED;
+                local_MotorSpeeds.topRightSpeed    = 10;
+                local_MotorSpeeds.bottomLeftSpeed  = 10;
+//                local_MotorSpeeds.bottomRightSpeed = MIN_MOTOR_SPEED;
+
+                // apply actions on the motors
+                HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
             }
             // get readings every time
             SERVICE_RTOS_CurrentMSTime(&local_u32EndCommand);
@@ -685,10 +694,10 @@ void Task_Master(void)
                 local_u8FirstReading = 0;
 
                 // assign base velocity to the motors
-                local_MotorSpeeds.topLeftSpeed     = MIN_MOTOR_SPEED;
+//                local_MotorSpeeds.topLeftSpeed     = MIN_MOTOR_SPEED;
                 local_MotorSpeeds.topRightSpeed    = MIN_MOTOR_SPEED;
                 local_MotorSpeeds.bottomLeftSpeed  = MIN_MOTOR_SPEED;
-                local_MotorSpeeds.bottomRightSpeed = MIN_MOTOR_SPEED;
+//                local_MotorSpeeds.bottomRightSpeed = MIN_MOTOR_SPEED;
 
                 // apply actions on the motors
                 HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
@@ -714,10 +723,10 @@ void Task_Master(void)
 //                pid_ctrl(&thrust_pid);
 
                 // Motor mixing algorithm
-                local_f32TopLeftSpeed     = (thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output);
-                local_f32TopRightSpeed    = (thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output);
-                local_f32BottomLeftSpeed  = (thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output);
-                local_f32BottomRightSpeed = (thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output);
+                local_f32TopLeftSpeed     = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output);
+                local_f32TopRightSpeed    = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output);
+                local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output);
+                local_f32BottomRightSpeed = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output);
 
     //          local_f32TopLeftSpeed     = (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
     //			local_f32TopRightSpeed    = (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
@@ -738,13 +747,14 @@ void Task_Master(void)
                 
 //                printf("speeds: TL: %d, TR: %d, BL: %d, BR: %d\n\r", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
 //                printf("%d,%d,%d,%d\n\r", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
-                printf("%f,%f\r\n", roll_pid.output, pitch_pid.output);
+//                printf("%f,%f\r\n", local_SensorFusedReadings_t.roll, local_SensorFusedReadings_t.pitch);
+                // printf("%f,%f\r\n", roll_pid.output, pitch_pid.output);
 
                 // assign values to motors
-                local_MotorSpeeds.topLeftSpeed     = (uint8_t) local_f32TopLeftSpeed;
+//                local_MotorSpeeds.topLeftSpeed     = (uint8_t) local_f32TopLeftSpeed;
                 local_MotorSpeeds.topRightSpeed    = (uint8_t) local_f32TopRightSpeed;
                 local_MotorSpeeds.bottomLeftSpeed  = (uint8_t) local_f32BottomLeftSpeed;
-                local_MotorSpeeds.bottomRightSpeed = (uint8_t) local_f32BottomRightSpeed;     
+//                local_MotorSpeeds.bottomRightSpeed = (uint8_t) local_f32BottomRightSpeed;
                 
                 // apply actions on the motors
                 HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
