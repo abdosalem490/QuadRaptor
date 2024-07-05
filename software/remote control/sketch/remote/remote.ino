@@ -415,7 +415,10 @@ void loop()
     flyingMode = FLYING_MODE_SELECTION;
     ssd1306_showMenu( &mainMenu );
 
+  }
 
+  if(flyingMode == FLYING_MODE_SELECTION)
+  {
     // stop the drone
     data.type = DATA_TYPE_MOVE;
     data.data.move.startDrone = false;
@@ -429,10 +432,7 @@ void loop()
     data.data.move.playMusic = leftJoyStickPressed;
     
     myRadio.stopListening();
-    // send 10 packets to make sure at least one of them has been sent
-    for (size_t i = 0; i < 50; i++) {
-      myRadio.write(&data, sizeof(data));
-    }
+    myRadio.write(&data, sizeof(data));
     myRadio.startListening(); 
   }
 

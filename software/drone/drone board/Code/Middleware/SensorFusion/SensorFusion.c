@@ -337,7 +337,8 @@ void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusio
     }
 
     // compute yaw rate
-    arg_pFusedReadings->yaw_rate = YawRate(arg_pFusedReadings->yaw);
+    arg_pFusedReadings->yaw_rate = arg_pSensorsReadings->Gyro.yaw; // YawRate(arg_pFusedReadings->yaw);
+
 }
 
 
