@@ -714,10 +714,10 @@ void Task_Master(void)
 //                pid_ctrl(&thrust_pid);
 
                 // Motor mixing algorithm
-                local_f32TopLeftSpeed     = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output);
-                local_f32TopRightSpeed    = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output);
-                local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output);
-                local_f32BottomRightSpeed = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output);
+                local_f32TopLeftSpeed     = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output + pitch_pid.output + yaw_pid.output);
+                local_f32TopRightSpeed    = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output + pitch_pid.output - yaw_pid.output);
+                local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
+                local_f32BottomRightSpeed = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
 
     //          local_f32TopLeftSpeed     = (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
     //			local_f32TopRightSpeed    = (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
@@ -742,7 +742,7 @@ void Task_Master(void)
 //                 printf("%f,%f\r\n", roll_pid.output, pitch_pid.output);
 //                printf("%f,%f\r\n", local_SensorFusedReadings_t.yaw, local_SensorFusedReadings_t.yaw_rate);
 //                printf("%f\r\n", local_SensorFusedReadings_t.yaw_rate);
-                printf("%f,%f\r\n", local_SensorFusedReadings_t.yaw_rate, yaw_pid.output);
+//                printf("%f,%f\r\n", local_SensorFusedReadings_t.yaw_rate, local_RCRequiredVal.yaw);
 
                 // assign values to motors
                 local_MotorSpeeds.topLeftSpeed     = (uint8_t) local_f32TopLeftSpeed;

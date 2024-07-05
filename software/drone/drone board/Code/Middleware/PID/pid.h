@@ -69,9 +69,9 @@
 //#define PITCH_KD 0.00002571429 // 0.5 // 0.0243843061996966
 
 
-#define KP 0.5
+#define KP 0.1
 #define KI 0.000855
-#define KD 27.445567
+#define KD 1
 
 #define ROLL_KP KP 	// 0.0876327724816902
 #define ROLL_KI KI  // 0.0268134216559389
@@ -83,8 +83,8 @@
 
 // YAW rate range from -500 to 500
 #define YAW_KP 0.001
-#define YAW_KI 0.00015
-#define YAW_KD 0.000005
+#define YAW_KI 0.00005
+#define YAW_KD 0
 
 #define THRUST_KP 0.995894926271201
 #define THRUST_KI 0.304718769324561
