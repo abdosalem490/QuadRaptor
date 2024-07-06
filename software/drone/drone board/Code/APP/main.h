@@ -69,7 +69,8 @@
 /**
  * @brief: this is how frequent we collect sensors data in MS
  */
-#define SENSOR_SAMPLE_PERIOD 5
+#define SENSOR_SAMPLE_PERIOD 7
+// 144 MHz
 
 /******************************************************************************
  * Module Preprocessor Macros

@@ -129,22 +129,22 @@
 /**
  * @brief: Queue length for 'queue_RawRCData_Handle_t'
 */
-#define QUEUE_RAW_RC_DATA_LEN   30
+#define QUEUE_RAW_RC_DATA_LEN   40
 
 /**
  * @brief: Queue length for 'queue_TakeAction_Handle_t'
 */
-#define QUEUE_TAKE_ACTION_DATA_LEN   10
+#define QUEUE_TAKE_ACTION_DATA_LEN   40
 
 /**
  * @brief: Queue length for 'queue_AppCommToDrone_Handle_t'
 */
-#define QUEUE_APP_TO_DRONE_DATA_LEN   10
+#define QUEUE_APP_TO_DRONE_DATA_LEN   40
 
 /**
  * @brief: Queue length for 'queue_DroneCommToApp_Handle_t'
 */
-#define QUEUE_DRONE_TO_APP_DATA_LEN   10
+#define QUEUE_DRONE_TO_APP_DATA_LEN   40
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -317,7 +317,7 @@ void Task_RCComm(void)
             SERVICE_RTOS_Notify(task_DroneComm_Handle_t, LIB_CONSTANTS_DISABLED);
 
             // push the data into the queue for sending to actions task (TODO)
-            // SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
+            // SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
         }
 
         // check if there is anything to send to the remote control
@@ -325,6 +325,7 @@ void Task_RCComm(void)
         if(HAL_WRAPPER_STAT_OK == local_errState)
         {
             // assign the variables
+
             local_RCData_t.MsgToSend = local_itemToSend_t.data;
 
             // send data
@@ -380,7 +381,7 @@ void Task_DroneComm(void)
                     if(global_DroneCommMsg_t.IsDataReceived)
                     {   
                         // append the new received message to the queue
-                        SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &global_MsgToRec_t, queue_DroneCommToApp_Handle_t);
+                        SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &global_MsgToRec_t, queue_DroneCommToApp_Handle_t);
                         SERVICE_RTOS_Notify(task_RCComm_Handle_t, LIB_CONSTANTS_DISABLED);  
 
                         global_DroneCommMsg_t.dataIsToReceive = 0;
@@ -398,7 +399,7 @@ void Task_DroneComm(void)
         if(global_DroneCommMsg_t.IsDataReceived)
         {   
              // append the new received message to the queue
-            SERVICE_RTOS_AppendToBlockingQueue(1000, (const void *) &global_MsgToRec_t, queue_DroneCommToApp_Handle_t);
+            SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &global_MsgToRec_t, queue_DroneCommToApp_Handle_t);
             SERVICE_RTOS_Notify(task_RCComm_Handle_t, LIB_CONSTANTS_DISABLED);  
             
              global_DroneCommMsg_t.dataIsToReceive = 0;

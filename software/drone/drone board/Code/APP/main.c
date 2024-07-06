@@ -166,7 +166,7 @@
 /**
  * @brief: maximum speed for motors to prevent damage
 */
-#define MAX_MOTOR_SPEED   70
+#define MAX_MOTOR_SPEED   75
 
 /**
  * @brief: minimum speed for motors to prevent damage
@@ -398,9 +398,9 @@ void Task_SensorFusion(void)
             local_out_t.pitch = -local_temp_t.roll;
             local_out_t.roll = local_temp_t.pitch;
             local_out_t.yaw = local_temp_t.yaw;
+            local_out_t.yaw_rate = local_temp_t.yaw_rate;
             local_out_t.altitude = local_temp_t.altitude;
             local_out_t.vertical_velocity = local_temp_t.vertical_velocity;
-
 
             // check if a second passed to send some info to the application board
             SERVICE_RTOS_CurrentMSTime(&CurrentTimeMS);
@@ -670,15 +670,6 @@ void Task_Master(void)
             if(0 == local_u32StartCommand)
             {
                 SERVICE_RTOS_CurrentMSTime(&local_u32StartCommand);
-
-                // assign minimum base velocity to the motors
-//                local_MotorSpeeds.topLeftSpeed     = MIN_MOTOR_SPEED;
-                local_MotorSpeeds.topRightSpeed    = 10;
-                local_MotorSpeeds.bottomLeftSpeed  = 10;
-//                local_MotorSpeeds.bottomRightSpeed = MIN_MOTOR_SPEED;
-
-                // apply actions on the motors
-                HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
             }
             // get readings every time
             SERVICE_RTOS_CurrentMSTime(&local_u32EndCommand);
@@ -693,10 +684,10 @@ void Task_Master(void)
                 local_u8FirstReading = 0;
 
                 // assign base velocity to the motors
-//                local_MotorSpeeds.topLeftSpeed     = MIN_MOTOR_SPEED;
+                local_MotorSpeeds.topLeftSpeed     = MIN_MOTOR_SPEED;
                 local_MotorSpeeds.topRightSpeed    = MIN_MOTOR_SPEED;
                 local_MotorSpeeds.bottomLeftSpeed  = MIN_MOTOR_SPEED;
-//                local_MotorSpeeds.bottomRightSpeed = MIN_MOTOR_SPEED;
+                local_MotorSpeeds.bottomRightSpeed = MIN_MOTOR_SPEED;
 
                 // apply actions on the motors
                 HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
@@ -718,14 +709,14 @@ void Task_Master(void)
                 // apply PID to compensate error
                 pid_ctrl(&roll_pid);
                 pid_ctrl(&pitch_pid);
-//                pid_ctrl(&yaw_pid);
+                pid_ctrl(&yaw_pid);
 //                pid_ctrl(&thrust_pid);
 
                 // Motor mixing algorithm
-                local_f32TopLeftSpeed     = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output + pitch_pid.output - yaw_pid.output);
-                local_f32TopRightSpeed    = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output + pitch_pid.output + yaw_pid.output);
-                local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output - pitch_pid.output + yaw_pid.output);
-                local_f32BottomRightSpeed = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output - pitch_pid.output - yaw_pid.output);
+                local_f32TopLeftSpeed     = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output + pitch_pid.output + yaw_pid.output);
+                local_f32TopRightSpeed    = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output + pitch_pid.output - yaw_pid.output);
+                local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
+                local_f32BottomRightSpeed = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
 
     //          local_f32TopLeftSpeed     = (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
     //			local_f32TopRightSpeed    = (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
@@ -747,13 +738,16 @@ void Task_Master(void)
 //                printf("speeds: TL: %d, TR: %d, BL: %d, BR: %d\n\r", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
 //                printf("%d,%d,%d,%d\n\r", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
 //                printf("%f,%f\r\n", local_SensorFusedReadings_t.roll, local_SensorFusedReadings_t.pitch);
-                // printf("%f,%f\r\n", roll_pid.output, pitch_pid.output);
+//                 printf("%f,%f\r\n", roll_pid.output, pitch_pid.output);
+//                printf("%f,%f\r\n", local_SensorFusedReadings_t.yaw, local_SensorFusedReadings_t.yaw_rate);
+//                printf("%f\r\n", local_SensorFusedReadings_t.yaw_rate);
+//                printf("%f,%f\r\n", local_SensorFusedReadings_t.yaw_rate, local_RCRequiredVal.yaw);
 
                 // assign values to motors
-//                local_MotorSpeeds.topLeftSpeed     = (uint8_t) local_f32TopLeftSpeed;
+                local_MotorSpeeds.topLeftSpeed     = (uint8_t) local_f32TopLeftSpeed;
                 local_MotorSpeeds.topRightSpeed    = (uint8_t) local_f32TopRightSpeed;
                 local_MotorSpeeds.bottomLeftSpeed  = (uint8_t) local_f32BottomLeftSpeed;
-//                local_MotorSpeeds.bottomRightSpeed = (uint8_t) local_f32BottomRightSpeed;
+                local_MotorSpeeds.bottomRightSpeed = (uint8_t) local_f32BottomRightSpeed;
                 
                 // apply actions on the motors
                 HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
