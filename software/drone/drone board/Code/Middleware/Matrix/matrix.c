@@ -96,7 +96,7 @@
 /**
  *
  */
-void matrix_create(matrix_2d_t* matrix, int rows, int cols, float* values)
+void matrix_set(matrix_2d_t* matrix, int rows, int cols, float* values)
 {
     matrix->rows = rows;
     matrix->cols = cols;
@@ -106,10 +106,22 @@ void matrix_create(matrix_2d_t* matrix, int rows, int cols, float* values)
 /**
  *
  */
-void matrix_destroy(matrix_2d_t* matrix)
+void matrix_clear(matrix_2d_t* matrix)
 {
-    free(matrix->values);
-    free(matrix);
+    if(matrix->values != NULL)
+    {
+        free(matrix->values);
+        matrix->values = NULL;
+        matrix->rows = 0;
+        matrix->cols = 0;
+    }
+}
+
+void matrix_copy(matrix_2d_t* src, matrix_2d_t* dst)
+{
+    dst->rows = src->rows;
+    dst->cols = src->cols;
+    dst->values = src->values;
 }
 
 /**

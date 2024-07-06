@@ -86,9 +86,11 @@ typedef struct {
  * Function Prototypes
  *******************************************************************************/
 
-void matrix_create(matrix_2d_t* matrix, int rows, int cols, float* values);
+void matrix_set(matrix_2d_t* matrix, int rows, int cols, float* values);
 
-void matrix_destroy(matrix_2d_t* matrix);
+void matrix_clear(matrix_2d_t* matrix);
+
+void matrix_copy(matrix_2d_t* src, matrix_2d_t* dst);
 
 uint8_t matrix_add(matrix_2d_t* matrix1, matrix_2d_t* matrix2, matrix_2d_t* result);
 

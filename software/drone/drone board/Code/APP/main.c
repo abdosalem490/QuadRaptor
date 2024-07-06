@@ -379,7 +379,9 @@ void Task_SensorFusion(void)
     uint8_t local_u8LenOfRemaining = 0;
     uint32_t CurrentTimeMS = 0;
     uint32_t CurrentTimeCounterS = 0;
-    
+
+    // Initialize 2d-kalman filter matrices
+    Altitude_Kalman_2D_init();
 
     while (1)
     {
@@ -595,9 +597,6 @@ void Task_Master(void)
 
     // TODO: comment the below line
     USART_Printf_Init(115200);
-
-    // Initialize 2d-kalman filter matrices
-    Altitude_Kalman_2D_init();
 
     
 

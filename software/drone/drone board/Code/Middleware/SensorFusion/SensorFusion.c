@@ -171,29 +171,29 @@ void kalman_filter_2d(float measurement, float inertial_acc)
     matrix_multiply(&F, &S, &temp_1);
     matrix_multiply(&G, &U, &temp_2);
     matrix_add(&temp_1, &temp_2, &S);
-    free(temp_1.values);
-    free(temp_2.values);
+    matrix_clear(&temp_1);
+    matrix_clear(&temp_2);
 
     // Update
     matrix_multiply(&F, &P, &temp_1);
     matrix_transpose(&F, &F_T);
     matrix_multiply(&temp_1, &F_T, &temp_2);
     matrix_add(&temp_2, &Q, &P);
-    free(temp_1.values);
-    free(temp_2.values);
+    matrix_clear(&temp_1);
+    matrix_clear(&temp_2);
 
     // Kalman Gain
     matrix_transpose(&H, &H_T);
     matrix_multiply(&H, &P, &temp_1);
     matrix_multiply(&temp_1, &H_T, &temp_2);
     matrix_add(&temp_2, &R, &L);
-    free(temp_1.values);
-    free(temp_2.values);
+    matrix_clear(&temp_1);
+    matrix_clear(&temp_2);
     L.values[0] = 1/(L.values[0]+EPSILON);
 
     matrix_multiply(&P, &H_T, &temp_1);
     matrix_multiply(&temp_1, &L, &K);
-    free(temp_1.values);
+    matrix_clear(&temp_1);
 
     // Update State
     M.values[0] = measurement;
@@ -201,20 +201,20 @@ void kalman_filter_2d(float measurement, float inertial_acc)
     matrix_subtract(&M, &temp_1, &temp_2);
     matrix_multiply(&K, &temp_2, &temp_3);
     matrix_add(&S, &temp_3, &temp_4);
-    free(S.values);
-    free(temp_1.values);
-    free(temp_2.values);
-    free(temp_3.values);
-    S.values = temp_4.values;
+    matrix_clear(&S);
+    matrix_copy(&temp_4, &S);
+    matrix_clear(&temp_1);
+    matrix_clear(&temp_2);
+    matrix_clear(&temp_3);
 
     // Update Uncertainty
     matrix_multiply(&K, &H, &temp_1);
     matrix_subtract(&I, &temp_1, &temp_2);
     matrix_multiply(&temp_2, &P, &temp_3);
-    free(P.values);
-    free(temp_1.values);
-    free(temp_2.values);
-    P.values = temp_3.values;
+    matrix_clear(&P);
+    matrix_clear(&temp_1);
+    matrix_clear(&temp_2);
+    matrix_copy(&temp_3, &P);
 }
 
 /**
@@ -317,10 +317,10 @@ void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusio
     vertical_acc =  - arg_pSensorsReadings->Acc.x * sin(pitch_rad)
                     + arg_pSensorsReadings->Acc.y * sin(roll_rad) * cos(pitch_rad) 
                     + arg_pSensorsReadings->Acc.z * cos(roll_rad) * cos(pitch_rad);
-    // arg_pFusedReadings->vertical_velocity += vertical_acc * Ts;
+    vertical_acc = (vertical_acc-1)*9.81*100;
 
     // 2D kalman filter for altitude estimation
-//     kalman_filter_2d(arg_pSensorsReadings->Altitude.altitude*100, vertical_acc*100);
+    kalman_filter_2d(arg_pSensorsReadings->Altitude.altitude*100, vertical_acc);
 //     arg_pFusedReadings->altitude = S.values[0];
 //     arg_pFusedReadings->vertical_velocity = S.values[1];
 
@@ -348,34 +348,34 @@ void Altitude_Kalman_2D_init()
     // State Matrix S
     float* S_values = (float*)malloc(2 * 1 * sizeof(float));
     S_values[0] = 0; S_values[1] = 0;
-    matrix_create(&S, 2, 1, S_values);
+    matrix_set(&S, 2, 1, S_values);
 
     // Covariance Matrix P
     float* P_values = (float*)malloc(2 * 2 * sizeof(float));
     P_values[0] = 0; P_values[1] = 0;
     P_values[2] = 0; P_values[3] = 0;
-    matrix_create(&P, 2, 2, P_values);
+    matrix_set(&P, 2, 2, P_values);
 
     // State Transition Matrix F
     float* F_values = (float*)malloc(2 * 2 * sizeof(float));
     F_values[0] = 1; F_values[1] = Ts;
     F_values[2] = 0; F_values[3] = 1;
-    matrix_create(&F, 2, 2, F_values);
+    matrix_set(&F, 2, 2, F_values);
 
     // Control Matrix G
     float* G_values = (float*)malloc(2 * 1 * sizeof(float));
     G_values[0] = 0.5 * Ts * Ts; G_values[1] = Ts;
-    matrix_create(&G, 2, 1, G_values);
+    matrix_set(&G, 2, 1, G_values);
 
     // Input Matrix U
     float* U_values = (float*)malloc(1 * 1 * sizeof(float));
     U_values[0] = 0;
-    matrix_create(&U, 1, 1, U_values);
+    matrix_set(&U, 1, 1, U_values);
 
     // Observation Matrix H
     float* H_values = (float*)malloc(1 * 2 * sizeof(float));
     H_values[0] = 1; H_values[1] = 0;
-    matrix_create(&H, 1, 2, H_values);
+    matrix_set(&H, 1, 2, H_values);
 
     // Process Noise Covariance Matrix Q (assume process variance = 1)
     matrix_transpose(&G, &G_T);
@@ -384,28 +384,28 @@ void Altitude_Kalman_2D_init()
     // Measurement Noise Covariance Matrix R
     float* R_values = (float*)malloc(1 * 1 * sizeof(float));
     R_values[0] = BAROMETER_MEASUREMENT_UNCERTAINTY;
-    matrix_create(&R, 1, 1, R_values);
+    matrix_set(&R, 1, 1, R_values);
 
     // Intermediate Matrix L
     float* L_values = (float*)malloc(1 * 1 * sizeof(float));
     L_values[0] = 0;
-    matrix_create(&L, 1, 1, L_values);
+    matrix_set(&L, 1, 1, L_values);
 
     // Kalman Gain Matrix K
     float* K_values = (float*)malloc(2 * 1 * sizeof(float));
     K_values[0] = 0; K_values[1] = 0;
-    matrix_create(&K, 2, 1, K_values);
+    matrix_set(&K, 2, 1, K_values);
 
     // Measurement matrix M
     float* M_values = (float*)malloc(1 * 1 * sizeof(float));
     M_values[0] = 0;
-    matrix_create(&M, 1, 1, M_values);
+    matrix_set(&M, 1, 1, M_values);
 
     // Identity Matrix I
     float* I_values = (float*)malloc(2 * 2 * sizeof(float));
     I_values[0] = 1; I_values[1] = 0;
     I_values[2] = 0; I_values[3] = 1;
-    matrix_create(&I, 2, 2, I_values);
+    matrix_set(&I, 2, 2, I_values);
 
 }
 
