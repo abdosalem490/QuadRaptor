@@ -560,6 +560,7 @@ void Task_Master(void)
     pid_obj_t roll_pid = {0};
     pid_obj_t pitch_pid = {0};
     pid_obj_t yaw_pid = {0};
+    pid_obj_t thrust_pid = {0};
     pid_obj_t roll_rate_pid = {0};
     pid_obj_t pitch_rate_pid = {0};
 
