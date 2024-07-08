@@ -22057,13 +22057,12 @@ Disassembly of section .text:
     e912:	41a8                	lw	a0,64(a1)
     e914:	0000                	unimp
     e916:	41a0                	lw	s0,64(a1)
-    e918:	cccd                	beqz	s1,e9d2 <_read+0x2be>
-    e91a:	3d4c                	fld	fa1,184(a0)
-    e91c:	d70a                	sw	sp,172(sp)
-    e91e:	74bc3ba3          	0x74bc3ba3
-    e922:	126f3c13          	sltiu	s8,t5,294
-    e926:	999a3a83          	0x999a3a83
-    e92a:	3f19                	jal	e840 <_read+0x12c>
+    e918:	d70a                	sw	sp,172(sp)
+    e91a:	d70a3c23          	0xd70a3c23
+    e91e:	126f3ba3          	0x126f3ba3
+    e922:	126f3a03          	0x126f3a03
+    e926:	00003a83          	0x3a83
+    e92a:	3f00                	fld	fs0,56(a4)
     e92c:	4000                	lw	s0,0(s0)
     e92e:	c61c                	sw	a5,8(a2)
     e930:	4000                	lw	s0,0(s0)

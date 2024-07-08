@@ -69,9 +69,9 @@
 //#define PITCH_KD 0.00002571429 // 0.5 // 0.0243843061996966
 
 
-#define KP 0.05
-#define KI 0.009
-#define KD 0.6
+#define KP 0.02
+#define KI 0.0007
+#define KD 0.5
 
 #define ROLL_KP KP 	// 0.0876327724816902
 #define ROLL_KI KI  // 0.0268134216559389

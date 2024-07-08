@@ -763,7 +763,7 @@ void Task_Master(void)
                 }
                 else
                 {
-                	thrust_pid.output += -0.0025 * 10;
+                	// thrust_pid.output += -0.0025 * 10;
                 }
 
                 // Motor mixing algorithm
