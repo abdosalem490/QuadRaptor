@@ -148,6 +148,8 @@ typedef struct {
 typedef struct {
 
     // rate of rotation
+    float roll_rate;
+    float pitch_rate;
     float yaw_rate;
     
     // height from the ground

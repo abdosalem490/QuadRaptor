@@ -398,7 +398,11 @@ void Task_SensorFusion(void)
             local_out_t.pitch = -local_temp_t.roll;
             local_out_t.roll = local_temp_t.pitch;
             local_out_t.yaw = local_temp_t.yaw;
+
+            local_out_t.roll_rate = local_temp_t.roll_rate;
+            local_out_t.pitch_rate = local_temp_t.pitch_rate;
             local_out_t.yaw_rate = local_temp_t.yaw_rate;
+
             local_out_t.altitude = local_temp_t.altitude;
             local_out_t.vertical_velocity = local_temp_t.vertical_velocity;
 
@@ -556,7 +560,8 @@ void Task_Master(void)
     pid_obj_t roll_pid = {0};
     pid_obj_t pitch_pid = {0};
     pid_obj_t yaw_pid = {0};
-    pid_obj_t thrust_pid = {0};
+    pid_obj_t roll_rate_pid = {0};
+    pid_obj_t pitch_rate_pid = {0};
 
     
     //                      SOME INITIALIZATION 
@@ -570,13 +575,13 @@ void Task_Master(void)
     global_AppCommMsg_t.IsDataReceived = 0;
     /************************************************************************/
     // initialize the pid controllers
-    roll_pid.kp = ROLL_KP;		pitch_pid.kp = PITCH_KP;		yaw_pid.kp = YAW_KP;		thrust_pid.kp = THRUST_KP;
-    roll_pid.ki = ROLL_KI;		pitch_pid.ki = PITCH_KI;       	yaw_pid.ki = YAW_KI;		thrust_pid.ki = THRUST_KI;
-    roll_pid.kd = ROLL_KD;		pitch_pid.kd = PITCH_KD;		yaw_pid.kd = YAW_KD;		thrust_pid.kd = THRUST_KD;
+    roll_pid.kp = ROLL_KP;		pitch_pid.kp = PITCH_KP;		yaw_pid.kp = YAW_KP;		roll_rate_pid.kp = RP_RATE_KP;      pitch_rate_pid.kp = RP_RATE_KP;
+    roll_pid.ki = ROLL_KI;		pitch_pid.ki = PITCH_KI;       	yaw_pid.ki = YAW_KI;		roll_rate_pid.ki = RP_RATE_KI;      pitch_rate_pid.ki = RP_RATE_KI;
+    roll_pid.kd = ROLL_KD;		pitch_pid.kd = PITCH_KD;		yaw_pid.kd = YAW_KD;		roll_rate_pid.kd = RP_RATE_KD;      pitch_rate_pid.kd = RP_RATE_KD;
     // add extra info for blocks
-    roll_pid.minIntegralVal = ROLL_INTEGRAL_MIN;		pitch_pid.minIntegralVal = PITCH_INTEGRAL_MIN;		yaw_pid.minIntegralVal = YAW_INTEGRAL_MIN;		thrust_pid.minIntegralVal = THRUST_INTEGRAL_MIN;
-    roll_pid.maxIntegralVal = ROLL_INTEGRAL_MAX;		pitch_pid.maxIntegralVal = PITCH_INTEGRAL_MAX;		yaw_pid.maxIntegralVal = YAW_INTEGRAL_MAX;		thrust_pid.maxIntegralVal = THRUST_INTEGRAL_MAX;
-    roll_pid.blockWeight = ROLL_BLOCK_WEIGHT;			pitch_pid.blockWeight = PITCH_BLOCK_WEIGHT;			yaw_pid.blockWeight = YAW_BLOCK_WEIGHT;			thrust_pid.blockWeight = THRUST_BLOCK_WEIGHT;
+    roll_pid.minIntegralVal = ROLL_INTEGRAL_MIN;		pitch_pid.minIntegralVal = PITCH_INTEGRAL_MIN;		yaw_pid.minIntegralVal = YAW_INTEGRAL_MIN;		roll_rate_pid.minIntegralVal = ROLL_INTEGRAL_MIN;		pitch_rate_pid.minIntegralVal = PITCH_INTEGRAL_MIN;
+    roll_pid.maxIntegralVal = ROLL_INTEGRAL_MAX;		pitch_pid.maxIntegralVal = PITCH_INTEGRAL_MAX;		yaw_pid.maxIntegralVal = YAW_INTEGRAL_MAX;		roll_rate_pid.maxIntegralVal = ROLL_INTEGRAL_MAX;       pitch_rate_pid.maxIntegralVal = PITCH_INTEGRAL_MAX;
+    roll_pid.blockWeight = ROLL_BLOCK_WEIGHT;			pitch_pid.blockWeight = PITCH_BLOCK_WEIGHT;			yaw_pid.blockWeight = YAW_BLOCK_WEIGHT;			roll_rate_pid.blockWeight = ROLL_BLOCK_WEIGHT;          pitch_rate_pid.blockWeight = PITCH_BLOCK_WEIGHT;
     /************************************************************************/
     
     // Configure/enable Clock and all needed peripherals 
@@ -647,10 +652,15 @@ void Task_Master(void)
                 yaw_pid.error = 0;
                 yaw_pid.output = 0;
 
-                thrust_pid.integral = 0;
-                thrust_pid.lastError = 0;
-                thrust_pid.error = 0;
-                thrust_pid.output = 0;
+                roll_rate_pid.integral = 0;
+                roll_rate_pid.lastError = 0;
+                roll_rate_pid.error = 0;
+                roll_rate_pid.output = 0;
+
+                pitch_rate_pid.integral = 0;
+                pitch_rate_pid.lastError = 0;
+                pitch_rate_pid.error = 0;
+                pitch_rate_pid.output = 0;
 
                 // zero the time
                 local_u32StartCommand = 0;
@@ -704,7 +714,6 @@ void Task_Master(void)
                 roll_pid.error      = local_RCRequiredVal.roll   - local_SensorFusedReadings_t.roll;
                 pitch_pid.error     = local_RCRequiredVal.pitch  - local_SensorFusedReadings_t.pitch;
                 yaw_pid.error       = local_RCRequiredVal.yaw 	 - local_SensorFusedReadings_t.yaw_rate;
-                thrust_pid.error    = local_RCRequiredVal.thrust - local_SensorFusedReadings_t.vertical_velocity;
                 
                 // apply PID to compensate error
                 pid_ctrl(&roll_pid);
@@ -712,16 +721,16 @@ void Task_Master(void)
                 pid_ctrl(&yaw_pid);
 //                pid_ctrl(&thrust_pid);
 
-                // Motor mixing algorithm
-                local_f32TopLeftSpeed     = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output + pitch_pid.output + yaw_pid.output);
-                local_f32TopRightSpeed    = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output + pitch_pid.output - yaw_pid.output);
-                local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
-                local_f32BottomRightSpeed = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
+                roll_rate_pid.error    = roll_pid.output - local_SensorFusedReadings_t.roll_rate;
+                pitch_rate_pid.error   = pitch_pid.output - local_SensorFusedReadings_t.pitch_rate;
+                pid_ctrl(&roll_rate_pid);
+                pid_ctrl(&pitch_rate_pid);
 
-    //          local_f32TopLeftSpeed     = (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
-    //			local_f32TopRightSpeed    = (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
-    //			local_f32BottomLeftSpeed  = (thrust_pid.output - roll_pid.output + pitch_pid.output + yaw_pid.output);
-    //			local_f32BottomRightSpeed = (thrust_pid.output + roll_pid.output + pitch_pid.output - yaw_pid.output);
+                // Motor mixing algorithm
+                local_f32TopLeftSpeed     = MIN_MOTOR_SPEED + (thrust_pid.output - roll_rate_pid.output + pitch_rate_pid.output + yaw_pid.output);
+                local_f32TopRightSpeed    = MIN_MOTOR_SPEED + (thrust_pid.output + roll_rate_pid.output + pitch_rate_pid.output - yaw_pid.output);
+                local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED + (thrust_pid.output - roll_rate_pid.output - pitch_rate_pid.output - yaw_pid.output);
+                local_f32BottomRightSpeed = MIN_MOTOR_SPEED + (thrust_pid.output + roll_rate_pid.output - pitch_rate_pid.output + yaw_pid.output);
 
                 // apply max limits to the motor speeds
                 if(local_f32TopLeftSpeed     > MAX_MOTOR_SPEED)  local_f32TopLeftSpeed     = MAX_MOTOR_SPEED;

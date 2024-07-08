@@ -69,9 +69,9 @@
 //#define PITCH_KD 0.00002571429 // 0.5 // 0.0243843061996966
 
 
-#define KP 0.1
-#define KI 0.000855
-#define KD 1
+#define KP 2
+#define KI 0
+#define KD 0
 
 #define ROLL_KP KP 	// 0.0876327724816902
 #define ROLL_KI KI  // 0.0268134216559389
@@ -86,9 +86,9 @@
 #define YAW_KI 0.00005
 #define YAW_KD 0
 
-#define THRUST_KP 0.995894926271201
-#define THRUST_KI 0.304718769324561
-#define THRUST_KD 0.27711330062044
+#define RP_RATE_KP 0.6
+#define RP_RATE_KI 0.012
+#define RP_RATE_KD 0.0085
 
 // blocks extra parameters
 #define ROLL_INTEGRAL_MIN	-100000
