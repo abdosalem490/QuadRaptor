@@ -113,7 +113,7 @@
  */
 #define LIB_COMM_MAP(IN, IN_MIN_VAL, IN_MAX_VAL, OUT_MIN_VAL, OUT_MAX_VAL) \
     (((((IN) - (IN_MAX_VAL)) * ((OUT_MAX_VAL) - (OUT_MIN_VAL))) / ((IN_MAX_VAL) - (IN_MIN_VAL))) + (OUT_MAX_VAL))
-
+    
 /******************************************************************************
  * Typedefs
  *******************************************************************************/

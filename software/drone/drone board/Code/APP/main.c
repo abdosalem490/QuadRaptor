@@ -166,12 +166,27 @@
 /**
  * @brief: maximum speed for motors to prevent damage
 */
-#define MAX_MOTOR_SPEED   75
+#define MAX_MOTOR_SPEED   80
 
 /**
- * @brief: minimum speed for motors to prevent damage
+ * @brief: minimum speed for top left motors to be arming
 */
-#define MIN_MOTOR_SPEED   15
+#define MIN_MOTOR_SPEED_TL   21
+
+/**
+ * @brief: minimum speed for top right motors to be arming
+*/
+#define MIN_MOTOR_SPEED_TR   21
+
+/**
+ * @brief: minimum speed for bottom left motors to be arming
+*/
+#define MIN_MOTOR_SPEED_BL   20
+
+/**
+ * @brief: minimum speed for bottom right motors to be arming
+*/
+#define MIN_MOTOR_SPEED_BR   21
 
 /******************************************************************************
  * Module Preprocessor Macros
@@ -328,16 +343,16 @@ void Task_CollectSensorData(void)
         HAL_WRAPPER_ReadMagnet(&local_magnet_t);
 
         // read barometer data
-        // HAL_WRAPPER_ReadPressure(&local_pressure_t);
+         HAL_WRAPPER_ReadPressure(&local_pressure_t);
 
         // read temperature data
-        // HAL_WRAPPER_ReadTemperature(&local_temperature_t);
+         HAL_WRAPPER_ReadTemperature(&local_temperature_t);
 
         // read altitude from barometer
-        // HAL_WRAPPER_ReadAltitude(&local_altitude_t, &ref_pressure_t);
+//         HAL_WRAPPER_ReadAltitude(&local_altitude_t, &ref_pressure_t);
 
         // read battery charge
-        // HAL_WRAPPER_GetBatteryCharge(&local_battery_t);
+         HAL_WRAPPER_GetBatteryCharge(&local_battery_t);
 
 // FOR SERIAL MONITOR
 //        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
@@ -556,6 +571,9 @@ void Task_Master(void)
     pid_obj_t yaw_pid = {0};
     pid_obj_t thrust_pid = {0};
 
+    // temp variable
+    static uint8_t up = 0;
+
     
     //                      SOME INITIALIZATION 
     // INITIALIZATION CAN'T BE DONE IN MAIN AS SCHEDULAR HAS TO START FIRST BEFORE DOING 
@@ -612,12 +630,33 @@ void Task_Master(void)
         // check for new State from AppComm
         if(SERVICE_RTOS_STAT_OK == local_RTOSErrStatus)
         {
+//        	// TODO: remove the below lines as it's for debugging
+//        	if(local_u8FirstReading && (local_u32EndCommand - local_u32StartCommand) > 5000)
+//        	{
+//        		if((local_u32EndCommand - local_u32StartCommand) < 10000)
+//        		{
+//                	local_RCRequiredVal.roll = 0;
+//                	local_RCRequiredVal.pitch = 0;
+//                	local_RCRequiredVal.thrust = 10;
+//                	local_RCRequiredVal.yaw = 0;
+//        		}
+//        		else
+//        		{
+//                	local_RCRequiredVal.roll = 0;
+//                	local_RCRequiredVal.pitch = 0;
+//                	local_RCRequiredVal.thrust = -10;
+//                	local_RCRequiredVal.yaw = 0;
+//        		}
+//        	}
+
+
             // assign the required state
         
             // TODO: remove the below line
             // printf("type = %d, roll = %f, pitch = %f, thrust = %f, yaw = %f,\r\n",
             // local_RCRequiredVal.type, local_RCRequiredVal.roll, local_RCRequiredVal.pitch,
             // local_RCRequiredVal.thrust, local_RCRequiredVal.yaw);
+//            printf("%f,%f,%f,%f\n\r", local_RCRequiredVal.pitch, local_RCRequiredVal.roll, local_RCRequiredVal.yaw, local_RCRequiredVal.thrust);
 
             // check if we wanted to stop the drone
             if(!local_RCRequiredVal.startDrone)
@@ -685,10 +724,10 @@ void Task_Master(void)
                 local_u8FirstReading = 0;
 
                 // assign base velocity to the motors
-                local_MotorSpeeds.topLeftSpeed     = MIN_MOTOR_SPEED;
-                local_MotorSpeeds.topRightSpeed    = MIN_MOTOR_SPEED;
-                local_MotorSpeeds.bottomLeftSpeed  = MIN_MOTOR_SPEED;
-                local_MotorSpeeds.bottomRightSpeed = MIN_MOTOR_SPEED;
+                local_MotorSpeeds.topLeftSpeed     = MIN_MOTOR_SPEED_TL;
+                local_MotorSpeeds.topRightSpeed    = MIN_MOTOR_SPEED_TR;
+                local_MotorSpeeds.bottomLeftSpeed  = MIN_MOTOR_SPEED_BL;
+                local_MotorSpeeds.bottomRightSpeed = MIN_MOTOR_SPEED_BR;
 
                 // apply actions on the motors
                 HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
@@ -704,7 +743,7 @@ void Task_Master(void)
                 // Compute error
                 roll_pid.error      = local_RCRequiredVal.roll   - local_SensorFusedReadings_t.roll;
                 pitch_pid.error     = local_RCRequiredVal.pitch  - local_SensorFusedReadings_t.pitch;
-                yaw_pid.error       = local_RCRequiredVal.yaw 	 - local_SensorFusedReadings_t.yaw_rate;
+                yaw_pid.error       = 5 * local_RCRequiredVal.yaw 	 - local_SensorFusedReadings_t.yaw_rate;
                 thrust_pid.error    = local_RCRequiredVal.thrust - local_SensorFusedReadings_t.vertical_velocity;
                 
                 // apply PID to compensate error
@@ -712,29 +751,43 @@ void Task_Master(void)
                 pid_ctrl(&pitch_pid);
                 pid_ctrl(&yaw_pid);
 //                pid_ctrl(&thrust_pid);
+                // thrust_pid.output += 0.0025 * (local_RCRequiredVal.thrust + 0.15625);
+//                printf("%f\r\n", local_RCRequiredVal.thrust);
+                if(up == 0)
+                {
+                	thrust_pid.output += 0.0025 * 10;
+                	if(thrust_pid.output > 40)
+                	{
+                		up = 1;
+                	}
+                }
+                else
+                {
+                	thrust_pid.output += -0.0025 * 10;
+                }
 
                 // Motor mixing algorithm
-                local_f32TopLeftSpeed     = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output + pitch_pid.output + yaw_pid.output);
-                local_f32TopRightSpeed    = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output + pitch_pid.output - yaw_pid.output);
-                local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED + (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
-                local_f32BottomRightSpeed = MIN_MOTOR_SPEED + (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
+                local_f32TopLeftSpeed     = MIN_MOTOR_SPEED_TL + (thrust_pid.output - roll_pid.output + pitch_pid.output + yaw_pid.output);
+                local_f32TopRightSpeed    = MIN_MOTOR_SPEED_TR + (thrust_pid.output + roll_pid.output + pitch_pid.output - yaw_pid.output);
+                local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED_BL + (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
+                local_f32BottomRightSpeed = MIN_MOTOR_SPEED_BR + (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
 
     //          local_f32TopLeftSpeed     = (thrust_pid.output - roll_pid.output - pitch_pid.output - yaw_pid.output);
-    //			local_f32TopRightSpeed    = (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
-    //			local_f32BottomLeftSpeed  = (thrust_pid.output - roll_pid.output + pitch_pid.output + yaw_pid.output);
-    //			local_f32BottomRightSpeed = (thrust_pid.output + roll_pid.output + pitch_pid.output - yaw_pid.output);
-
+    //			local_f32TopRig
                 // apply max limits to the motor speeds
                 if(local_f32TopLeftSpeed     > MAX_MOTOR_SPEED)  local_f32TopLeftSpeed     = MAX_MOTOR_SPEED;
                 if(local_f32TopRightSpeed    > MAX_MOTOR_SPEED)  local_f32TopRightSpeed    = MAX_MOTOR_SPEED;
                 if(local_f32BottomLeftSpeed  > MAX_MOTOR_SPEED)  local_f32BottomLeftSpeed  = MAX_MOTOR_SPEED;
                 if(local_f32BottomRightSpeed > MAX_MOTOR_SPEED)  local_f32BottomRightSpeed = MAX_MOTOR_SPEED;
                 
-                // apply min limits to the motor speeds
-                if(local_f32TopLeftSpeed     < MIN_MOTOR_SPEED)  local_f32TopLeftSpeed     = MIN_MOTOR_SPEED;
-                if(local_f32TopRightSpeed    < MIN_MOTOR_SPEED)  local_f32TopRightSpeed    = MIN_MOTOR_SPEED;
-                if(local_f32BottomLeftSpeed  < MIN_MOTOR_SPEED)  local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED;
-                if(local_f32BottomRightSpeed < MIN_MOTOR_SPEED)  local_f32BottomRightSpeed = MIN_MOTOR_SPEED;
+                // apply min limits to the motor speedshtSpeed    = (thrust_pid.output + roll_pid.output - pitch_pid.output + yaw_pid.output);
+    //			local_f32BottomLeftSpeed  = (thrust_pid.output - roll_pid.output + pitch_pid.output + yaw_pid.output);
+    //			local_f32BottomRightSpeed = (thrust_pid.output + roll_pid.output + pitch_pid.output - yaw_pid.output);
+
+                if(local_f32TopLeftSpeed     < MIN_MOTOR_SPEED_TL)  local_f32TopLeftSpeed     = MIN_MOTOR_SPEED_TL;
+                if(local_f32TopRightSpeed    < MIN_MOTOR_SPEED_TR)  local_f32TopRightSpeed    = MIN_MOTOR_SPEED_TR;
+                if(local_f32BottomLeftSpeed  < MIN_MOTOR_SPEED_BL)  local_f32BottomLeftSpeed  = MIN_MOTOR_SPEED_BL;
+                if(local_f32BottomRightSpeed < MIN_MOTOR_SPEED_BR)  local_f32BottomRightSpeed = MIN_MOTOR_SPEED_BR;
                 
 //                printf("speeds: TL: %d, TR: %d, BL: %d, BR: %d\n\r", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
 //                printf("%d,%d,%d,%d\n\r", local_MotorSpeeds.topLeftSpeed, local_MotorSpeeds.topRightSpeed, local_MotorSpeeds.bottomLeftSpeed, local_MotorSpeeds.bottomRightSpeed );
@@ -752,6 +805,10 @@ void Task_Master(void)
                 
                 // apply actions on the motors
                 HAL_WRAPPER_SetESCSpeeds(&local_MotorSpeeds);
+
+                printf("%f,%f\r\n", roll_pid.error, pitch_pid.error);
+
+//                printf("%f,%f,%f,%f\n\r", local_RCRequiredVal.pitch, local_RCRequiredVal.roll, local_RCRequiredVal.yaw, local_RCRequiredVal.thrust);
 
                 // FOR SERIAL PLOTTER
          //       printf("test\n\r");
