@@ -301,67 +301,11 @@ void UARTReceivedISR(void)
 */
 void Task_CollectSensorData(void)
 {   
-    HAL_WRAPPER_Acc_t local_Acc_t = {0};
-    HAL_WRAPPER_Gyro_t local_gyro_t = {0};
-    HAL_WRAPPER_Magnet_t local_magnet_t = {0};
-    HAL_WRAPPER_Pressure_t local_pressure_t = {0};
-    HAL_WRAPPER_Pressure_t ref_pressure_t = {0};
-    HAL_WRAPPER_Temperature_t local_temperature_t = {0};
-    HAL_WRAPPER_Altitude_t local_altitude_t = {0};
-    HAL_WRAPPER_Battery_t local_battery_t = {0};
-
-    // the item to push into the queue
-    RawSensorDataItem_t local_out_t = {0};
-
-    // read the start pressure
-    HAL_WRAPPER_ReadPressure(&ref_pressure_t);
+    
 
     while (1)
     {
-        // read accelerometer data
-        HAL_WRAPPER_ReadAcc(&local_Acc_t);
         
-        // read gyroscope data
-        HAL_WRAPPER_ReadGyro(&local_gyro_t);
-
-        // read magnetometer data
-        HAL_WRAPPER_ReadMagnet(&local_magnet_t);
-
-        // read barometer data
-        // HAL_WRAPPER_ReadPressure(&local_pressure_t);
-
-        // read temperature data
-        // HAL_WRAPPER_ReadTemperature(&local_temperature_t);
-
-        // read altitude from barometer
-        // HAL_WRAPPER_ReadAltitude(&local_altitude_t, &ref_pressure_t);
-
-        // read battery charge
-        // HAL_WRAPPER_GetBatteryCharge(&local_battery_t);
-
-// FOR SERIAL MONITOR
-//        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
-//        printf("MPU6050 Gyro: roll: %f,  pitch: %f,  yaw: %f\r\n", local_gyro_t.roll, local_gyro_t.pitch, local_gyro_t.yaw);
-//        printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
-// printf("MPU6050 ACC: x: %f,  y: %f,  z: %f\r\n", local_Acc_t.x, local_Acc_t.y, local_Acc_t.z);
-
-// FOR SERIAL PLOTTER
-    //    printf("%d,%d,%d\r\n", local_magnet_t.x, local_magnet_t.y, local_magnet_t.z);
-
-        // assign variables
-        local_out_t.Acc = local_Acc_t;
-        local_out_t.Gyro = local_gyro_t;
-        local_out_t.Magnet = local_magnet_t;
-        local_out_t.Pressure = local_pressure_t;
-        local_out_t.Temperature = local_temperature_t;
-        local_out_t.Altitude = local_altitude_t;
-        local_out_t.Battery = local_battery_t;
-
-        // push the data into the queue for fusion
-        SERVICE_RTOS_AppendToBlockingQueue(0, (const void *) &local_out_t, queue_RawSensorData_Handle_t);
-
-        // sleep for 5 ms
-        SERVICE_RTOS_BlockFor(SENSOR_SAMPLE_PERIOD);
     }
 }
 
@@ -774,62 +718,90 @@ void Task_Master(void)
 int main(void)
 {
 
-    // create the Queue for sensor collection data task to put its data into it
-    SERVICE_RTOS_CreateBlockingQueue(QUEUE_RAW_SENSOR_DATA_LEN,
-                                    sizeof(RawSensorDataItem_t),
-                                    &queue_RawSensorData_Handle_t);
+    // Initialize the sensor data collectors
+    HAL_WRAPPER_Pressure_t ref_pressure_t = {0};
+    RawSensorDataItem_t raw_data = {0};
+    // read the start pressure
+    HAL_WRAPPER_ReadPressure(&ref_pressure_t);
 
-    // create the Queue for sensor fusion task to put its data into it
-    SERVICE_RTOS_CreateBlockingQueue(QUEUE_SENSOR_FUSION_DATA_LEN,
-                                    sizeof(SensorFusionDataItem_t),
-                                    &queue_FusedSensorData_Handle_t);
-
-    // create the Queue for sensor collection data to put its data into it
-    SERVICE_RTOS_CreateBlockingQueue(QUEUE_APP_TO_DRONE_DATA_LEN,
-                                    sizeof(AppToDroneDataItem_t),
-                                    &queue_AppCommToDrone_Handle_t);
-
-    // create the Queue for sensor collection data to put its data into it
-    SERVICE_RTOS_CreateBlockingQueue(QUEUE_DRONE_TO_APP_DATA_LEN,
-                                    sizeof(DroneToAppDataItem_t),
-                                    &queue_DroneCommToApp_Handle_t);
-
-
-    // create a task for reading sensor data
-    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_CollectSensorData,
-                "Sensor Collection",
-                TASK_SENSOR_COLLECT_STACK_SIZE,
-                TASK_SENSOR_COLLECT_PRIO,
-                &task_CollectSensorData_Handle_t);
-
-    // create a task for fusing sensor data
-    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_SensorFusion,
-                "Sensor Fusion",
-                TASK_SENSOR_FUSION_STACK_SIZE,
-                TASK_SENSOR_FUSION_PRIO,
-                &task_SensorFusion_Handle_t);
+    // Initialize sensor fusion
+    SensorFusionDataItem_t local_temp_t = {0};
+    SensorFusionDataItem_t fused_data = {0};
+    DroneToAppDataItem_t local_DataToSendtoApp_t = {0};
+    // Initialize 2d-kalman filter matrices
+    Altitude_Kalman_2D_init();
 
    // create a task for communication with app board
-   SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_AppComm,
-               "App Communication",
-               TASK_APP_COMM_STACK_SIZE,
-               TASK_APP_COMM_PRIO,
-               &task_AppComm_Handle_t);
+
 
     // create a task for master
-    SERVICE_RTOS_TaskCreate((SERVICE_RTOS_TaskFunction_t)Task_Master,
-                "Master",
-                TASK_MASTER_STACK_SIZE,
-                TASK_MASTER_PRIO,
-                &task_Master_Handle_t);
+
 
     // start the schedular
-    SERVICE_RTOS_StartSchedular();
 
 
     while (1)
     {
-        printf("shouldn't run at here!!\n");
+        /************************************************ Collect Sensors data *************************************************/
+        // read accelerometer data
+        HAL_WRAPPER_ReadAcc(&(raw_data.Acc));
+        
+        // read gyroscope data
+        HAL_WRAPPER_ReadGyro(&(raw_data.Gyro));
+
+        // read magnetometer data
+        HAL_WRAPPER_ReadMagnet(&(raw_data.Magnet));
+
+        // read barometer data
+        // HAL_WRAPPER_ReadPressure(&(raw_data.Pressure));
+
+        // read temperature data
+        // HAL_WRAPPER_ReadTemperature(&(raw_data.Temperature));
+
+        // read altitude from barometer
+        HAL_WRAPPER_ReadAltitude(&(raw_data.Altitude), &ref_pressure_t);
+
+        // read battery charge
+        // HAL_WRAPPER_GetBatteryCharge(&(raw_data.Battery));
+
+// FOR SERIAL PLOTTER
+    //    printf("%d,%d,%d\r\n", raw_data.Magnet.x, raw_data.Magnet.y, raw_data.Magnet.z);
+
+
+        
+        /********************************************** Perform Sensor fusion **************************************************/
+        // apply kalman filter with sensor fusion
+        SensorFuseWithKalman(&raw_data, &local_temp_t);
+
+        // actual measurements showed that roll and pitch are reversed and pitch is in negative
+        fused_data.pitch = -local_temp_t.roll;
+        fused_data.roll = local_temp_t.pitch;
+        fused_data.yaw = local_temp_t.yaw;
+        fused_data.yaw_rate = local_temp_t.yaw_rate;
+        fused_data.altitude = local_temp_t.altitude;
+        fused_data.vertical_velocity = local_temp_t.vertical_velocity;
+
+        // Send some info to the application board
+        // set type of data to send
+        local_DataToSendtoApp_t.data.type = DATA_TYPE_INFO;
+
+        // read temperature data
+        local_DataToSendtoApp_t.data.data.info.temperature = raw_data.Temperature.temperature;
+
+        // read battery charge
+        local_DataToSendtoApp_t.data.data.info.batteryCharge = raw_data.Battery.batteryCharge;
+
+        // assign current altitude
+        local_DataToSendtoApp_t.data.data.info.altitude = raw_data.Altitude.ultrasonic_altitude / 100.0;
+
+        // assign distanceToOrigin (TODO)
+        local_DataToSendtoApp_t.data.data.info.distanceToOrigin = 1.5;       
+
+        // push data into queue to be sent to the app board and notify the AppComm with new data (TODO)
+
+
+
+
     }
 }
 
