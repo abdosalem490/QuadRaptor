@@ -282,6 +282,7 @@ void setup()
 {
   Serial.begin(115200);
   delay(1000);
+  Serial.println("TEST");
 
 
   /* Select the font to use with menu and all font functions */
@@ -474,6 +475,7 @@ void loop()
         leftJoyStickPressed = 0;
       }
 
+      Serial.println("SECTION1 --- 1");
       commandTime = millis();
       data.type = DATA_TYPE_MOVE;
       data.data.move.startDrone = true;
@@ -500,9 +502,16 @@ void loop()
       // sprintf(buff, "yaw = %d, thurst= %d, roll= %d, pitch=%d, test=%d", data.data.move.yaw, data.data.move.thurst, data.data.move.roll, data.data.move.pitch, analogRead(RIGHT_JOYSTICK_Y_PIN));
       // Serial.println(buff);
       
+      Serial.println("SECTION1 --- 2");
       myRadio.stopListening();
+      
+      Serial.println("SECTION1 --- 3");
       myRadio.write(&data, sizeof(data));
-      myRadio.startListening(); 
+      
+      Serial.println("SECTION1 --- 4");
+      myRadio.startListening();
+
+      Serial.println("SECTION1 --- 5");
     }
     else if(millis() - commandTime >= 25 && !readingsTaken)
     {
@@ -518,8 +527,9 @@ void loop()
   // read incoming traffic if any
   if(myRadio.available())
   {
+    Serial.println("SECTION2 --- 1");
     myRadio.read(&data, sizeof(data));
-
+    Serial.println("SECTION2 --- 1");
     // char buff[100];
     // sprintf(buff, "type = %d", data.type);
     // Serial.println(buff);
