@@ -86,10 +86,36 @@
 /******************************************************************************
  * Function Prototypes
  *******************************************************************************/
+void hmc5883l_write(uint8_t reg, uint8_t data);
+void hmc5883l_setptr(uint8_t reg);
+void mpu6050_write(uint8_t reg, uint8_t data);
 
 /******************************************************************************
  * Function Definitions
  *******************************************************************************/
+
+void hmc5883l_write(uint8_t reg, uint8_t data)
+{
+    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(reg);
+    I2C_write(data);
+    I2C_stop();
+}
+
+void hmc5883l_setptr(uint8_t reg)
+{
+    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(reg);
+    I2C_stop();
+}
+
+void mpu6050_write(uint8_t reg, uint8_t data)
+{
+    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
+    I2C_write(reg);
+    I2C_write(data);
+    I2C_stop();
+}
 
 /**
  * 
@@ -102,61 +128,37 @@ void hmc5883l_init()
     Register: USER_CTRL (0x6A)
     *  Disable the MPU6050 master mode. This is a prerequisite for the next step
     **/
-    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
-    I2C_write(MPU6050_REG_USER_CTRL);
-    I2C_write(MPU6050_DISABLE_MASTER);
-    I2C_stop();
-
+    mpu6050_write(MPU6050_REG_USER_CTRL, MPU6050_DISABLE_MASTER);
     /**
     Register: BYPASS_CTRL (0x37)
     *  Enables bypass mode. This connects the main I2C bus to the auxiliary one.
     **/
-    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
-    I2C_write(MPU6050_REG_BYPASS);
-    I2C_write(MPU6050_ENABLE_BYPASS);
-    I2C_stop();
-
+    mpu6050_write(MPU6050_REG_BYPASS, MPU6050_ENABLE_BYPASS);
     /**
     Register: PWR_MGMT_1 (0x6B = 107)
     *  Selects the clock source: 8MHz oscillator
     *  Disables the following bits: Reset, Sleep, Cycle
     *  Does not disable Temperature sensor.
     **/
-    I2C_start_transmission(MPU6050_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
-    I2C_write(MPU6050_REG_PWR_MGMT_1);
-    I2C_write(0);
-    I2C_stop();
-
+    mpu6050_write(MPU6050_REG_PWR_MGMT_1, 0);
     #endif
 
     /**
     Register: MODE_REG (0x02)
     *  Sets the measurement mode
     **/
-    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
-    I2C_write(HMC5883L_REG_MODE);
-    I2C_write(HMC5883L_CONTINUOUS_MODE);
-    I2C_stop();
-
+    hmc5883l_write(HMC5883L_REG_MODE, HMC5883L_CONTINUOUS_MODE);
     /**
     Register: CONFIG_A (0x00)
     *  Sets the samples per measurement output to 8
     *  Sets the output data rate to 15Hz
     **/
-    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
-    I2C_write(HMC5883L_REG_CONFIG_A);
-    I2C_write(HMC5883L_SAMPLES_8 | HMC5883L_OUTPUT_RATE_15);
-    I2C_stop();
-
+    hmc5883l_write(HMC5883L_REG_CONFIG_A, HMC5883L_SAMPLES_8 | HMC5883L_OUTPUT_RATE_15);
     /**
     Register: CONFIG_B (0x01)
     *  Sets the sensor field range to 1.3 Ga
     **/
-    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
-    I2C_write(HMC5883L_REG_CONFIG_B);
-    I2C_write(HMC5883L_RANGE_1_3);
-    I2C_stop();
-
+    hmc5883l_write(HMC5883L_REG_CONFIG_B, HMC5883L_RANGE_1_3);
 }  
 
 /**
@@ -167,9 +169,7 @@ void hmc5883l_read(hmc5883l_packet* data)
     /**
      * Registers: Magnetometer measurements (0x03 to 0x08)
     */
-    I2C_start_transmission(HMC5883L_SLAVE_ADDRESS, MASTER_TRANSMIT_MODE);
-    I2C_write(HMC5883L_REG_DATA);
-    I2C_stop();
+    hmc5883l_setptr(HMC5883L_REG_DATA);
 
     // Get sensor readings
     I2C_requestFrom(HMC5883L_SLAVE_ADDRESS, I2C_Rx_BUFFER_SIZE);
