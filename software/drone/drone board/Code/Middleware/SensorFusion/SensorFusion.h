@@ -84,58 +84,25 @@
  *******************************************************************************/
 
 /**
- *  \b function                                 :       None
- *  \b Description                              :       None.
- *  @param  arg_pFuncTaskFunction [IN]          :       None
- *  @param  arg_u32TaskPriority [IN]            :       None.
- *  @param  arg_pTaskHandle [OUT]               :       None.
- *  @note                                       :       None.
- *  \b PRE-CONDITION                            :       None.
- *  \b POST-CONDITION                           :       None.
- *  @return                                     :       None
- *  @see                                        :       None
+ * Fuses sensor data using a Kalman filter to provide a more accurate estimation of the sensor readings.
+ * This function takes raw sensor data as input and outputs the fused sensor data.
  *
- *  \b Example:
- * @code
- * 
- * None
- * 
- * @endcode
+ * @param arg_pSensorsReadings [IN] Pointer to the structure containing raw sensor data.
+ * @param arg_pFusedReadings [OUT] Pointer to the structure where the fused sensor data will be stored.
  *
- * <br><b> - HISTORY OF CHANGES - </b>
- * <table align="left" style="width:800px">
- * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 14/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
- * </table><br><br>
- * <hr>
+ * @note This function should be called after initializing the sensor and the Kalman filter.
+ *
+ * @return void.
  */
 void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusionDataItem_t* arg_pFusedReadings);
 
 /**
- *  \b function                                 :       None
- *  \b Description                              :       None.
- *  @param  arg_pFuncTaskFunction [IN]          :       None
- *  @param  arg_u32TaskPriority [IN]            :       None.
- *  @param  arg_pTaskHandle [OUT]               :       None.
- *  @note                                       :       None.
- *  \b PRE-CONDITION                            :       None.
- *  \b POST-CONDITION                           :       None.
- *  @return                                     :       None
- *  @see                                        :       None
+ * Initializes the 2D Kalman filter for altitude estimation. This function sets up the initial state and
+ * parameters of the Kalman filter to be used for altitude estimation based on sensor inputs.
  *
- *  \b Example:
- * @code
- * 
- * None
- * 
- * @endcode
+ * @note This function should be called before using the Kalman filter for altitude estimation.
  *
- * <br><b> - HISTORY OF CHANGES - </b>
- * <table align="left" style="width:800px">
- * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 26/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
- * </table><br><br>
- * <hr>
+ * @return void.
  */
 void Altitude_Kalman_2D_init();
 

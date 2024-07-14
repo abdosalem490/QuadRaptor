@@ -110,12 +110,44 @@ float  Ts = SENSOR_SAMPLE_PERIOD/1000.0;
  * Function Prototypes
  *******************************************************************************/
 
+/**
+ * Computes the azimuth angle based on the magnetic sensor readings along the X and Y axes.
+ * The azimuth angle is calculated in radians from the North direction, using the arctangent of the Y and X magnetic field values.
+ *
+ * @param mag_x The magnetic field reading along the X-axis.
+ * @param mag_y The magnetic field reading along the Y-axis.
+ *
+ * @return The azimuth angle in radians.
+ */
 float compute_azimuth(float mag_x, float mag_y);
 
+/**
+ * Performs a single iteration of the Kalman filter on a one-dimensional system. This function updates the Kalman state
+ * and uncertainty based on the new input and measurement.
+ *
+ * @param KalmanState Pointer to the current state estimate of the Kalman filter. Updated by this function.
+ * @param KalmanUncertainty Pointer to the current estimate uncertainty of the Kalman filter. Updated by this function.
+ * @param KalmanInput The control input to the system.
+ * @param KalmanMeasurement The new measurement for the update step.
+ * @param Ts The sampling time or time step between the current and previous measurements.
+ * @param process_noise The process noise covariance, representing the uncertainty in the system model.
+ * @param measure_covar The measurement noise covariance, representing the uncertainty in the measurement.
+ *
+ * @return void.
+ */
 void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanInput, float KalmanMeasurement, float Ts, float process_noise, float measure_covar);
 
-float YawRate(float newYaw);
-
+/**
+ * Applies a 2D Kalman filter to estimate the true position based on a single measurement and inertial acceleration.
+ * This simplified function is designed for systems where a full 2D state estimation is required but only a single
+ * measurement is available. It abstracts the complexities of a full 2D Kalman filter implementation.
+ *
+ * @param measurement The measurement value used for the update step of the Kalman filter.
+ * @param inertial_acc The acceleration value from an inertial measurement unit, used as part of the system model.
+ *
+ * @return void.
+ */
+void kalman_filter_2d(float measurement, float inertial_acc);
 /******************************************************************************
  * Function Definitions
  *******************************************************************************/
@@ -127,7 +159,7 @@ float compute_azimuth(float mag_x, float mag_y)
 {
     float declination_angle, heading;
     // Declination angle
-    declination_angle = (DECLINATION_DEGREE + (DECLINATION_MINUTE / 60.0)) / (180 / PI);
+    declination_angle = (DECLINATION_DEGREE + (DECLINATION_MINUTE / 60.0)) * (PI / 180);
     // Calculate heading
     heading = atan2(mag_x, mag_y);
     heading += declination_angle;
@@ -153,12 +185,18 @@ void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanI
  * @param S: State matrix
  * @param F: State transition matrix
  * @param G: Control matrix
- * @param U: Input variable
+ * @param U: Input variable matrix
  * @param H: Measurement matrix
  * @param Q: Process noise covariance matrix
  * @param R: Measurement noise covariance matrix
  * @param P: Covariance matrix
  * @param K: Kalman gain matrix
+ * @param L: Temporary matrix for storing intermediate values during Kalman gain calculation
+ * @param M: Measurement matrix
+ * @param I: Identity matrix
+ * @param F_T: Transpose of the state transition matrix
+ * @param H_T: Transpose of the measurement matrix
+ * @param temp_1, temp_2, temp_3, temp_4: Temporary matrices for intermediate calculations
  */
 void kalman_filter_2d(float measurement, float inertial_acc)
 {
@@ -218,66 +256,6 @@ void kalman_filter_2d(float measurement, float inertial_acc)
 }
 
 /**
- * @brief: computes yaw rate
- */
-float YawRate(float newYaw)
-{
-    static float oldVal = 0;
-    static int8_t direction = 1;
-    float rate = 0.0;
-
-    // check if both values have same sign
-    if(oldVal * newYaw >= 0)
-    {
-        rate = (newYaw - oldVal);
-        direction = (rate >= 0) - (rate < 0);
-    }
-    else
-    {
-        if(-1 == direction)
-        {
-            if(newYaw < 0)
-            {
-                rate = oldVal + (-newYaw);
-            }
-            else if(oldVal < 0) 
-            {
-                rate = (180 - newYaw) + (180 + oldVal);
-            }
-            else
-            {
-                // do nothing
-            }  
-        }
-        else if(1 == direction)
-        {
-            if(newYaw < 0)
-            {
-                rate = (180 - oldVal) + (180 + newYaw);
-            }
-            else if(oldVal < 0) 
-            {
-                rate = (-oldVal) + newYaw;
-            }
-            else
-            {
-                // do nothing
-            }  
-        }
-        else
-        {
-            // do nothing
-        }
-
-    }
-
-    rate /= Ts;
-    oldVal = newYaw;
-
-    return rate;
-}
-
-/**
  *
  */
 void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusionDataItem_t* arg_pFusedReadings)
@@ -321,23 +299,11 @@ void SensorFuseWithKalman(RawSensorDataItem_t* arg_pSensorsReadings, SensorFusio
 
     // 2D kalman filter for altitude estimation
     kalman_filter_2d(arg_pSensorsReadings->Altitude.altitude*100, vertical_acc);
-//     arg_pFusedReadings->altitude = S.values[0];
-//     arg_pFusedReadings->vertical_velocity = S.values[1];
-
-    // TEMP (to be deleted)
-    if(arg_pSensorsReadings->Altitude.ultrasonic_altitude < 400)
-    {
-        static float previous_readings = 0;
-        arg_pFusedReadings->vertical_velocity = arg_pSensorsReadings->Altitude.ultrasonic_altitude - previous_readings;
-        previous_readings = arg_pSensorsReadings->Altitude.ultrasonic_altitude;
-    }
-    else
-    {
-    	arg_pFusedReadings->vertical_velocity = 0;
-    }
+    arg_pFusedReadings->altitude = S.values[0];
+    arg_pFusedReadings->vertical_velocity = S.values[1];
 
     // compute yaw rate
-    arg_pFusedReadings->yaw_rate = arg_pSensorsReadings->Gyro.yaw; // YawRate(arg_pFusedReadings->yaw);
+    arg_pFusedReadings->yaw_rate = arg_pSensorsReadings->Gyro.yaw;
 
 }
 
