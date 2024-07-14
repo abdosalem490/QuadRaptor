@@ -113,88 +113,40 @@ extern uint8_t RxData[I2C_Rx_BUFFER_SIZE];
  *******************************************************************************/
 
 /**
- *  \b function                                 :       None
- *  \b Description                              :       Initialize gyroscope and accelerometer.
- *  @param  arg_pFuncTaskFunction [IN]          :       None
- *  @param  arg_pu8TaskName [IN]                :       None
- *  @param  arg_pTaskHandle [OUT]               :       None
- *  @note                                       :       Only called once.
- *  \b PRE-CONDITION                            :       None
- *  \b POST-CONDITION                           :       None.
- *  @return                                     :       None
- *  @see                                        :       None
+ * Initializes the MPU6050 gyroscope and accelerometer sensor. This function configures the sensor with default
+ * settings for measurement. It must be called before any other operations are performed on the sensor.
  *
- *  \b Example:
- * @code
- * 
- *          None
- * 
- * @endcode
+ * @note This function should be called only once at the start of the program.
  *
- * <br><b> - HISTORY OF CHANGES - </b>
- * <table align="left" style="width:800px">
- * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 19/05/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
- * </table><br><br>
- * <hr>
+ * @return void.
  */
 void mpu6050_init();
 
-
 /**
- *  \b function                                 :       None
- *  \b Description                              :       Get gyroscope and accelerometer measurements.
- *  @param  arg_pFuncTaskFunction [IN]          :       None
- *  @param  arg_pu8TaskName [IN]                :       None
- *  @param  arg_pTaskHandle [OUT]               :       None
- *  @note                                       :       mpu6050_init must be called once in the program before using this function.
- *  \b PRE-CONDITION                            :       None
- *  \b POST-CONDITION                           :       None.
- *  @return                                     :       None
- *  @see                                        :       None
+ * Reads the gyroscope measurements from the MPU6050 sensor and stores them in the provided variables.
+ * This function should be called after initializing the sensor with mpu6050_init().
  *
- *  \b Example:
- * @code
- * 
- *          None
- * 
- * @endcode
+ * @param roll_rate [OUT] Pointer to a float where the roll rate will be stored.
+ * @param pitch_rate [OUT] Pointer to a float where the pitch rate will be stored.
+ * @param yaw_rate [OUT] Pointer to a float where the yaw rate will be stored.
  *
- * <br><b> - HISTORY OF CHANGES - </b>
- * <table align="left" style="width:800px">
- * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 12/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
- * </table><br><br>
- * <hr>
+ * @note mpu6050_init must be called once in the program before using this function.
+ *
+ * @return void.
  */
 void mpu6050_gyro_read(float* roll_rate, float* pitch_rate, float* yaw_rate);
 
-
 /**
- *  \b function                                 :       None
- *  \b Description                              :       Get gyroscope and accelerometer measurements.
- *  @param  arg_pFuncTaskFunction [IN]          :       None
- *  @param  arg_pu8TaskName [IN]                :       None
- *  @param  arg_pTaskHandle [OUT]               :       None
- *  @note                                       :       mpu6050_init must be called once in the program before using this function.
- *  \b PRE-CONDITION                            :       None
- *  \b POST-CONDITION                           :       None.
- *  @return                                     :       None
- *  @see                                        :       None
+ * Reads the accelerometer measurements from the MPU6050 sensor and stores them in the provided variables.
+ * This function should be called after initializing the sensor with mpu6050_init().
  *
- *  \b Example:
- * @code
- * 
- *          None
- * 
- * @endcode
+ * @param x_acc [OUT] Pointer to a float where the acceleration on the X-axis will be stored.
+ * @param y_acc [OUT] Pointer to a float where the acceleration on the Y-axis will be stored.
+ * @param z_acc [OUT] Pointer to a float where the acceleration on the Z-axis will be stored.
  *
- * <br><b> - HISTORY OF CHANGES - </b>
- * <table align="left" style="width:800px">
- * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 12/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
- * </table><br><br>
- * <hr>
+ * @note mpu6050_init must be called once in the program before using this function.
+ *
+ * @return void.
  */
 void mpu6050_accel_read(float* x_acc, float* y_acc, float* z_acc);
 
