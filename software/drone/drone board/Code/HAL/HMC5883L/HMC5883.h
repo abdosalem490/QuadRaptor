@@ -140,92 +140,38 @@ typedef struct packet hmc5883l_packet;
  *******************************************************************************/
 
 /**
- *  \b function                                 :       None
- *  \b Description                              :       Initialize magnetometer.
- *  @param  arg_pFuncTaskFunction [IN]          :       None
- *  @param  arg_pu8TaskName [IN]                :       None.
- *  @param  arg_u16TaskStackDepth [IN]          :       None.
- *  @param  arg_u32TaskPriority [IN]            :       None.
- *  @param  arg_pTaskHandle [OUT]               :       None.
- *  @note                                       :       Only called once.
- *  \b PRE-CONDITION                            :       None.
- *  \b POST-CONDITION                           :       None.
- *  @return                                     :       None.
- *  @see                                        :       None.
+ * Initializes the HMC5883L magnetometer sensor. This function configures the sensor with default settings
+ * for measurement. It must be called before any other operations are performed on the sensor.
  *
- *  \b Example:
- * @code
- * 
- * None
- * 
- * @endcode
+ * @note This function should be called only once at the start of the program.
  *
- * <br><b> - HISTORY OF CHANGES - </b>
- * <table align="left" style="width:800px">
- * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 14/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
- * </table><br><br>
- * <hr>
+ * @return void.
  */
 void hmc5883l_init();
 
 /**
- *  \b function                                 :       None
- *  \b Description                              :       Get magnetometer measurements.
- *  @param  arg_pFuncTaskFunction [IN]          :       None
- *  @param  arg_pu8TaskName [IN]                :       None.
- *  @param  arg_u16TaskStackDepth [IN]          :       None.
- *  @param  arg_u32TaskPriority [IN]            :       None.
- *  @param  arg_pTaskHandle [OUT]               :       None.
- *  @note                                       :       hmc5883l_init must be called once in the program before using this function.
- *  \b PRE-CONDITION                            :       None.
- *  \b POST-CONDITION                           :       None.
- *  @return                                     :       None.
- *  @see                                        :       None.
+ * Reads the raw magnetometer measurements from the HMC5883L sensor and stores them in the provided
+ * hmc5883l_packet structure. This function should be called after initializing the sensor with hmc5883l_init().
  *
- *  \b Example:
- * @code
- * 
- * None
- * 
- * @endcode
+ * @param data [OUT] Pointer to a hmc5883l_packet structure where the magnetometer data will be stored.
  *
- * <br><b> - HISTORY OF CHANGES - </b>
- * <table align="left" style="width:800px">
- * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 14/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
- * </table><br><br>
- * <hr>
+ * @note hmc5883l_init must be called once in the program before using this function.
+ *
+ * @return void.
  */
 void hmc5883l_read(hmc5883l_packet* data);
 
 /**
- *  \b function                                 :       None
- *  \b Description                              :       Get magnetometer measurements.
- *  @param  arg_pFuncTaskFunction [IN]          :       None
- *  @param  arg_pu8TaskName [IN]                :       None.
- *  @param  arg_u16TaskStackDepth [IN]          :       None.
- *  @param  arg_u32TaskPriority [IN]            :       None.
- *  @param  arg_pTaskHandle [OUT]               :       None.
- *  @note                                       :       hmc5883l_init must be called once in the program before using this function.
- *  \b PRE-CONDITION                            :       None.
- *  \b POST-CONDITION                           :       None.
- *  @return                                     :       None.
- *  @see                                        :       None.
+ * Normalizes the raw magnetometer measurements obtained from hmc5883l_read() function. This may involve
+ * scaling the raw values to a specific range or applying calibration data to correct for sensor biases.
  *
- *  \b Example:
- * @code
- * 
- * None
- * 
- * @endcode
+ * @param data [IN, OUT] Pointer to a hmc5883l_packet structure containing the raw data to be normalized.
+ *                       The normalized data is also stored back in this structure.
  *
- * <br><b> - HISTORY OF CHANGES - </b>
- * <table align="left" style="width:800px">
- * <tr><td> Date       </td><td> Software Version </td><td> Initials </td><td> Description </td></tr>
- * <tr><td> 14/06/2024 </td><td> 1.0.0            </td><td> MZ      </td><td> Interface Created </td></tr>
- * </table><br><br>
- * <hr>
+ * @note hmc5883l_init must be called once in the program before using this function. Also, hmc5883l_read()
+ *       must be called to obtain the raw data before calling this function.
+ *
+ * @return void.
  */
 void hmc5883l_normalize(hmc5883l_packet* data);
 
