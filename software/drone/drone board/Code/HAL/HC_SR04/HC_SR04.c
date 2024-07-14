@@ -2,7 +2,7 @@
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    @title          :   source file for the HC_SR04 ultrasonic sensor                                                               |
  * |    @file           :   HC_SR04.c                                                                                                   |
- * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
+ * |    @author         :   Abdelrahman Mohamed Fathy                                                                                  |
  * |    @origin_date    :   26/06/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
  * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |

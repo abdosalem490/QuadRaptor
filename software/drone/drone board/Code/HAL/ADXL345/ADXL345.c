@@ -2,7 +2,7 @@
  * --------------------------------------------------------------------------------------------------------------------------------------
  * |    @title          :   ADXL345 Digital Accelerometer                                                                               |
  * |    @file           :   ADXL345.c                                                                                                   |
- * |    @author         :   Abdelrahman Mohamed Salem                                                                                   |
+ * |    @author         :   Abdelrahman Mohamed Fathy                                                                                  |
  * |    @origin_date    :   24/05/2024                                                                                                  |
  * |    @version        :   1.0.0                                                                                                       |
  * |    @tool_chain     :   RISC-V Cross GCC                                                                                            |
