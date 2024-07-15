@@ -176,7 +176,7 @@ void kalman_filter(float * KalmanState, float * KalmanUncertainty, float KalmanI
     float KalmanGain;
     *KalmanState = *KalmanState + Ts*KalmanInput;
     *KalmanUncertainty = *KalmanUncertainty + Ts*Ts * process_noise*process_noise;
-    KalmanGain = *KalmanUncertainty * 1/(1*(*KalmanUncertainty) + measure_covar*measure_covar);
+    KalmanGain = *KalmanUncertainty * 1/(*KalmanUncertainty + measure_covar*measure_covar);
     *KalmanState = *KalmanState + KalmanGain*(KalmanMeasurement-*KalmanState);
     *KalmanUncertainty = (1-KalmanGain) * (*KalmanUncertainty);
 }
