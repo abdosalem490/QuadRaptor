@@ -142,7 +142,6 @@ uint8_t HAL_ADXL345_Read_Single(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8R
   return local_pu8ArrData[1];
 }
 
-
 /**
  * @brief: sends multiple data writes utilizing coalesced write feature
 */
@@ -151,7 +150,6 @@ void HAL_ADXL345_Write_Mutliple(MCAL_CONFIG_SPI_t* arg_pADXLSPI, uint8_t arg_u8R
   uint8_t local_8Temp = 0x40 | (arg_u8RegisterStartAddress & 0x3F); // write register adreess and make multiple by 1 to write to consecutive registers
   MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, (uint8_t*) &local_8Temp, 1, NULL);
   MCAL_WRAPEPR_SPI_POLL_TRANSFER(arg_pADXLSPI, arg_pu8Data, arg_u8Len, NULL);
-
 }
 
 
@@ -200,7 +198,7 @@ HAL_ADXL345_ErrStates_t HAL_ADXL345_Init(HAL_ADXL345_config_t* arg_pADXLConfig, 
 }
 
 
-#include "ch32v20x_gpio.h"
+// #include "ch32v20x_gpio.h"
 
 /**
  * IMPORTANT NOTE: IC isn't working, it's either a problem with SPI pins routing or the chip is fake
@@ -212,8 +210,8 @@ HAL_ADXL345_ErrStates_t HAL_ADXL345_Init(HAL_ADXL345_config_t* arg_pADXLConfig, 
 HAL_ADXL345_ErrStates_t HAL_ADXL345_ReadAcc(MCAL_CONFIG_SPI_t* arg_pADXLSPI, HAL_ADXL345_Acc_t* arg_pReadings_t) 
 {
 
-  uint8_t local_u8Temp = HAL_ADXL345_Read_Single(arg_pADXLSPI, HAL_ADXL345_REG_DEVID);
-  local_u8Temp = HAL_ADXL345_Read_Single(arg_pADXLSPI, HAL_ADXL345_REG_DATA_FORMAT);
+  // uint8_t local_u8Temp = HAL_ADXL345_Read_Single(arg_pADXLSPI, HAL_ADXL345_REG_DEVID);
+  // local_u8Temp = HAL_ADXL345_Read_Single(arg_pADXLSPI, HAL_ADXL345_REG_DATA_FORMAT);
 
   uint8_t local_u8Dummy[7] = {0};
   local_u8Dummy[0] = 0xC0 | HAL_ADXL345_REG_DATAX0;
